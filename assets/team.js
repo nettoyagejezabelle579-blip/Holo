@@ -29,7 +29,7 @@
       pool: "Card pool", poolOwned: "My cards", poolAll: "Every card at max level (theory)", effort: "Search effort", fast: "Fast", normal: "Normal", thorough: "Thorough",
       core: "Core cards", pickCore: "Choose core cards", lockLeader: "Leader", anyLeader: "Any (optimise)", keep: "Cards to keep",
       pullLv: "Assume the new card is", pullBloom: "Bloom",
-      s4: "Holomem board", boardInfo: "Board bonuses come from the tiles unlocked on each holomem's board in My Data → Holomems. Holomems you haven't set up use auto setup with the points from their rank.",
+      s4: "Holomem board", boardInfo: "How holomem boards are counted when comparing units.", bRole: "Planned for each unit (recommended)", bRoleHelp: "Every board is set up for its holomem's role in the unit being tried, using the points from its rank: the leader gets leader (red) tiles, unit members get member (blue) tiles, everyone else gets support (green) and song (yellow) tiles. Use \"Plan my boards\" on a result to see exactly which tiles to unlock.", bSaved: "My saved boards", bSavedHelp: "Only the tiles you set up in My Data → Holomems (boards you haven't set up count as empty).", bFull: "All tiles unlocked (theory)", bOff: "No board", bFullHelp: "Every tile of every board unlocked.", bOffHelp: "Board bonuses are ignored.",
       s5: "Input details", eventSongs: "Songs", addSong: "Add song", ratingLeader: "Leader holomem", latestEvent: "Use latest event songs",
       run: "Find best unit", running: "Searching…", cancel: "Cancel", results: "Result", alternatives: "Other strong units",
       noCards: "You have no cards yet. Add your cards in My Data first.", perSong: "Per song", avg: "Average", rating: "Rating (top 3)",
@@ -41,7 +41,7 @@
       planMats: "Materials needed", planTiles: "+{a} tiles", planRemoved: "−{r} tiles (reset)", planConnect: "{c} Connect cards", planPts: "Board Pt",
       planSave: "Save board to My Data", planSaveAll: "Save all boards to My Data", planSaved: "Saved ✓", planNone: "Your boards are already the best this planner can find for this unit.",
       planHelp: "Boards of the holomems in this unit are re-planned from scratch with their rank points (reset the board in game, then unlock the green tiles). Other boards keep your tiles and only spend leftover points on support/song tiles. Cube stock is not checked. Green ring = new tile, red ring = tile removed by the reset.",
-      planScore: "score with this unit", teamBoard: "in unit",
+      planScore: "score with this unit", onlyChanges: "Only show boards and tiles that need changes", conNew: "new", teamBoard: "in unit",
       planOthers: "Also re-plan other holomems' boards for support tiles (helps every unit, replaces their leader/member tiles)", goalAvg: "Average score", goalMax: "Maximum score",
       goalHelp: "Average = what you get on a typical play (active skills fire by chance). Maximum = every active skill fires.",
       average: "Average", maximum: "Maximum", spread: "Over {n} simulated plays", typical: "Typical (middle 80%)", top10: "Top 10%", bestSeen: "Best seen",
@@ -67,7 +67,7 @@
       pool: "カード範囲", poolOwned: "所持カード", poolAll: "全カード最大レベル（理論値）", effort: "探索量", fast: "高速", normal: "標準", thorough: "精密",
       core: "指定カード", pickCore: "指定カードを選択", lockLeader: "リーダー", anyLeader: "指定なし（最適化）", keep: "残すカード",
       pullLv: "新カードの想定", pullBloom: "開花",
-      s4: "ホロメンボード", boardInfo: "ボード効果は所持データ→ホロメンで解放したマスから計算します。未設定のホロメンはランクのPtで自動設置した状態として計算します。",
+      s4: "ホロメンボード", boardInfo: "ユニットを比較するときのボードの扱い。", bRole: "ユニットごとに計画（推奨）", bRoleHelp: "試すユニットでの役割に合わせて、ランクのPtで各ボードを設定して計算します：リーダーはリーダー（赤）マス、ユニットのメンバーはメンバー（青）マス、それ以外はサポート（緑）と楽曲（黄）マス。結果の「ボードを計画」で解放するマスを確認できます。", bSaved: "保存したボード", bSavedHelp: "所持データ→ホロメンで設定したマスのみ（未設定のボードは空として計算）。", bFull: "全マス解放（理論値）", bOff: "ボードなし", bFullHelp: "全ボードの全マスを解放した状態。", bOffHelp: "ボード効果を無視します。",
       s5: "詳細入力", eventSongs: "楽曲", addSong: "楽曲を追加", ratingLeader: "リーダーのホロメン", latestEvent: "最新イベント楽曲を使用",
       run: "最適ユニットを探す", running: "探索中…", cancel: "中止", results: "結果", alternatives: "その他の強いユニット",
       noCards: "所持カードがありません。先に所持データでカードを登録してください。", perSong: "楽曲別", avg: "平均", rating: "レーティング（上位3曲）",
@@ -79,7 +79,7 @@
       planMats: "必要素材", planTiles: "+{a}マス", planRemoved: "−{r}マス（リセット）", planConnect: "コネクト{c}枚", planPts: "ボードPt",
       planSave: "所持データに保存", planSaveAll: "すべてのボードを所持データに保存", planSaved: "保存しました ✓", planNone: "現在のボードはこのユニットにとって既に最適です。",
       planHelp: "このユニットのホロメンのボードはランクPtで一から計画します（ゲーム内でリセットして緑のマスを解放）。他のボードは現在のマスを残し、余ったPtでサポート・楽曲マスのみ追加します。キューブの所持数は確認しません。緑枠＝新規解放、赤枠＝リセットで外れるマス。",
-      planScore: "このユニットのスコア", teamBoard: "ユニット内",
+      planScore: "このユニットのスコア", onlyChanges: "変更が必要なボードとマスのみ表示", conNew: "新規", teamBoard: "ユニット内",
       planOthers: "他のホロメンのボードもサポート効果中心に再計画（全ユニットに有効、リーダー/メンバー効果は外れます）", goalAvg: "平均スコア", goalMax: "最大スコア",
       goalHelp: "平均＝通常のプレイで得られるスコア（アクティブスキルは確率で発動）。最大＝アクティブスキルがすべて発動した場合。",
       average: "平均", maximum: "最大", spread: "{n}回のシミュレーション", typical: "通常（中央80%）", top10: "上位10%", bestSeen: "最高記録",
@@ -105,7 +105,7 @@
       pool: "卡片範圍", poolOwned: "我的卡片", poolAll: "全部卡片最高等級（理論值）", effort: "搜尋強度", fast: "快速", normal: "標準", thorough: "精密",
       core: "核心卡片", pickCore: "選擇卡片", lockLeader: "隊長", anyLeader: "不指定（最佳化）", keep: "保留的卡片",
       pullLv: "新卡片假設為", pullBloom: "綻放",
-      s4: "Holo成員面板", boardInfo: "面板效果依照遊戲進度資料→Holo成員中解鎖的格子計算。未編輯的成員會以其Rank的Pt自動設置後計算。",
+      s4: "Holo成員面板", boardInfo: "比較隊伍時如何計算Holo成員面板。", bRole: "依每個隊伍規劃（推薦）", bRoleHelp: "依照成員在所試隊伍中的角色，以其Rank的Pt設定面板後計算：隊長使用隊長（紅）格子，隊伍成員使用成員（藍）格子，其他成員使用支援（綠）與樂曲（黃）格子。可在結果中按「為此隊伍規劃面板」查看需解鎖的格子。", bSaved: "已儲存的面板", bSavedHelp: "只使用在遊戲進度資料→Holo成員中設定的格子（未設定的面板視為空白）。", bFull: "全部格子解鎖（理論值）", bOff: "不使用面板", bFullHelp: "所有面板的所有格子皆解鎖。", bOffHelp: "忽略面板效果。",
       s5: "輸入細節", eventSongs: "樂曲", addSong: "新增樂曲", ratingLeader: "擔任隊長的Holo成員", latestEvent: "使用最新活動樂曲",
       run: "尋找最佳隊伍", running: "搜尋中…", cancel: "取消", results: "您的最佳隊伍", alternatives: "其他強力隊伍",
       noCards: "你還沒有持有任何卡片，請先到遊戲進度資料登錄卡片。", perSong: "各樂曲", avg: "平均", rating: "評級（前3首）",
@@ -117,7 +117,7 @@
       planMats: "所需素材", planTiles: "需解鎖 {a} 個", planRemoved: "−{r} 個（重置）", planConnect: "{c} 個協力欄位", planPts: "面板Pt",
       planSave: "儲存面板至遊戲進度", planSaveAll: "儲存所有面板至遊戲進度", planSaved: "已儲存 ✓", planNone: "目前的面板對此隊伍已是最佳。",
       planHelp: "此隊伍成員的面板會用其Rank的Pt從頭規劃（請在遊戲中重置面板後解鎖綠框格子）。其他面板保留現有格子，只用剩餘Pt追加支援／樂曲格子。不會檢查方塊的持有數量。綠框＝新解鎖，紅框＝重置後移除的格子。",
-      planScore: "此隊伍的分數", teamBoard: "隊伍內",
+      planScore: "此隊伍的分數", onlyChanges: "僅檢視需變更欄位", conNew: "新配置", teamBoard: "隊伍內",
       planOthers: "也將其他Holo成員的面板改以支援效果為主規劃（對所有隊伍有效，但會移除其隊長/成員效果）", goalAvg: "平均分數", goalMax: "最高分數",
       goalHelp: "平均＝一般遊玩可得的分數（主動技能依機率發動）。最高＝所有主動技能皆發動時的分數。",
       average: "預估平均樂曲分數", maximum: "最高", spread: "{n} 次模擬遊玩", typical: "一般（中間80%）", top10: "前10%", bestSeen: "最佳紀錄",
@@ -129,11 +129,13 @@
 
   const latestSongs = U.songsSorted().filter((s) => S.chartIndex[s.id] || true).slice(0, 4).map((s) => s.id);
   const st = Object.assign({
-    mode: "best", target: "score", play: "perfect", lifeFull: true, board: true, boardFull: false, pool: "owned",
+    mode: "best", target: "score", play: "perfect", lifeFull: true, boardSrc: "role", pool: "owned",
     effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0, luck: "avg",
     song: latestSongs[0], diff: "expert", eventSongs: latestSongs.slice(), ratingChr: Object.keys(H.talents)[0],
     eventId: (S.EVENTS.events[0] || {}).id, eventSong: "all",
   }, H.store.get("optimizer", {}));
+  if (!["role", "saved", "full", "off"].includes(st.boardSrc)) st.boardSrc = "role";
+  delete st.board; delete st.boardFull;
   const qs = new URLSearchParams(location.search);
   if (qs.get("song") && S.songById[qs.get("song")]) { st.song = qs.get("song"); st.target = "score"; if (qs.get("diff")) st.diff = qs.get("diff"); }
   let running = null;
@@ -196,7 +198,8 @@
         <div><span class="lbl">${esc(tx("pullLv"))}</span>Lv max · ${esc(tx("pullBloom"))} ${seg("pullBloom", [[0, "0"], [1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]])}</div>`;
     }
     s3 += `</div>`;
-    const s4 = `<p class="muted">${esc(tx("boardInfo"))}</p><div class="opt-rows"><div>${toggle("board", tx("board"))}</div><div>${toggle("boardFull", tx("boardFull"))}</div></div>`;
+    const s4 = `<p class="muted">${esc(tx("boardInfo"))}</p><div class="opt-rows"><div>${seg("boardSrc", [["role", tx("bRole")], ["saved", tx("bSaved")], ["full", tx("bFull")], ["off", tx("bOff")]])}</div>
+      <p class="small muted">${esc(tx({ role: "bRoleHelp", saved: "bSavedHelp", full: "bFullHelp", off: "bOffHelp" }[st.boardSrc] || "bRoleHelp"))}</p></div>`;
     let s5 = "";
     if (st.target === "score") {
       s5 = U.songPickerHTML("song-pick", st.song, st.diff);
@@ -246,6 +249,7 @@
   root.addEventListener("click", async (e) => {
     const b = e.target.closest("button");
     if (!b || b.disabled) return;
+    if (b.closest("summary")) e.preventDefault();
     if (b.dataset.group) { st[b.dataset.group] = b.dataset.value; save(); render(); }
     else if (b.dataset.set) { st[b.dataset.set] = isNaN(b.dataset.value) || b.dataset.set === "diff" ? b.dataset.value : Number(b.dataset.value); save(); render(); }
     else if (b.dataset.event) { st.eventId = b.dataset.event; st.eventSong = "all"; save(); render(); }
@@ -273,7 +277,10 @@
   });
   root.addEventListener("change", (e) => {
     const el = e.target;
-    if (el.dataset.toggle) { st[el.dataset.toggle] = el.checked; save(); }
+    if (el.dataset.onlyChanges != null) {
+      document.getElementById("planbox-" + el.dataset.onlyChanges).classList.toggle("only-changes", el.checked);
+      window.HoloBoardView.init(root);
+    } else if (el.dataset.toggle) { st[el.dataset.toggle] = el.checked; save(); }
     else if (el.id === "core-leader") { st.coreLeader = el.value; save(); }
     else if (el.id === "rating-chr") { st.ratingChr = el.value; save(); }
   });
@@ -287,7 +294,7 @@
     };
   }
   function buildEnv() {
-    const env = S.makeEnv(H.progress, { board: st.board, boardFull: st.boardFull, mode: st.play, lifeFull: st.lifeFull });
+    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.play, lifeFull: st.lifeFull }));
     return env;
   }
   function overridesForPool() {
@@ -380,33 +387,47 @@
     plans[i] = res;
     btn.disabled = false;
     out.innerHTML = planHTML(res, i);
+    window.HoloBoardView.init(out);
+  }
+  const GEM = { "item-skill_tree_leader": "leader", "item-skill_tree_card": "card", "item-skill_tree_content": "content", "item-skill_tree_allmember": "allmember" };
+  function matChip([id, q]) {
+    const [kind, tier] = id.split(/-(?=\d$)/);
+    return `<span class="chip mat-chip" title="${esc(L((G.materials || {})[id] || { en: id }))}"><span class="gem ${GEM[kind] || ""}">${tier === "2" ? "✦" : "◆"}</span>${esc(L((G.materials || {})[id] || { en: id }))} <b>${fmt(q)}</b></span>`;
   }
   function planHTML(res, i) {
     const n = (v) => fmt(Math.round(v));
     const gain = res.before ? (res.after / res.before - 1) * 100 : 0;
     const chrs = Object.keys(res.boards).sort((a, b) => (res.boards[b].team - res.boards[a].team) || res.boards[b].added.length - res.boards[a].added.length);
     const mats = Object.entries(res.materials).sort();
-    return `<div class="plan">
+    return `<div class="plan only-changes" id="planbox-${i}">
       <h3>${esc(tx("planTitle"))}</h3>
       <div class="plan-head"><span>${esc(tx("planNow"))} <b>${n(res.before)}</b></span> → <span>${esc(tx("planAfter"))} <b class="big-inline">${n(res.after)}</b></span>
         <b style="color:#22a35a">${gain >= 0 ? "+" : ""}${gain.toFixed(2)}%</b> <span class="small muted">(${esc(tx("planScore"))})</span>
-        ${chrs.length ? `<button class="icon-btn" data-save-all="${i}">${esc(tx("planSaveAll"))}</button>` : ""}</div>
+        ${chrs.length ? `<button class="btn-primary btn-sm" data-save-all="${i}">${esc(tx("planSaveAll"))}</button>` : ""}</div>
       <p class="small muted">${esc(tx("planHelp"))}</p>
-      ${mats.length ? `<div class="chips"><span class="small muted">${esc(tx("planMats"))}:</span>${mats.map(([id, q]) => `<span class="chip">${esc(L((G.materials || {})[id] || { en: id }))} ${fmt(q)}</span>`).join("")}</div>` : ""}
+      <label class="check"><input type="checkbox" data-only-changes="${i}" checked> ${esc(tx("onlyChanges"))}</label>
+      ${mats.length ? `<div class="chips"><span class="small muted">${esc(tx("planMats"))}</span>${mats.map(matChip).join("")}</div>` : ""}
       ${chrs.length ? chrs.map((chr) => {
         const bd = res.boards[chr];
         const tl = H.talents[chr];
+        const cur = (H.progress.connect || {})[chr] || {};
+        const conChanged = new Set(Object.keys(bd.connect).filter((k) => cur[k] !== bd.connect[k]));
         const cc = Object.keys(bd.connect).length;
-        return `<details class="plan-board" ${bd.team ? "open" : ""}><summary>
+        const changed = bd.added.length || bd.removed.length || conChanged.size;
+        return `<details class="plan-board ${changed ? "" : "nochange"}" ${bd.team ? "open" : ""}><summary>
           <span class="avatar" style="background:linear-gradient(135deg,${esc(tl.color)},${esc(tl.color2)})">${esc(L(tl.short).slice(0, 2))}</span>
           <b>${esc(L(tl.name))}</b> ${bd.team ? `<span class="pill on">${esc(tx("teamBoard"))}</span>` : ""}
           <span class="pill">${esc(tx("planTiles").replace("{a}", bd.added.length))}</span>
           ${bd.removed.length ? `<span class="pill">${esc(tx("planRemoved").replace("{r}", bd.removed.length))}</span>` : ""}
           ${cc ? `<span class="pill">${esc(tx("planConnect").replace("{c}", cc))}</span>` : ""}
           <span class="small muted" style="margin-left:auto">${esc(tx("planPts"))} ${bd.spent}/${bd.points}</span>
-          <button class="icon-btn" data-save-board="${esc(chr)}" data-plan-id="${i}">${esc(tx("planSave"))}</button></summary>
-          ${U.boardMiniHTML(chr, bd)}
-          ${cc ? `<div class="chips" style="margin-top:6px">${Object.entries(bd.connect).map(([k, id]) => `<span class="chip">${esc(k)}: ${H.stars(H.cardById[id].rarity)} ${esc(L(H.talents[H.cardById[id].chr].short))} · ${esc(L(H.cardById[id].title))}</span>`).join("")}</div>` : ""}
+          <button class="btn-primary btn-sm" data-save-board="${esc(chr)}" data-plan-id="${i}">${esc(tx("planSave"))}</button></summary>
+          ${window.HoloBoardView.html(chr, { set: new Set(bd.set), added: new Set(bd.added), removed: new Set(bd.removed), connect: bd.connect, conChanged, key: `plan-${i}-${chr}` })}
+          ${cc ? `<div class="con-list">${Object.entries(bd.connect).map(([k, id]) => {
+            const c = H.cardById[id];
+            return `<span class="con-card ${conChanged.has(k) ? "new" : ""}"><span class="ic">${H.imgChain(H.cardImageUrls(id, "icon"), L(c.title))}</span>
+              <span><b>${esc(L(H.talents[c.chr].name))}</b> ${H.stars(c.rarity)}<br><span class="small muted">${esc(L(c.title))} · ${esc(k)}${conChanged.has(k) ? ` · <b style="color:#22a35a">${esc(tx("conNew"))}</b>` : ""}</span></span></span>`;
+          }).join("")}</div>` : ""}
         </details>`;
       }).join("") : `<p>${esc(tx("planNone"))}</p>`}
     </div>`;

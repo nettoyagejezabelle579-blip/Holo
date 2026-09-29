@@ -12,7 +12,7 @@
     en: {
       title: "Team Details", intro: "Build a unit by hand and see its Unit Score, estimated Live score and how each member contributes.",
       leader: "Leader", members: "Members (formation order)", change: "Change members", playMode: "Play",
-      perfect: "ALL PERFECT", auto: "AUTO", board: "Use holomem board", life: "LIFE stays full",
+      perfect: "ALL PERFECT", auto: "AUTO", board: "Holomem board", bRole: "Planned for this unit", bSaved: "My saved boards", bFull: "All tiles unlocked", bOff: "No board", life: "LIFE stays full",
       breakdown: "Score breakdown", baseScore: "Notes (no skills)", skillScore: "From skills", songBonus: "Song bonus (board)",
       upgrade: "Member Upgrade Bonus", memory: "Memories", member: "Member", uptime: "Active uptime", special: "Special",
       specialAt: "fires at", support: "Score Support", rate: "Skill rate", empty: "Pick a leader and members to see the estimate.",
@@ -26,7 +26,7 @@
     ja: {
       title: "編成詳細", intro: "ユニットを手動で組み、ユニットスコア・推定スコア・各メンバーの貢献を確認できます。",
       leader: "リーダー", members: "メンバー（編成順）", change: "メンバーを変更", playMode: "プレイ",
-      perfect: "ALL PERFECT", auto: "AUTO", board: "ホロメンボードを使用", life: "ライフ満タン",
+      perfect: "ALL PERFECT", auto: "AUTO", board: "ホロメンボード", bRole: "このユニット向けに計画", bSaved: "保存したボード", bFull: "全マス解放", bOff: "ボードなし", life: "ライフ満タン",
       breakdown: "スコア内訳", baseScore: "ノーツ（スキルなし）", skillScore: "スキル分", songBonus: "楽曲ボーナス（ボード）",
       upgrade: "メンバー育成ボーナス", memory: "メモリー", member: "メンバー", uptime: "アクティブ発動率", special: "スペシャル",
       specialAt: "発動", support: "スコアサポート", rate: "発動率", empty: "リーダーとメンバーを選ぶと推定値が表示されます。",
@@ -40,7 +40,7 @@
     zh: {
       title: "隊伍詳情", intro: "手動組成隊伍，查看隊伍分數、預估分數以及每位成員的貢獻。",
       leader: "隊長", members: "成員（編組順序）", change: "變更成員", playMode: "遊玩方式",
-      perfect: "ALL PERFECT", auto: "AUTO", board: "使用Holo成員面板", life: "生命值保持全滿",
+      perfect: "ALL PERFECT", auto: "AUTO", board: "Holo成員面板", bRole: "為此隊伍規劃", bSaved: "已儲存的面板", bFull: "全部格子解鎖", bOff: "不使用面板", life: "生命值保持全滿",
       breakdown: "分數明細", baseScore: "音符（無技能）", skillScore: "技能加成", songBonus: "樂曲加成（面板）",
       upgrade: "成員強化加成", memory: "回憶卡", member: "成員", uptime: "主動技能發動率", special: "特殊技能",
       specialAt: "發動", support: "分數支援", rate: "發動率", empty: "選擇隊長與成員後會顯示預估值。",
@@ -55,8 +55,10 @@
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
   const root = document.getElementById("details");
 
-  const st = Object.assign({ song: U.songsSorted()[0].id, diff: "expert", mode: "perfect", leader: null, members: [], board: true, lifeFull: true },
+  const st = Object.assign({ song: U.songsSorted()[0].id, diff: "expert", mode: "perfect", leader: null, members: [], boardSrc: "role", lifeFull: true },
     H.store.get("details", {}), U.decodeTeam(location.hash.slice(1)));
+  if (!["role", "saved", "full", "off"].includes(st.boardSrc)) st.boardSrc = st.board === false ? "off" : "role";
+  delete st.board;
   const save = () => {
     H.store.set("details", st);
     history.replaceState(null, "", location.pathname + "#" + U.encodeTeam(st));
@@ -73,7 +75,7 @@
     await S.loadChart(st.song);
     const song = S.songById[st.song];
     const chart = S.getChart(st.song, st.diff, st.mode);
-    const env = S.makeEnv(H.progress, { board: st.board, mode: st.mode, lifeFull: st.lifeFull });
+    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull }));
     const lk = st.leader ? st.leader.chr + ":" + (st.leader.cardId || "") : "";
     let result = null;
     if (st.members.length) {
@@ -88,8 +90,9 @@
           <p class="small muted">${esc(tx("chart"))}: ${chart.notes} ${esc(tx("notes"))} · ${song.sec}s${chart.synthetic ? " · " + esc(tx("synthetic")) : ""}</p>
           <div class="opt-rows">
             <div><span class="lbl">${esc(tx("playMode"))}</span><span class="seg">${[["perfect", tx("perfect")], ["auto", tx("auto")]].map(([v, l]) => `<button data-mode="${v}" aria-pressed="${st.mode === v}">${esc(l)}</button>`).join("")}</span></div>
-            <div><label class="check"><input type="checkbox" data-toggle="board" ${st.board ? "checked" : ""}> ${esc(tx("board"))}</label>
-              <label class="check"><input type="checkbox" data-toggle="lifeFull" ${st.lifeFull ? "checked" : ""}> ${esc(tx("life"))}</label></div>
+            <div><span class="lbl">${esc(tx("board"))}</span><select class="select" id="d-board">${[["role", "bRole"], ["saved", "bSaved"], ["full", "bFull"], ["off", "bOff"]].map(([v, k]) =>
+              `<option value="${v}" ${st.boardSrc === v ? "selected" : ""}>${esc(tx(k))}</option>`).join("")}</select></div>
+            <div>              <label class="check"><input type="checkbox" data-toggle="lifeFull" ${st.lifeFull ? "checked" : ""}> ${esc(tx("life"))}</label></div>
             <div><span class="lbl">${esc(tx("leader"))}</span><select class="select" id="d-leader"><option value="">—</option>${leaderOptions().map((l) => {
               const v = l.chr + ":" + (l.cardId || "");
               return `<option value="${esc(v)}" ${v === lk ? "selected" : ""}>${esc(U.leaderLabel(l))}</option>`;
@@ -179,7 +182,7 @@
       H.store.set("calibration", 1); render();
     } else if (b.id === "d-order") {
       const chart = S.getChart(st.song, st.diff, st.mode);
-      const env = S.makeEnv(H.progress, { board: st.board, mode: st.mode, lifeFull: st.lifeFull });
+      const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull }));
       let best = st.members, bestS = -1;
       for (const p of O.permutations(st.members)) {
         const s = S.evaluate(env, { leader: st.leader, members: p.map((id) => S.prepare(env, id)) }, chart);
@@ -194,7 +197,8 @@
       const [chr, cardId] = el.value.split(":");
       st.leader = el.value ? { chr, cardId: cardId || null } : null;
       save(); render();
-    } else if (el.dataset.toggle) { st[el.dataset.toggle] = el.checked; save(); render(); }
+    } else if (el.id === "d-board") { st.boardSrc = el.value; save(); render(); }
+    else if (el.dataset.toggle) { st[el.dataset.toggle] = el.checked; save(); render(); }
   });
   window.addEventListener("hashchange", () => { Object.assign(st, U.decodeTeam(location.hash.slice(1))); render(); });
 

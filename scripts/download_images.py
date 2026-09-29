@@ -6,10 +6,10 @@ Usage (needs internet access to the image hosts):
     python3 scripts/download_images.py --force    # re-download everything
 
 Sources, tried in order (all public):
-  card art      https://api.holodori.best/api/asset/assetbundles/img_card_vert_<assetId>/img_card_vert_<assetId>.webp
+  card art      https://cdn.holodori.dev/assets/assetbundles/img_card_vert_<assetId>/img_card_vert_<assetId>.webp
   illustration  https://cdn.holodori.dev/assets/assetbundles/img_card_full_<assetId>/img_card_full_<assetId>_unsquished.webp
   song cover    official site jacket (data/jackets.js), then
-                https://api.holodori.best/api/asset/assetbundles/img_music_jacket_<jacketId>/img_music_jacket_<jacketId>.webp
+                https://cdn.holodori.dev/assets/assetbundles/img_music_jacket_<jacketId>/img_music_jacket_<jacketId>.webp
 
 Files go to assets/art/vert/<cardId>.webp, assets/art/full/<cardId>.webp and assets/jackets/<songId>.<ext>;
 data/art.js and data/jacket_files.js are rewritten so the site uses the local files first.
@@ -23,11 +23,12 @@ import time
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UA = {"User-Agent": "Mozilla/5.0 (holodori-db image sync)", "Accept": "image/avif,image/webp,image/png,image/*;q=0.8"}
-VERT = "https://api.holodori.best/api/asset/assetbundles/img_card_vert_{id}/img_card_vert_{id}.webp"
-FULL = "https://cdn.holodori.dev/assets/assetbundles/img_card_full_{id}/img_card_full_{id}_unsquished.webp"
-JACKET = ["https://api.holodori.best/api/asset/assetbundles/img_music_jacket_{id}/img_music_jacket_{id}.webp",
-          "https://api.holodori.best/api/asset/assetbundles/img_music_jacket_{id}/img_music_jacket_{id}.png"]
+UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36", "Referer": "https://holodori.best/", "Accept": "image/avif,image/webp,image/png,image/*;q=0.8"}
+CDN = "https://cdn.holodori.dev/assets/assetbundles/"
+VERT = [CDN + "img_card_vert_{id}/img_card_vert_{id}.webp", CDN + "img_card_vert_{id}/img_card_vert_{id}_unsquished.webp"]
+FULL = [CDN + "img_card_full_{id}/img_card_full_{id}_unsquished.webp", CDN + "img_card_full_{id}/img_card_full_{id}.webp"]
+JACKET = [CDN + "img_music_jacket_{id}/img_music_jacket_{id}.webp", CDN + "img_music_jacket_{id}/img_music_jacket_{id}_unsquished.webp",
+          CDN + "img_music_jacket_{id}/img_music_jacket_{id}.png"]
 
 
 def load_js(path):
@@ -88,9 +89,9 @@ def main():
     for c in cards:
         if not c.get("asset"):
             continue
-        jobs.append(("vert", c["id"], [VERT.format(id=c["asset"])], os.path.join("assets", "art", "vert", c["id"] + ".webp")))
+        jobs.append(("vert", c["id"], [u.format(id=c["asset"]) for u in VERT], os.path.join("assets", "art", "vert", c["id"] + ".webp")))
         if not args.no_full:
-            jobs.append(("full", c["id"], [FULL.format(id=c["asset"])], os.path.join("assets", "art", "full", c["id"] + ".webp")))
+            jobs.append(("full", c["id"], [u.format(id=c["asset"]) for u in FULL], os.path.join("assets", "art", "full", c["id"] + ".webp")))
     for s in songs:
         urls = ([official[s["id"]]] if s["id"] in official else []) + [u.format(id=s.get("jacket", s["id"])) for u in JACKET]
         jobs.append(("jacket", s["id"], urls, None))

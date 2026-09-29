@@ -223,22 +223,6 @@
   }
 
   // Small read-only board: new tiles ringed green, removed ringed red, Connect cards shown.
-  function boardMiniHTML(chr, board) {
-    const B = window.HoloBoard;
-    const b = B.tilesFor(chr);
-    const set = new Set(board.set), added = new Set(board.added), removed = new Set(board.removed);
-    const xs = b.list.map((t) => t.x), ys = b.list.map((t) => t.y);
-    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-    const cells = b.list.map((t) => {
-      const on = set.has(t.k);
-      const con = board.connect[t.k];
-      const cls = added.has(t.k) ? "added" : removed.has(t.k) ? "removed" : "";
-      return `<span class="mini-tile t-${t.type} ${on ? "on" : ""} ${cls}" style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}"
-        title="${esc(t.eff ? B.effectText(t.eff, chr) : t.type)}">${con && H.hasArt(con) ? H.imgChain(H.cardImageUrls(con, "icon"), "") : ""}</span>`;
-    }).join("");
-    return `<div class="board-wrap"><div class="mini-board" style="grid-template-columns:repeat(${maxX - minX + 1},14px);grid-template-rows:repeat(${maxY - minY + 1},14px)">${cells}</div></div>`;
-  }
-
   function encodeTeam(state) {
     const p = new URLSearchParams();
     if (state.song) p.set("s", state.song);
@@ -259,5 +243,5 @@
     return out;
   }
 
-  window.HoloTeamUI = { boardMiniHTML, breakdownHTML, timelineHTML, tx, DIFFS, songsSorted, songLabel, songPickerHTML, bindSongPicker, pickCards, scoreRank, leaderLabel, teamHTML, encodeTeam, decodeTeam };
+  window.HoloTeamUI = { breakdownHTML, timelineHTML, tx, DIFFS, songsSorted, songLabel, songPickerHTML, bindSongPicker, pickCards, scoreRank, leaderLabel, teamHTML, encodeTeam, decodeTeam };
 })();

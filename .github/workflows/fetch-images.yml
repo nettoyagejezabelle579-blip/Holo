@@ -1,0 +1,44 @@
+# Downloads a picture for every card and every song cover (scripts/download_images.py) on
+# GitHub's servers and commits them to the branch. Runs when this file or the script changes,
+# every day (on the default branch, so new cards/songs get pictures once the CDN has them),
+# or by hand from the Actions tab (Run workflow).
+name: Fetch card and song images
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+  push:
+    paths:
+      - .github/workflows/fetch-images.yml
+      - scripts/download_images.py
+      - data/cards.js
+      - data/game.js
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download missing images
+        run: python3 scripts/download_images.py
+      - name: Commit new images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add assets/art assets/jackets data/art.js data/jacket_files.js
+          if git diff --cached --quiet; then echo "No new images"; exit 0; fi
+          git commit -m "Add downloaded card pictures and song covers"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

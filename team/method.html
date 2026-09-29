@@ -45,15 +45,18 @@
     <h2>5. Holomem board</h2>
     <p>Holomem Rank gives board points (e.g. 191 at rank 33, 361 at rank 50). Each holomem's real board (153 tiles, laid out in one of four shapes)
       is simulated tile by tile: a tile can be unlocked when it touches an unlocked tile, you have the points and the Dream Rank it needs.
-      Set up each board in My Data → Holomems exactly like in the game, or use Auto (Leader / Member / Support focus) which spends the points along the cheapest paths.
-      Holomems you have not edited are auto-set with your chosen focus. Note that auto setup assumes you have the unlock materials; if the game shows fewer unlocked tiles, edit the board to match.</p>
+      Boards in My Data → Holomems hold only what you set up (points are never spent automatically).
+      By default the optimizer compares units with every board <b>planned for its holomem's role in that unit</b>, using that holomem's rank points:
+      the leader's board takes leader (red) tiles first, then member and support tiles; a unit member's board takes member (blue) tiles, then support/song tiles
+      (leader tiles do nothing for a non-leader); every other holomem's board takes support (green) and song (yellow) tiles. You can switch to your saved boards,
+      all tiles unlocked, or no board.</p>
     <ul>
       <li><b>Leader tiles</b> (red) apply to the whole unit when that holomem is the leader; some only on songs they sing.</li>
       <li><b>Member tiles</b> (blue) boost that holomem's card when it is in the unit (flat stats, stat %, active skill rate and frequency).</li>
       <li><b>Support tiles</b> (green) apply to every unit, even when that holomem is not in it.</li>
       <li><b>Song tiles</b> (yellow) add a score bonus on songs by that holomem (max +10% total).</li>
-      <li><b>Connect tiles</b> (4 per board, the centre one is free): a ★4/★5 card placed there multiplies every tile in its range by its Connect value
-        (e.g. ×1.5, ×2.0 at Bloom 5). A card can only sit on one board. Ranges are mirrored on the mirrored board layouts.</li>
+      <li><b>Connect tiles</b> (4 per board, the centre one is free): a ★4/★5 card placed there boosts every tile in its range by its Connect value
+        (the % is added on top: a +50 tile with a 140% card gives +120, as in game; the value rises at Bloom 5). Overlapping ranges are assumed to add up. A card can only sit on one board. Ranges are mirrored on the mirrored board layouts.</li>
       <li>Every tile also costs cubes (e.g. the ★★ skill-rate member tile: 4 points + 50 Blue Cubes + 10 Blue Hexa); the editor shows them.</li>
     </ul>
     <h3>Board points per Holomem Rank (from the master data)</h3>
@@ -131,15 +134,17 @@
     <h2>5. ホロメンボード</h2>
     <p>ホロメンランクに応じてボードポイントが得られます（例：ランク33で191、ランク50で361）。各ホロメンの実際のボード（153マス、4種類の配置のいずれか）を
       1マスずつシミュレートします：解放済みのマスに隣接し、ポイントと必要なドリームランクがあれば解放できます。
-      マイデータ → ホロメンで各ボードをゲーム通りに設定するか、自動（リーダー／メンバー／サポート重視、自動設置と同様）で最も安い経路にポイントを使えます。
-      編集していないホロメンは選んだ方針で自動設定されます。自動設置は解放素材を持っている前提なので、ゲーム内の解放マスが少ない場合はボードを編集して合わせてください。</p>
+      所持データ → ホロメンのボードは設定した内容のみ保存します（Ptは自動で使いません）。
+      オプティマイザーは標準で、各ボードを<b>そのユニットでのホロメンの役割に合わせて計画</b>した状態（ランクのPtを使用）でユニットを比較します：
+      リーダーのボードはリーダー（赤）マス優先、次にメンバー・サポートマス；ユニットのメンバーはメンバー（青）マス、次にサポート・楽曲マス（リーダーでなければリーダーマスは無効）；
+      それ以外のホロメンはサポート（緑）と楽曲（黄）マス。保存したボード、全マス解放、ボードなしにも切り替えられます。</p>
     <ul>
       <li><b>リーダータイル</b>（赤）はそのホロメンがリーダーのときユニット全体に適用されます。一部は歌唱曲のみ。</li>
       <li><b>メンバータイル</b>（青）はそのホロメンのカードがユニットにいるとき強化します（固定値、ステータス%、アクティブ発動率・頻度）。</li>
       <li><b>サポートタイル</b>（緑）はそのホロメンがいなくても、すべてのユニットに適用されます。</li>
       <li><b>楽曲タイル</b>（黄）はそのホロメンの楽曲でスコアボーナスを加えます（合計最大+10%）。</li>
-      <li><b>コネクトタイル</b>（ボードごとに4つ、中央は無料）：★4/★5 カードを置くと、範囲内のすべてのタイルがコネクト値倍になります
-        （例：×1.5、開花5で×2.0）。カードは1つのボードにしか置けません。反転配置のボードでは範囲も反転します。</li>
+      <li><b>コネクトタイル</b>（ボードごとに4つ、中央は無料）：★4/★5 カードを置くと、範囲内のすべてのタイルの効果がコネクト値分アップします
+        （X%は上乗せ：+50のマスに140%のカードで+120、ゲーム内と同じ。開花5で上昇）。範囲が重なる場合は加算と仮定。カードは1つのボードにしか置けません。反転配置のボードでは範囲も反転します。</li>
       <li>各タイルにはキューブも必要です（例：★★ スキル発動率メンバータイル：4ポイント + ブルーキューブ50 + ブルーヘキサ10）。エディターに表示されます。</li>
     </ul>
     <h3>ホロメンランクごとのボードポイント（マスターデータより）</h3>
@@ -213,15 +218,17 @@
     <h2>5. holo成員看板</h2>
     <p>holo成員等級提供看板點數（例：等級33為191點，等級50為361點）。模擬每位holo成員實際的看板（153格，四種佈局之一），逐格判斷：
       與已解鎖格子相鄰、點數足夠且符合所需的夢想等級即可解鎖。
-      可在「我的資料 → holo成員」依遊戲內狀態設定每個看板，或使用自動（隊長／成員／支援優先，同遊戲的自動設置）沿最省點數的路徑分配點數。
-      未編輯的holo成員會以所選方針自動設定。自動設置假設你擁有解鎖素材；若遊戲中解鎖的格子較少，請編輯看板使其一致。</p>
+      「遊戲進度資料 → Holo成員」中的面板只保存你設定的內容（不會自動使用Pt）。
+      最佳化工具預設會以<b>依成員在該隊伍中的角色規劃</b>的面板（使用其Rank的Pt）比較隊伍：
+      隊長的面板優先隊長（紅）格子，再到成員與支援格子；隊伍成員優先成員（藍）格子，再到支援／樂曲格子（非隊長時隊長格子無效）；
+      其他成員使用支援（綠）與樂曲（黃）格子。也可切換為已儲存的面板、全部解鎖或不使用面板。</p>
     <ul>
       <li><b>隊長格子</b>（紅）在該holo成員擔任隊長時作用於整個隊伍；部分僅限其演唱的歌曲。</li>
       <li><b>成員格子</b>（藍）在該holo成員的卡片於隊伍中時強化該卡（固定數值、數值%、主動技能發動率與頻率）。</li>
       <li><b>支援格子</b>（綠）即使該holo成員不在隊伍中，也作用於所有隊伍。</li>
       <li><b>歌曲格子</b>（黃）在該holo成員的歌曲中增加分數加成（合計最多 +10%）。</li>
-      <li><b>連結格子</b>（每個看板4格，中央免費）：放置 ★4/★5 卡片後，範圍內所有格子的效果乘以其連結值
-        （例：×1.5，綻放5時 ×2.0）。每張卡只能放在一個看板上。鏡像佈局的看板範圍也會鏡像。</li>
+      <li><b>連結格子</b>（每個看板4格，中央免費）：放置 ★4/★5 卡片後，範圍內所有格子的效果依其連結值提升
+        （X%為額外加成：+50的格子配上140%的卡片變成+120，與遊戲相同；綻放5時提升）。範圍重疊時假設相加。每張卡只能放在一個看板上。鏡像佈局的看板範圍也會鏡像。</li>
       <li>每個格子也需要方塊素材（例：★★ 技能發動率成員格子：4點 + 藍色方塊50 + 藍色六角10），編輯器中會顯示。</li>
     </ul>
     <h3>各holo成員等級的看板點數（來自主資料）</h3>
