@@ -61,9 +61,19 @@
     <ul style="display:none">
     </ul>
 
+    <h2>Average vs maximum</h2>
+    <p>Active skills fire by chance, so the same unit scores differently every play. <b>Average</b> is the expected score (exact expected value of
+      "highest active effect wins" over all checks; it matches the mean of thousands of simulated plays). <b>Maximum</b> is the score when every
+      active skill check succeeds. Results also show a spread from simulated plays (typical middle 80%, top 10%, best seen).
+      The optimizer can maximise either one; the best unit for the maximum is often not the best on average.</p>
+
     <h2>6. Search</h2>
-    <p>Leaders are screened with a baseline unit, then each promising leader gets a greedy fill and a swap-until-no-improvement search over your cards
-      (one card per holomem). The best units are then tried in all 120 formation orders.</p>
+    <p>Leaders are screened with a baseline unit; each promising leader gets a greedy fill and a swap-until-no-improvement search over your cards
+      (one card per holomem), including swapping slot positions. Extra starts are built around each type, each unit/generation and each leader
+      outfit's condition, then leaders are re-screened against the best units found. Finalists are polished with all 120 formation orders and
+      two-cards-at-once swaps (for synergies like "2 or more Cute"). Checked against brute force (every leader × every 5-card set × every order)
+      on random boxes: Normal and Thorough found the best unit in 11 of 12 cases and were within 0.01% in the last one; on full boxes Normal and
+      Thorough always agreed. Fast is quicker but can be 1–3% lower.</p>
 
     <h2>Data</h2>
     <p>Master data: <a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>. Chart timelines: parsed holodori charts.</p>

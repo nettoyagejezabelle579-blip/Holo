@@ -258,7 +258,10 @@
 
   // ---------- evaluation ----------
   // team = { leader: { chr, cardId|null }, members: [prepared member ×1..5] }
-  function evaluate(env, team, chart, detail) {
+  // luck: "avg" (expected score, default) | "max" (every active check succeeds) | function () -> [0,1) (one random play)
+  function evaluate(env, team, chart, detail, luck) {
+    luck = luck || "avg";
+    const rolls = typeof luck === "function" ? new Map() : null;
     const members = team.members;
     const n = members.length;
     const song = chart.song;
@@ -392,7 +395,15 @@
         if (idx < 1 || t0 >= c + a.dur) continue;
         let rate = a.rate;
         for (const s of specials) if (c >= s.t0 && c < s.t1) rate += s.rate;
-        const p = Math.min(1, a.p * (1 + rate));
+        let p = Math.min(1, a.p * (1 + rate));
+        if (luck === "max") p = p > 0 ? 1 : 0;
+        else if (rolls) {
+          const key = a.i * 10000 + idx;
+          let hit = rolls.get(key);
+          if (hit === undefined) { hit = luck() < p; rolls.set(key, hit); }
+          p = hit ? 1 : 0;
+        }
+        if (!p) continue;
         const v = (t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * (a.mult + sup);
         vals[k] = v; probs[k] = p; k++;
         if (uptime) uptime[a.i] += w * p;
@@ -420,6 +431,22 @@
     };
   }
 
+  // Score spread over many random plays of one unit: average, typical range and best/worst seen,
+  // plus the theoretical maximum (every active skill check succeeds).
+  function simulate(env, team, chart, runs) {
+    runs = runs || 2000;
+    let seed = 20260929;
+    const rng = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    const scores = [];
+    for (let i = 0; i < runs; i++) scores.push(evaluate(env, team, chart, false, rng));
+    scores.sort((a, b) => a - b);
+    const q = (f) => scores[Math.min(scores.length - 1, Math.floor(f * scores.length))];
+    return {
+      runs, mean: evaluate(env, team, chart), max: evaluate(env, team, chart, false, "max"),
+      min: scores[0], p10: q(0.1), median: q(0.5), p90: q(0.9), p99: q(0.99), best: scores[scores.length - 1],
+    };
+  }
+
   function rankFor(list, value) {
     let r = "";
     for (const [th, name] of list.slice().sort((a, b) => a[0] - b[0])) if (value >= th) r = name;
@@ -427,7 +454,7 @@
   }
 
   window.HoloSim = {
-    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, boardEffects, upgradeBonus,
+    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, simulate, boardEffects, upgradeBonus,
     posterPermil, rankFor, hasTimeTrigger, chartIndex,
   };
 })();

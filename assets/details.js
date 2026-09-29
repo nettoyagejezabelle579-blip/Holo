@@ -20,6 +20,8 @@
       chart: "Chart", notes: "notes", synthetic: "no chart data, notes spread evenly",
       calibrate: "Calibrate with your real score", calibHelp: "Play this exact unit and song, then enter your in-game score. Every estimate on the site is rescaled by the same factor.",
       apply: "Apply", reset: "Reset", factor: "Current factor",
+      maximum: "Maximum", maxHelp: "all active skills fire", spread: "2,000 simulated plays", worst: "Worst", typical: "Typical (middle 80%)",
+      median: "Median", bestSeen: "Best seen",
     },
     ja: {
       title: "編成詳細", intro: "ユニットを手動で組み、ユニットスコア・推定スコア・各メンバーの貢献を確認できます。",
@@ -32,6 +34,8 @@
       chart: "譜面", notes: "ノーツ", synthetic: "譜面データなし：ノーツを均等配置",
       calibrate: "実際のスコアで補正", calibHelp: "このユニットとこの楽曲で実際にプレイしたスコアを入力すると、サイト全体の推定値を同じ倍率で補正します。",
       apply: "適用", reset: "リセット", factor: "現在の倍率",
+      maximum: "最大", maxHelp: "アクティブスキルが全発動", spread: "2,000回のシミュレーション", worst: "最低", typical: "通常（中央80%）",
+      median: "中央値", bestSeen: "最高記録",
     },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
@@ -59,7 +63,9 @@
     const lk = st.leader ? st.leader.chr + ":" + (st.leader.cardId || "") : "";
     let result = null;
     if (st.members.length) {
-      result = S.evaluate(env, { leader: st.leader, members: st.members.map((id) => S.prepare(env, id)) }, chart, true);
+      const team = { leader: st.leader, members: st.members.map((id) => S.prepare(env, id)) };
+      result = S.evaluate(env, team, chart, true);
+      result.spread = S.simulate(env, team, chart, 2000);
     }
     root.innerHTML = `<h1 class="page-title">${esc(tx("title"))}</h1><p class="muted">${esc(tx("intro"))}</p>
       <div class="details-layout">
@@ -100,11 +106,21 @@
     }).join("");
     return `<div class="panel result">
         <div class="result-head">
-          <div><div class="small muted">${esc(U.tx("estScore"))}</div><div class="big">${fmt(Math.round(r.score))}</div>
+          <div><div class="small muted">${esc(U.tx("estScore"))} (${esc(H.lang === "ja" ? "平均" : "average")})</div><div class="big">${fmt(Math.round(r.score))}</div>
             <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, r.score))}</b></div></div>
+          <div><div class="small muted">${esc(tx("maximum"))}</div><div class="big">${fmt(Math.round(r.spread.max))}</div>
+            <div class="small">${esc(U.scoreRank(song, r.spread.max))} · <span class="muted">${esc(tx("maxHelp"))}</span></div></div>
           <div><div class="small muted">${esc(U.tx("unitScore"))}</div><div class="big">${fmt(Math.round(r.unit))}</div>
             <div class="small">${esc(S.rankFor(G.powerRanks, r.unit))}</div></div>
         </div>
+        <div class="spread"><span class="small muted">${esc(tx("spread"))}:</span>
+          <span>${esc(tx("worst"))} <b>${fmt(Math.round(r.spread.min))}</b></span>
+          <span>${esc(tx("typical"))} <b>${fmt(Math.round(r.spread.p10))} – ${fmt(Math.round(r.spread.p90))}</b></span>
+          <span>${esc(tx("median"))} <b>${fmt(Math.round(r.spread.median))}</b></span>
+          <span>1% <b>≥ ${fmt(Math.round(r.spread.p99))}</b></span>
+          <span>${esc(tx("bestSeen"))} <b>${fmt(Math.round(r.spread.best))}</b></span>
+          <div class="spread-bar"><i style="left:${(r.spread.p10 / r.spread.max * 100).toFixed(1)}%;width:${((r.spread.p90 - r.spread.p10) / r.spread.max * 100).toFixed(1)}%"></i>
+            <b style="left:${(r.score / r.spread.max * 100).toFixed(1)}%"></b></div></div>
         ${U.teamHTML(st.leader, st.members, { stats: r.stats })}
         <div class="table-wrap"><table class="data"><thead><tr><th>#</th><th>${esc(tx("member"))}</th><th class="num">P</th><th class="num">T</th><th class="num">S</th><th class="num">Σ</th>
           <th class="num">${esc(tx("uptime"))}</th><th>${esc(tx("special"))}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>

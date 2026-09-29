@@ -32,6 +32,10 @@
       gain: "Gain", pullResult: "Cards that would improve your unit the most", baseline: "Current best", withCard: "With this card",
       evals: "units evaluated", needCore: "Pick at least one core card.", chartNote: "* songs marked with * have no chart data; notes are spread evenly.",
       method: "How is the score estimated?",
+      goal: "Optimise for", goalAvg: "Average score", goalMax: "Maximum score",
+      goalHelp: "Average = what you get on a typical play (active skills fire by chance). Maximum = every active skill fires.",
+      average: "Average", maximum: "Maximum", spread: "Over {n} simulated plays", typical: "Typical (middle 80%)", top10: "Top 10%", bestSeen: "Best seen",
+      maxHelp: "all active skills fire",
     },
     ja: {
       title: "編成最適化",
@@ -56,6 +60,10 @@
       gain: "上昇", pullResult: "ユニットを最も強化できるカード", baseline: "現在の最強", withCard: "このカード入り",
       evals: "ユニットを評価", needCore: "指定カードを1枚以上選んでください。", chartNote: "* 付きの楽曲は譜面データがないため、ノーツを均等配置して計算します。",
       method: "スコアの推定方法",
+      goal: "最適化の基準", goalAvg: "平均スコア", goalMax: "最大スコア",
+      goalHelp: "平均＝通常のプレイで得られるスコア（アクティブスキルは確率で発動）。最大＝アクティブスキルがすべて発動した場合。",
+      average: "平均", maximum: "最大", spread: "{n}回のシミュレーション", typical: "通常（中央80%）", top10: "上位10%", bestSeen: "最高記録",
+      maxHelp: "アクティブスキルが全発動",
     },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
@@ -64,7 +72,7 @@
   const latestSongs = U.songsSorted().filter((s) => S.chartIndex[s.id] || true).slice(0, 4).map((s) => s.id);
   const st = Object.assign({
     mode: "best", target: "score", play: "perfect", lifeFull: true, board: true, boardFull: false, pool: "owned",
-    effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0,
+    effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0, luck: "avg",
     song: latestSongs[0], diff: "expert", eventSongs: latestSongs.slice(), ratingChr: Object.keys(H.talents)[0],
   }, H.store.get("optimizer", {}));
   const qs = new URLSearchParams(location.search);
@@ -114,6 +122,8 @@
         <a class="chip" href="../my/index.html#holomem">${esc(tx("holomems"))}: ${Object.values(p.ranks).filter((r) => r > 1).length}</a>
         <a class="chip" href="../my/index.html#memories">${esc(tx("memories"))}: ${p.memories || 0}</a></div>`;
     let s3 = `<div class="opt-rows">
+      <div><span class="lbl">${esc(tx("goal"))}</span>${seg("luck", [["avg", tx("goalAvg")], ["max", tx("goalMax")]])}
+        <span class="small muted">${esc(tx("goalHelp"))}</span></div>
       <div><span class="lbl">${esc(tx("playMode"))}</span>${seg("play", [["perfect", tx("perfect")], ["auto", tx("auto")]])}</div>
       <div><span class="lbl">${esc(tx("pool"))}</span>${seg("pool", [["owned", tx("poolOwned")], ["all", tx("poolAll")]])}</div>
       <div><span class="lbl">${esc(tx("effort"))}</span>${seg("effort", [["fast", tx("fast")], ["normal", tx("normal")], ["thorough", tx("thorough")]])}</div>
@@ -219,7 +229,7 @@
     render();
     const env = buildEnv();
     const overrides = overridesForPool();
-    const base = { env, pool, overrides, effort: st.effort, signal: running };
+    const base = { env, pool, overrides, effort: st.effort, signal: running, luck: st.luck };
     if (st.mode === "core") { base.lockMembers = st.core; base.lockLeader = parseLeader(st.coreLeader); }
     if (st.mode === "pull") base.lockMembers = st.keep;
     try {
@@ -295,25 +305,37 @@
   function teamBlock(env, overrides, leader, ids, charts, songs, title) {
     const team = { leader, members: ids.map((id) => S.prepare(env, id, overrides && overrides[id])) };
     const details = charts.map((c) => S.evaluate(env, team, c, true));
+    const maxes = charts.map((c) => S.evaluate(env, team, c, false, "max"));
     const avg = details.reduce((a, d) => a + d.score, 0) / details.length;
+    const max = maxes.reduce((a, v) => a + v, 0) / maxes.length;
+    const spread = charts.length === 1 ? S.simulate(env, team, charts[0], 1000) : null;
     const d0 = details[0];
     const song = charts[0].song;
     const hypo = {};
     for (const id of ids) if (overrides && overrides[id] && !H.progress.cards[id]) hypo[id] = overrides[id];
+    const n = (v) => fmt(Math.round(v));
     return `<div class="panel result">
       ${title ? `<h3>${title}</h3>` : ""}
       <div class="result-head">
         ${charts.length === 1 ? `<div class="song-current">${H.jacketHTML(song, "sm")}<div><b>${esc(L(song.title))}</b><br><span class="small muted">${esc(U.tx(charts[0].diff))} ${song.diff[charts[0].diff] ? song.diff[charts[0].diff].lv : ""}</span></div></div>` :
           `<div class="song-current">${charts.slice(0, 4).map((c) => H.jacketHTML(c.song, "xs")).join("")}</div>`}
-        <div><div class="small muted">${esc(charts.length > 1 ? tx("avg") : U.tx("estScore"))}</div><div class="big">${fmt(Math.round(avg))}</div>
+        <div><div class="small muted">${esc(tx("average"))}${charts.length > 1 ? " · " + esc(tx("avg")) : ""}</div><div class="big">${n(avg)}</div>
           <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, avg))}</b></div></div>
-        <div><div class="small muted">${esc(U.tx("unitScore"))}</div><div class="big">${fmt(Math.round(d0.unit))}</div>
+        <div><div class="small muted">${esc(tx("maximum"))}</div><div class="big">${n(max)}</div>
+          <div class="small">${esc(U.scoreRank(song, max))} · <span class="muted">${esc(tx("maxHelp"))}</span></div></div>
+        <div><div class="small muted">${esc(U.tx("unitScore"))}</div><div class="big">${n(d0.unit)}</div>
           <div class="small">${esc(S.rankFor(G.powerRanks, d0.unit))}</div></div>
         <a class="icon-btn" href="${detailsLink(leader, ids, songs[0], charts[0].diff)}">${esc(U.tx("openDetails"))} →</a>
       </div>
+      ${spread ? `<div class="spread"><span class="small muted">${esc(tx("spread").replace("{n}", fmt(spread.runs)))}:</span>
+        <span>${esc(tx("typical"))} <b>${n(spread.p10)} – ${n(spread.p90)}</b></span>
+        <span>${esc(tx("top10"))} <b>≥ ${n(spread.p90)}</b></span>
+        <span>${esc(tx("bestSeen"))} <b>${n(spread.best)}</b></span>
+        <div class="spread-bar"><i style="left:${(spread.p10 / max * 100).toFixed(1)}%;width:${((spread.p90 - spread.p10) / max * 100).toFixed(1)}%"></i>
+          <b style="left:${(avg / max * 100).toFixed(1)}%" title="${esc(tx("average"))}"></b></div></div>` : ""}
       ${U.teamHTML(leader, ids, { stats: d0.stats, hypo })}
-      ${charts.length > 1 ? `<table class="data small-table"><thead><tr><th>${esc(tx("perSong"))}</th><th class="num">${esc(U.tx("estScore"))}</th></tr></thead><tbody>
-        ${charts.map((c, i) => `<tr><td>${esc(L(c.song.title))} ${c.synthetic ? "*" : ""}</td><td class="num">${fmt(Math.round(details[i].score))}</td></tr>`).join("")}</tbody></table>` : ""}
+      ${charts.length > 1 ? `<table class="data small-table"><thead><tr><th>${esc(tx("perSong"))}</th><th class="num">${esc(tx("average"))}</th><th class="num">${esc(tx("maximum"))}</th></tr></thead><tbody>
+        ${charts.map((c, i) => `<tr><td>${esc(L(c.song.title))} ${c.synthetic ? "*" : ""}</td><td class="num">${n(details[i].score)}</td><td class="num">${n(maxes[i])}</td></tr>`).join("")}</tbody></table>` : ""}
     </div>`;
   }
 
