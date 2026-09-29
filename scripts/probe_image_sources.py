@@ -23,33 +23,18 @@ def status(url):
         return f"ERR {e} {body!r}"
 
 
-for u in ["https://api.holodori.best/api/asset/assetbundles/img_card_vert_00023-5-uniq-0085-00/img_card_vert_00023-5-uniq-0085-00.webp",
-          "https://api.holodori.best/api/asset/assetbundles/img_card_vert_00001-5-uniq-0000-00/img_card_vert_00001-5-uniq-0000-00.webp",
-          "https://cdn.holodori.dev/assets/assetbundles/img_card_full_00001-5-uniq-0000-00/img_card_full_00001-5-uniq-0000-00_unsquished.webp",
-          "https://api.holodori.best/api/asset/assetbundles/img_music_jacket_m0548/img_music_jacket_m0548.webp",
-          "https://holodori.best/cards"]:
-    print("PROBE", status(u), u)
+CDN = "https://cdn.holodori.dev/assets/assetbundles/"
+pats = ["img_card_vert_{id}/img_card_vert_{id}.webp", "img_card_vert_{id}/img_card_vert_{id}_unsquished.webp",
+        "img_card_full_{id}/img_card_full_{id}_unsquished.webp", "img_card_full_{id}/img_card_full_{id}.webp",
+        "img_card_icon_{id}/img_card_icon_{id}.webp", "img_card_icon_{id}/img_card_icon_{id}_unsquished.webp",
+        "img_card_thumb_{id}/img_card_thumb_{id}.webp", "img_card_square_{id}/img_card_square_{id}.webp"]
+for cid in ["00001-5-uniq-0000-00", "00023-5-uniq-0085-00", "00001-3-nrml-0000-00"]:
+    for pt in pats:
+        u = CDN + pt.format(id=cid)
+        print("PROBE", status(u), u)
+for mid in ["m0001", "m0548", "m0325", "m9999"]:
+    for pt in ["img_music_jacket_{id}/img_music_jacket_{id}.webp", "img_music_jacket_{id}/img_music_jacket_{id}_unsquished.webp",
+               "img_music_jacket_{id}/img_music_jacket_{id}.png"]:
+        u = CDN + pt.format(id=mid)
+        print("PROBE", status(u), u)
 
-API = "https://hololive.wiki/w/api.php"
-
-
-def wiki(params):
-    q = urllib.parse.urlencode(dict(params, format="json"))
-    with urllib.request.urlopen(urllib.request.Request(API + "?" + q, headers=UA), timeout=40) as r:
-        return json.load(r)
-
-
-for cat in ["Category:Holodori Card Illustrations", "Category:Hololive Dreams Images"]:
-    try:
-        names, cont = [], {}
-        while True:
-            d = wiki(dict(action="query", list="categorymembers", cmtitle=cat, cmlimit="500", cmtype="file", **cont))
-            names += [m["title"] for m in d["query"]["categorymembers"]]
-            if "continue" not in d:
-                break
-            cont = {"cmcontinue": d["continue"]["cmcontinue"]}
-        print("WIKI", cat, len(names))
-        for n in names:
-            print("WIKIFILE", n)
-    except Exception as e:  # noqa: BLE001
-        print("WIKI ERR", cat, e)
