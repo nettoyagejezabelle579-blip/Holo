@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Score Method · holodori DB</title>
+  <link rel="stylesheet" href="../assets/app.css">
+</head>
+<body data-base="..">
+  <header class="site-header" id="site-header"></header>
+  <main class="container method" style="max-width:860px">
+    <h1 class="page-title">How the score is estimated</h1>
+    <p class="muted">The complete in-game score formula has not been published. The optimizer uses the pieces that are in the
+      game's master data and fills the gaps with the assumptions listed below. Absolute numbers are estimates; the comparison
+      between units is what the optimizer is built for.</p>
+
+    <h2>1. Member stats</h2>
+    <p>Each card's Performance, Technique and Sense come from its level curve and stat split, plus the Bloom (potential) bonus
+      (+10% for ★4/★5, +15% for ★3 at full bloom). Flat bonuses from holomem board tiles are added, then all percentage bonuses:
+      passive skills, the leader outfit skill, leader-type board tiles and memories (+0.2% per memory from the Memory Stand table).</p>
+
+    <h2>2. Unit Score</h2>
+    <p><code>Unit Score = Σ over members and P/T/S of (card stat + flat board bonus + card stat × (passive % + outfit % + board % + memories % + Member Upgrade %))</code>.
+      Every percentage applies to the card's own stats, which reproduces the component split shown by holodori.best (e.g. memories 4.6% × member stats).
+      The Member Upgrade Bonus is the sum of every owned card's level bonus (Lv 20+), capped at 50%, as the in-game help describes.</p>
+
+    <h2>3. Notes</h2>
+    <p>Each note scores <code>Unit Score × song coefficient × note coefficient × (1 + combo bonus)</code>. Note coefficients come
+      from the LiveNote table (PERFECT: tap/hold 1.00, flick 1.05, hold ticks 0.10; AUTO: 0.80 and no combo bonus). The combo bonus is +1% per 100 combo up to +10%.
+      Chart timings, special-skill markers and the combo at each marker come from parsed charts; songs without chart data use evenly spaced notes.</p>
+
+    <h2>4. Skills</h2>
+    <ul>
+      <li><b>Active skills</b> are checked every cooldown (from the start of the song) with their activation chance and last for their duration.
+        When several are active, only the highest effect counts (in-game help). The optimizer uses the expected value of that maximum.</li>
+      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support multiplies active Score UP
+        while it lasts; Skill Rate UP raises the activation chance of checks made during it.</li>
+      <li><b>Passive skills and leader outfits</b> apply when their conditions hold (type count, unit members, leader, song singer).
+        When a skill targets "2 Pure Type Members", the members with the highest base total are assumed to receive it.</li>
+      <li>Skill levels follow Bloom: 1 → Active Lv 2, 3 → Special Lv 2, 4 → Passive Lv 2.</li>
+      <li>Judgement Boost and LIFE recovery do not add score under ALL PERFECT play and are ignored. LIFE conditions follow the "LIFE stays full" option.</li>
+    </ul>
+
+    <h2>5. Holomem board</h2>
+    <p>Holomem Rank gives board points (e.g. 191 at rank 33, 361 at rank 50). Each holomem's real board (153 tiles, laid out in one of four shapes)
+      is simulated tile by tile: a tile can be unlocked when it touches an unlocked tile, you have the points and the Dream Rank it needs.
+      Set up each board in My Data → Holomems exactly like in the game, or use Auto (Leader / Member / Support focus, like 自動設置) which spends the points along the cheapest paths.
+      Holomems you have not edited are auto-set with your chosen focus. Note that auto setup assumes you have the unlock materials; if the game shows fewer unlocked tiles, edit the board to match.</p>
+    <ul>
+      <li><b>Leader tiles</b> (red) apply to the whole unit when that holomem is the leader; some only on songs they sing.</li>
+      <li><b>Member tiles</b> (blue) boost that holomem's card when it is in the unit (flat stats, stat %, active skill rate and frequency).</li>
+      <li><b>Support tiles</b> (green) apply to every unit, even when that holomem is not in it.</li>
+      <li><b>Song tiles</b> (yellow) add a score bonus on songs by that holomem (max +10% total).</li>
+      <li><b>Connect tiles</b> (4 per board, the centre one is free): a ★4/★5 card placed there multiplies every tile in its range by its Connect value
+        (e.g. ×1.5, ×2.0 at Bloom 5). A card can only sit on one board. Ranges are mirrored on the mirrored board layouts.</li>
+      <li>Every tile also costs cubes (e.g. the ★★ skill-rate member tile: 4 points + 50 Blue Cubes + 10 Blue Hexa); the editor shows them.</li>
+    </ul>
+    <h3>Board points per Holomem Rank (from the master data)</h3>
+    <p>Rank 2–4: +2 each · 5–9: +3 · 10–14: +5 · 15–19: +6 · 20–24: +7 · 25–29: +8 · 30–50: +10 each.
+      Totals: rank 10 = 26, 20 = 83, 30 = 161, 33 = 191, 40 = 261, 50 = 361. A full board costs about 447 points, so it can't be completed with rank points alone.
+      Rank EXP comes from that holomem's achievements (1–2 EXP each); rank 33 needs 111 EXP in total.</p>
+    <ul style="display:none">
+    </ul>
+
+    <h2>Events</h2>
+    <p>From the in-game Event bonus screen (活動加成):</p>
+    <ul>
+      <li><b>Score bonus</b> (分數加成): on each designated song, the matching event card in the unit gives <b>+10% Live score</b>
+        (e.g. PROPOSE → Kobo's card, Kyapi → Marine's card).</li>
+      <li><b>Acquisition bonus</b> (獲得加成) for event badges/points: +30% for each event card in the unit (成員加成), +30% when the unit's holomem
+        is an event holomem (holo成員加成), and a Bloom bonus (綻放加成) for every card of an event holomem in the unit:
+        ★3 1/1/2/2/3%, ★4 6/7/8/9/10%, ★5 15/18/22/26/30% at Bloom 1–5.</li>
+    </ul>
+    <p>Event Pt is estimated as score × (1 + acquisition bonus); the base point formula is not public, so it is shown as a relative value.
+      Events and their cards are in <code>data/events.js</code>.</p>
+
+    <h2>Board planner</h2>
+    <p>For a unit and song, each holomem board is re-planned with that holomem's own rank points and your Dream Rank. Boards of holomems in the unit
+      (leader and members) are planned by scoring the full unit after every candidate unlock path. The other boards only add support tiles
+      (flat stats for every unit or a generation) and song tiles, which are priced from measured sensitivities. Owned ★4/★5 cards are then placed on
+      unlocked Connect tiles one at a time where they add the most (each card on one board only). Cube materials are totalled but not limited.</p>
+
+    <h2>Average vs maximum</h2>
+    <p>Active skills fire by chance, so the same unit scores differently every play. <b>Average</b> is the expected score (exact expected value of
+      "highest active effect wins" over all checks; it matches the mean of thousands of simulated plays). <b>Maximum</b> is the score when every
+      active skill check succeeds. Results also show a spread from simulated plays (typical middle 80%, top 10%, best seen).
+      The optimizer can maximise either one; the best unit for the maximum is often not the best on average.</p>
+
+    <h2>6. Search</h2>
+    <p>Leaders are screened with a baseline unit; each promising leader gets a greedy fill and a swap-until-no-improvement search over your cards
+      (one card per holomem), including swapping slot positions. Extra starts are built around each type, each unit/generation and each leader
+      outfit's condition, then leaders are re-screened against the best units found. Finalists are polished with all 120 formation orders and
+      two-cards-at-once swaps (for synergies like "2 or more Cute"). Checked against brute force (every leader × every 5-card set × every order)
+      on random boxes: Normal and Thorough found the best unit in 11 of 12 cases and were within 0.01% in the last one; on full boxes Normal and
+      Thorough always agreed. Fast is quicker but can be 1–3% lower.</p>
+
+    <h2>Data</h2>
+    <p>Master data: <a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>. Chart timelines: parsed holodori charts.</p>
+  </main>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../assets/config.js"></script>
+  <script src="../data/cards.js"></script>
+  <script src="../data/announced.js"></script>
+  <script src="../data/art.js"></script>
+  <script src="../data/jackets.js"></script>
+  <script src="../assets/common.js"></script>
+  <script>Holo.renderHeader("optimizer"); Holo.renderFooter();</script>
+</body>
+</html>

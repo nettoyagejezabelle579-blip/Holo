@@ -4,7 +4,18 @@
 
   const D = window.HOLO_DATA;
   const ANN = window.HOLO_ANNOUNCED || { banners: [], cards: [] };
-  const CFG = Object.assign({ artBase: "", newDays: 14 }, window.HOLO_CONFIG || {});
+  const ART = window.HOLO_ART || {};
+  const JACKETS = window.HOLO_JACKETS || {};
+  const CFG = Object.assign({ artBase: "", newDays: 14, remoteCardArt: "", remoteCardFull: "", remoteJacket: "" }, window.HOLO_CONFIG || {});
+  // <img> that walks a list of sources and finally removes itself (the generated face shows through).
+  function imgChain(urls, alt, extra) {
+    urls = urls.filter(Boolean);
+    if (!urls.length) return "";
+    const rest = esc(JSON.stringify(urls.slice(1)));
+    return `<img loading="lazy" alt="${esc(alt)}" src="${esc(urls[0])}" data-next="${rest}" ${extra || ""}
+      onerror="var n=JSON.parse(this.dataset.next||'[]');if(n.length){this.dataset.next=JSON.stringify(n.slice(1));this.src=n[0];}else{if(this.parentNode&&this.parentNode.classList)this.parentNode.classList.remove('has-img');this.remove();}">`;
+  }
+  const fill = (tpl, id) => (tpl && id ? tpl.split("{id}").join(id) : "");
 
   // ---------- storage ----------
   const store = {
@@ -24,7 +35,7 @@
   // ---------- i18n ----------
   const STR = {
     en: {
-      home: "Home", cards: "Cards", talents: "Talents", search: "Search cards, talents, skills…",
+      home: "Home", cards: "Cards", songs: "Songs", myData: "My Data", optimizer: "Team Optimizer", teamDetails: "Team Details", talents: "Talents", search: "Search cards, talents, skills…",
       filters: "Filters", reset: "Reset", results: "{n} cards", rarity: "Rarity", attribute: "Type",
       cute: "Cute", happy: "Happy", pure: "Pure", availability: "Availability", standard: "Standard",
       limited: "Limited", announced: "Announced", banner: "Banner", branch: "Branch", unit: "Unit / Generation",
@@ -59,7 +70,7 @@
       launchStandard: "Launch (standard pool)",
     },
     ja: {
-      home: "ホーム", cards: "カード", talents: "タレント", search: "カード名・タレント・スキルで検索…",
+      home: "ホーム", cards: "カード", songs: "楽曲", myData: "所持データ", optimizer: "編成最適化", teamDetails: "編成詳細", talents: "タレント", search: "カード名・タレント・スキルで検索…",
       filters: "絞り込み", reset: "リセット", results: "{n}枚", rarity: "レアリティ", attribute: "タイプ",
       cute: "キュート", happy: "ハッピー", pure: "ピュア", availability: "入手区分", standard: "恒常",
       limited: "限定", announced: "発表済み", banner: "ガチャ", branch: "ブランチ", unit: "ユニット・期",
@@ -212,21 +223,79 @@
     if (card.announced) badges.push(`<span class="badge announced">${esc(t("announced"))}</span>`);
     else if (card.limited) badges.push(`<span class="badge limited">${esc(t("limited"))}</span>`);
     if (isNew(card) && !opts.noNew) badges.push(`<span class="badge new">${esc(t("newBadge"))}</span>`);
-    const img = CFG.artBase && card.asset
-      ? `<img loading="lazy" alt="" src="${esc(CFG.artBase.replace(/\/$/, ""))}/${esc(card.asset)}.webp" onerror="this.remove()">`
-      : "";
-    return `<div class="art" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
+    const kinds = ART[card.id] || [];
+    const local = opts.full && kinds.includes("full") ? artUrl(card.id, "full") : kinds.includes("icon") ? artUrl(card.id, "icon") : "";
+    const remote = card.asset ? (opts.full ? fill(CFG.remoteCardFull, card.asset) : fill(CFG.remoteCardArt, card.asset)) : "";
+    const kind = local ? (opts.full && kinds.includes("full") ? "full" : "icon") : remote ? "remote" : null;
+    const alt = L(tl.name) + " " + L(card.title);
+    const img = imgChain([local, remote, !opts.full ? "" : fill(CFG.remoteCardArt, card.asset)], alt);
+    return `<div class="art ${kind ? "has-img art-" + kind : ""}" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
       `<div class="art-name">${esc(L(tl.short))}</div>${img}` +
       `<div class="badges">${badges.join("")}</div>` +
       `<div class="stars" aria-label="${card.rarity} star">${stars(card.rarity)}</div></div>`;
   }
+  // Song cover (jacket) with a generated fallback.
+  function jacketHTML(song, cls) {
+    const title = L(song.title);
+    const urls = [JACKETS[song.id], fill(CFG.remoteJacket, song.jacket || song.id)];
+    const hue = [...song.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+    return `<div class="jacket ${cls || ""}" style="--h:${hue}">` +
+      `<span class="jacket-fallback">${esc(title.slice(0, 24))}</span>` +
+      imgChain(urls, title) + `</div>`;
+  }
+  function artUrl(id, kind) {
+    const base = CFG.artBase || (document.body.dataset.base || ".") + "/assets/art";
+    return base.replace(/\/$/, "") + "/" + kind + "/" + id + ".webp";
+  }
+  function hasArt(id, kind) {
+    if ((ART[id] || []).includes(kind || "icon")) return true;
+    const c = cardById[id];
+    return !!(c && c.asset && (kind === "full" ? CFG.remoteCardFull : CFG.remoteCardArt));
+  }
+  // Best image URL for a card (bundled first, then remote).
+  function cardImageUrls(id, kind) {
+    const c = cardById[id];
+    const out = [];
+    if ((ART[id] || []).includes(kind)) out.push(artUrl(id, kind));
+    if (c && c.asset) out.push(fill(kind === "full" ? CFG.remoteCardFull : CFG.remoteCardArt, c.asset));
+    if (kind === "full" && c && c.asset) out.push(fill(CFG.remoteCardArt, c.asset));
+    return out.filter(Boolean);
+  }
 
-  // ---------- collection ----------
-  const owned = new Set(store.get("owned", []));
+  // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
+  function loadProgress() {
+    const p = store.get("progress", null) || { v: 1, cards: {}, ranks: {}, board: {}, memories: 0 };
+    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.board = p.board || {}; p.connect = p.connect || {}; p.memories = p.memories || 0;
+    delete p.boardPct;
+    // Migrate the older "owned" list from the card database.
+    const legacy = store.get("owned", null);
+    if (legacy && legacy.length) {
+      for (const id of legacy) if (cardById[id] && !p.cards[id]) p.cards[id] = { lv: maxLevel(cardById[id]), bloom: 0 };
+      store.set("owned", []);
+    }
+    return p;
+  }
+  const progress = loadProgress();
+  const owned = new Set(Object.keys(progress.cards));
+  function saveProgress() {
+    progress.updated = new Date().toISOString();
+    store.set("progress", progress);
+    owned.clear();
+    for (const id in progress.cards) owned.add(id);
+  }
+  function setCardProgress(id, value) {
+    if (value) progress.cards[id] = Object.assign({ lv: maxLevel(cardById[id]), bloom: 0 }, progress.cards[id] || {}, value);
+    else delete progress.cards[id];
+    saveProgress();
+  }
+  function replaceProgress(p) {
+    for (const k of Object.keys(progress)) delete progress[k];
+    Object.assign(progress, { v: 1, cards: {}, ranks: {}, board: {}, memories: 0 }, p);
+    saveProgress();
+  }
   const favorites = new Set(store.get("favorites", []));
   function toggleOwned(id) {
-    owned.has(id) ? owned.delete(id) : owned.add(id);
-    store.set("owned", [...owned]);
+    setCardProgress(id, owned.has(id) ? null : {});
     return owned.has(id);
   }
   function toggleFavorite(id) {
@@ -246,6 +315,10 @@
         <nav class="nav">
           <a href="${base}/index.html" class="${active === "home" ? "active" : ""}">${esc(t("home"))}</a>
           <a href="${base}/cards/index.html" class="${active === "cards" ? "active" : ""}">${esc(t("cards"))}</a>
+          <a href="${base}/songs/index.html" class="${active === "songs" ? "active" : ""}">${esc(t("songs"))}</a>
+          <a href="${base}/my/index.html" class="${active === "my" ? "active" : ""}">${esc(t("myData"))}</a>
+          <a href="${base}/team/index.html" class="${active === "optimizer" ? "active" : ""}">${esc(t("optimizer"))}</a>
+          <a href="${base}/team/details.html" class="${active === "details" ? "active" : ""}">${esc(t("teamDetails"))}</a>
         </nav>
         <div class="header-actions">
           <button class="icon-btn" id="lang-btn" title="Language">${lang === "en" ? "日本語" : "EN"}</button>
@@ -276,7 +349,8 @@
   window.Holo = {
     D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
-    skillLevelAt, isNew, talentGroupNames, artHTML, owned, favorites, toggleOwned, toggleFavorite,
+    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, cardImageUrls, imgChain, jacketHTML, hasJacket: (id) => !!JACKETS[id], owned, favorites, toggleOwned, toggleFavorite,
+    progress, saveProgress, setCardProgress, replaceProgress,
     renderHeader, renderFooter,
   };
 })();

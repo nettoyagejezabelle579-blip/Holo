@@ -222,24 +222,23 @@
   });
 
   function exportCollection() {
-    const blob = new Blob([JSON.stringify({ owned: [...H.owned], favorites: [...H.favorites] }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ progress: H.progress, favorites: [...H.favorites] }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "holodori-collection.json";
+    a.download = "holodori-progress.json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   function importCollection(file) {
     file.text().then((txt) => {
       const data = JSON.parse(txt);
-      H.owned.clear();
-      (data.owned || []).forEach((id) => H.owned.add(id));
+      if (data.progress) H.replaceProgress(data.progress);
+      else if (data.owned) H.replaceProgress({ cards: Object.fromEntries(data.owned.filter((id) => H.cardById[id]).map((id) => [id, { lv: H.maxLevel(H.cardById[id]), bloom: 0 }])) });
       H.favorites.clear();
       (data.favorites || []).forEach((id) => H.favorites.add(id));
-      H.store.set("owned", [...H.owned]);
       H.store.set("favorites", [...H.favorites]);
       update(true);
-    }).catch(() => alert("Invalid collection file"));
+    }).catch(() => alert("Invalid file"));
   }
 
   // ---------- toolbar ----------
@@ -530,6 +529,7 @@
             <button class="icon-btn" id="m-link">${esc(t("copyLink"))}</button>
             <button class="icon-btn" id="m-close" title="${esc(t("close"))}">✕</button>
           </div>
+          ${H.cardImageUrls(c.id, "full").length ? `<div class="hero-art">${H.imgChain(H.cardImageUrls(c.id, "full"), L(c.title))}</div>` : ""}
           <div class="modal-body">
             <div class="art-col">${H.artHTML(c)}
               <dl class="kv">
