@@ -21,3 +21,9 @@ python3 scripts/build_data.py --eng .cache/holodori-db-eng-diff --jpn .cache/hol
 python3 scripts/build_game.py --eng .cache/holodori-db-eng-diff --jpn .cache/holodori-db-jpn-diff
 python3 scripts/build_charts.py --timelines .cache/yagoo-dori/data/generated/holodori-chart-timelines.json
 python3 scripts/import_art.py --icons .cache/yagoo-dori/apps/web/public/game/cards --full .cache/yagoo-dori/apps/web/public/game/previews
+if [ -d ".cache/holo-dreams-songlist/.git" ]; then
+  git -C .cache/holo-dreams-songlist pull --ff-only -q
+else
+  git clone -q --depth 1 https://github.com/MinatoIsuki/holo-dreams-songlist.git .cache/holo-dreams-songlist
+fi
+python3 scripts/build_jackets.py --songlist .cache/holo-dreams-songlist/output.json

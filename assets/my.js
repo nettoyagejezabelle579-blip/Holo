@@ -21,9 +21,13 @@
       points: "Board pts", confirmMark: "Mark all ★3 cards as owned at max level?",
       editBoard: "Edit board", tiles: "Tiles unlocked", ptsLeft: "Points left", dream: "Dream Rank", autoMode: "Auto setup for holomems you haven't edited",
       autoLeader: "Auto: Leader", autoMember: "Auto: Member", autoSupport: "Auto: Support", reset: "Reset", close: "Close",
-      boardHelp: "Tap a tile next to an unlocked tile to unlock it (needs points and Dream Rank); tap an unlocked tile to lock it. Auto setup spends the points left.",
+      boardHelp: "Tap a tile to see it, then Unlock (it must touch an unlocked tile, and needs points, materials and Dream Rank) or Lock. Auto setup spends the points left.",
       custom: "custom", autoState: "auto", totals: "Board effects", legend: "Red: Leader · Blue: Member · Green: Support · Yellow: Song · Grey: Connect",
       needDream: "Needs Dream Rank", cost: "Cost", noLive: "no effect on Live score",
+      tapTile: "Tap a tile to see its effect, cost and materials.", unlock: "Unlock", lock: "Lock", cantUnlock: "needs an unlocked neighbour, enough points and Dream Rank",
+      connectHelp: "Place a ★4/★5 card here: its Connect effect multiplies the board tiles in its range.", connectCard: "Card on this Connect tile",
+      connectOwned: "Only owned ★4/★5 cards that are not on another board are listed.", rankTable: "Rank → points table",
+      expTotal: "Total EXP", ptsGain: "Points gained", ptsTotal: "Total points", nextRank: "next rank",
     },
     ja: {
       title: "所持データ", intro: "ゲーム内の所持状況を入力してください。編成最適化はここのカード・レベル・開花・ランクだけを使います。",
@@ -39,9 +43,13 @@
       points: "ボードPt", confirmMark: "★3カードをすべて最大レベルで所持にしますか？",
       editBoard: "ボードを編集", tiles: "解放数", ptsLeft: "残りPt", dream: "ドリームランク", autoMode: "未編集ホロメンの自動設置",
       autoLeader: "自動：リーダー", autoMember: "自動：メンバー", autoSupport: "自動：サポート", reset: "リセット", close: "閉じる",
-      boardHelp: "解放済みマスに隣接するマスをタップで解放（Ptとドリームランクが必要）、解放済みマスをタップで解除。自動設置は残りPtを使います。",
+      boardHelp: "マスをタップして確認し、解放（解放済みマスに隣接・Pt・素材・ドリームランクが必要）または解除します。自動設置は残りPtを使います。",
       custom: "手動", autoState: "自動", totals: "ボード効果", legend: "赤：リーダー・青：メンバー・緑：サポート・黄：楽曲・灰：コネクト",
       needDream: "必要ドリームランク", cost: "コスト", noLive: "ライブスコアに影響なし",
+      tapTile: "マスをタップすると効果・コスト・素材を表示します。", unlock: "解放", lock: "解除", cantUnlock: "隣接マスの解放・Pt・ドリームランクが必要",
+      connectHelp: "★4/★5カードを配置すると、コネクト効果で範囲内のマス効果がアップします。", connectCard: "このコネクトマスのカード",
+      connectOwned: "他のボードに配置していない所持★4/★5カードのみ表示します。", rankTable: "ランク別Pt表",
+      expTotal: "累計EXP", ptsGain: "獲得Pt", ptsTotal: "累計Pt", nextRank: "次のランク",
     },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
@@ -150,8 +158,10 @@
   }
 
   // Board editor modal
-  let boardChr = null;
-  const TILE_ICON = { leader: "L", card: "M", all_member: "S", content: "♪", connection: "·" };
+  let boardChr = null, selTile = null, showRanks = false;
+  const TILE_ICON = { leader: "L", card: "M", all_member: "S", content: "♪", connection: "C" };
+  const TYPE_NAME = { en: { leader: "Leader tile", card: "Member tile", all_member: "Support tile", content: "Song tile", connection: "Connect tile" },
+    ja: { leader: "リーダー効果", card: "メンバー効果", all_member: "サポート効果", content: "楽曲効果", connection: "コネクト" } };
   function tileLabel(t) {
     const e = t.eff;
     if (!e) return TILE_ICON[t.type] || "";
@@ -161,10 +171,56 @@
       live_score_bonus_add_permil_up_by_music_skill_tree_character_and_music_singer_type: "♪" };
     return map[e.type] || (TILE_ICON[t.type] || "·");
   }
-  function openBoard(chr) { boardChr = chr; drawBoard(); }
+  function openBoard(chr) { boardChr = chr; selTile = null; drawBoard(); }
   function saveBoard(set) {
     H.progress.board[boardChr] = [...set];
+    // Connect cards on tiles that got locked are taken off.
+    const con = (H.progress.connect || {})[boardChr];
+    if (con) for (const k in con) if (!set.has(k)) delete con[k];
     H.saveProgress();
+  }
+  function tileMaterials(t) {
+    const raw = window.HoloBoard.tileByKey[t.k];
+    const v = raw.var.find((x) => x.chrs && x.chrs.includes(boardChr)) || raw.var.find((x) => !x.chrs) || raw.var[0];
+    return (v && v.mat) || [];
+  }
+  function detailPanel(chr, st) {
+    const b = B.tilesFor(chr);
+    const t = selTile && b.byKey[selTile];
+    if (!t) return `<div class="tile-detail muted small">${esc(tx("tapTile"))}</div>`;
+    const on = st.set.has(t.k);
+    const can = B.canUnlock(H.progress, chr, st.set, t.k);
+    const mult = B.connectMultipliers(H.progress, chr, st.set).get(t.k);
+    const mats = tileMaterials(t);
+    let body = `<div class="tile-detail"><div class="row"><span class="tile-node t-${t.type} on" style="opacity:1">${esc(tileLabel(t))}</span>
+      <div><span class="pill">${esc((TYPE_NAME[H.lang] || TYPE_NAME.en)[t.type])}</span> ${"★".repeat(t.grade)}<br>
+      <b>${esc(t.eff ? B.effectText(t.eff, chr) : t.type === "connection" ? tx("connectHelp") : "—")}</b>
+      ${mult && mult > 1 ? `<br><span class="small" style="color:var(--accent)">Connect ×${mult.toFixed(2)} → ${esc(B.effectText(Object.assign({}, t.eff, { v: t.eff.v * mult }), chr))}</span>` : ""}
+      ${t.eff && !t.eff.live ? `<br><span class="small muted">${esc(tx("noLive"))}</span>` : ""}</div></div>
+      <dl class="kv"><dt>${esc(tx("points"))}</dt><dd>${t.cost}</dd>
+        ${mats.map(([id, q]) => `<dt>${esc(L((G.materials || {})[id] || { en: id }))}</dt><dd>${fmt(q)}</dd>`).join("")}
+        ${t.lvl ? `<dt>${esc(tx("needDream"))}</dt><dd>${t.lvl}</dd>` : ""}</dl>
+      ${t.k === B.ROOT ? "" : on ? `<button class="icon-btn" id="bd-lock">${esc(tx("lock"))}</button>` :
+        `<button class="icon-btn" id="bd-unlock" ${can ? "" : "disabled"}>${esc(tx("unlock"))}</button> ${can ? "" : `<span class="small muted">${esc(tx("cantUnlock"))}</span>`}`}`;
+    if (t.type === "connection" && on) {
+      const placed = B.placedCards(H.progress);
+      const cur = ((H.progress.connect || {})[chr] || {})[t.k] || "";
+      const options = Object.keys(H.progress.cards).filter((id) => G.connect[id] && (!placed[id] || id === cur))
+        .sort((x, y) => (G.connect[y].v[0] - G.connect[x].v[0]) || H.talents[H.cardById[x].chr].order - H.talents[H.cardById[y].chr].order);
+      body += `<h4 style="margin:12px 0 6px">${esc(tx("connectCard"))}</h4>
+        <select class="select" id="bd-connect" style="width:100%"><option value="">—</option>${options.map((id) => {
+          const c = H.cardById[id];
+          return `<option value="${esc(id)}" ${id === cur ? "selected" : ""}>${H.stars(c.rarity)} ${esc(L(H.talents[c.chr].short))} · ${esc(L(c.title))} · ${esc(G.connect[id].area)} ×${(G.connect[id].v[B.connectLevel(H.progress, id) - 1] / 1000).toFixed(2)}</option>`;
+        }).join("")}</select>
+        ${cur ? `<p class="small">${esc(H.plain(L(G.connect[cur].text[B.connectLevel(H.progress, cur) - 1])))}</p>` : `<p class="small muted">${esc(tx("connectOwned"))}</p>`}`;
+    }
+    return body + `</div>`;
+  }
+  function rankTableHTML(chr) {
+    const r = H.progress.ranks[chr] || 1;
+    return `<div class="table-wrap" style="max-height:260px;margin-bottom:10px"><table class="data"><thead><tr><th class="num">${esc(tx("rank"))}</th><th class="num">${esc(tx("expTotal"))}</th>
+      <th class="num">${esc(tx("ptsGain"))}</th><th class="num">${esc(tx("ptsTotal"))}</th></tr></thead><tbody>${B.rankTable().map((x) =>
+      `<tr ${x.rank === r ? 'style="background:var(--accent-soft);font-weight:700"' : ""}><td class="num">${x.rank}</td><td class="num">${x.exp}</td><td class="num">${x.points ? "+" + x.points : "—"}</td><td class="num">${x.total}</td></tr>`).join("")}</tbody></table></div>`;
   }
   function drawBoard() {
     const chr = boardChr;
@@ -174,33 +230,46 @@
     const b = B.tilesFor(chr);
     const st = boardState(chr);
     const xs = b.list.map((t) => t.x), ys = b.list.map((t) => t.y);
-    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), maxY = Math.max(...ys), minY = Math.min(...ys);
+    const con = (H.progress.connect || {})[chr] || {};
+    let foot = new Set();
+    for (const k in con) if (st.set.has(k)) B.connectFootprint(chr, k, con[k]).forEach((x) => foot.add(x));
+    if (selTile && b.byKey[selTile] && b.byKey[selTile].type === "connection" && con[selTile]) foot = new Set(B.connectFootprint(chr, selTile, con[selTile]));
     const cells = b.list.map((t) => {
       const on = st.set.has(t.k);
       const can = !on && B.canUnlock(H.progress, chr, st.set, t.k);
-      const title = (t.eff ? B.effectText(t.eff, chr) : t.type) + ` · ${tx("cost")} ${t.cost}` + (t.lvl ? ` · ${tx("needDream")} ${t.lvl}` : "") + (t.eff && !t.eff.live ? ` · ${tx("noLive")}` : "");
-      return `<button class="tile-node t-${t.type} ${on ? "on" : can ? "can" : ""}" data-tile="${esc(t.k)}" title="${esc(title)}"
-        style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}">${esc(tileLabel(t))}${t.grade > 1 ? "<i>★★</i>" : ""}</button>`;
+      const placed = t.type === "connection" && con[t.k] && on;
+      const title = (t.eff ? B.effectText(t.eff, chr) : t.type) + ` · ${tx("points")} ${t.cost}` + (t.lvl ? ` · ${tx("needDream")} ${t.lvl}` : "");
+      return `<button class="tile-node t-${t.type} ${on ? "on" : can ? "can" : ""} ${foot.has(t.k) ? "foot" : ""} ${selTile === t.k ? "sel" : ""}" data-tile="${esc(t.k)}" title="${esc(title)}"
+        style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}">${placed && H.hasArt(con[t.k]) ? `<img src="${esc(H.artUrl(con[t.k], "icon"))}" alt="">` : esc(tileLabel(t))}${t.grade > 1 ? "<i>★★</i>" : ""}</button>`;
     }).join("");
-    const eff = B.effects(chr, st.set);
-    root2.innerHTML = `<div class="modal-backdrop" id="bd-back"><div class="modal" role="dialog" aria-modal="true" style="max-width:1100px">
+    const eff = B.effects(chr, st.set, H.progress);
+    const r = H.progress.ranks[chr] || 1;
+    const next = B.rankTable()[r];
+    root2.innerHTML = `<div class="modal-backdrop" id="bd-back"><div class="modal" role="dialog" aria-modal="true" style="max-width:1200px">
       <div class="modal-head"><span class="avatar" style="background:linear-gradient(135deg,${esc(tl.color)},${esc(tl.color2)})">${esc(L(tl.short).slice(0, 2))}</span>
         <strong>${esc(L(tl.name))}</strong><span class="spacer"></span>
         <button class="icon-btn" id="bd-close">✕</button></div>
       <div style="padding:12px 16px">
         <div class="toolbar">
-          <span>${esc(tx("rank"))}</span><button class="icon-btn" data-bdrank="-1">−</button><b>${H.progress.ranks[chr] || 1}</b><button class="icon-btn" data-bdrank="1">+</button>
-          <span>${esc(tx("points"))}: <b>${st.pts}</b></span><span>${esc(tx("ptsLeft"))}: <b>${st.left}</b></span><span>${esc(tx("tiles"))}: <b>${st.tiles}</b></span>
+          <span>${esc(tx("rank"))}</span><button class="icon-btn" data-bdrank="-1">−</button><b>${r}</b><button class="icon-btn" data-bdrank="1">+</button>
+          <span>${esc(tx("points"))}: <b>${st.pts}</b>${next ? ` <span class="small muted">(${esc(tx("nextRank"))} +${next.points})</span>` : ""}</span>
+          <span>${esc(tx("ptsLeft"))}: <b>${st.left}</b></span><span>${esc(tx("tiles"))}: <b>${st.tiles}</b></span>
           <span class="pill ${st.custom ? "on" : ""}">${esc(st.custom ? tx("custom") : tx("autoState"))}</span>
+          <button class="icon-btn" id="bd-ranks">${esc(tx("rankTable"))}</button>
           <button class="icon-btn" data-bdauto="leader">${esc(tx("autoLeader"))}</button>
           <button class="icon-btn" data-bdauto="member">${esc(tx("autoMember"))}</button>
           <button class="icon-btn" data-bdauto="support">${esc(tx("autoSupport"))}</button>
           <button class="icon-btn" id="bd-reset">${esc(tx("reset"))}</button>
         </div>
+        ${showRanks ? rankTableHTML(chr) : ""}
         <p class="small muted">${esc(tx("boardHelp"))}<br>${esc(tx("legend"))}</p>
-        <div class="board-wrap"><div class="board-grid" style="grid-template-columns:repeat(${maxX - minX + 1},34px);grid-template-rows:repeat(${maxY - minY + 1},34px)">${cells}</div></div>
+        <div class="board-layout">
+          <div class="board-wrap"><div class="board-grid" style="grid-template-columns:repeat(${maxX - minX + 1},34px);grid-template-rows:repeat(${maxY - minY + 1},34px)">${cells}</div></div>
+          ${detailPanel(chr, st)}
+        </div>
         <h3>${esc(tx("totals"))}</h3>
-        <ul class="board-eff">${eff.map((e) => `<li><span class="pill">${esc(e.node)}</span> ${esc(B.effectText(e, chr))}</li>`).join("") || "<li class='muted'>—</li>"}</ul>
+        <ul class="board-eff">${eff.map((e) => `<li><span class="pill">${esc((TYPE_NAME[H.lang] || TYPE_NAME.en)[e.node] || e.node)}</span> ${esc(B.effectText(e, chr))}</li>`).join("") || "<li class='muted'>—</li>"}</ul>
       </div></div></div>`;
   }
   document.getElementById("modal-root").addEventListener("click", (e) => {
@@ -208,22 +277,27 @@
     if (e.target.id === "bd-back" || e.target.closest("#bd-close")) { boardChr = null; drawBoard(); render(); return; }
     const t = e.target.closest("[data-tile]");
     const st = boardState(boardChr);
-    if (t) {
-      const k = t.dataset.tile;
-      if (k === B.ROOT) return;
-      if (st.set.has(k)) saveBoard(B.lockTile(boardChr, st.set, k));
-      else if (B.canUnlock(H.progress, boardChr, st.set, k)) { st.set.add(k); saveBoard(st.set); }
-      drawBoard();
-      return;
-    }
+    if (t) { selTile = t.dataset.tile; drawBoard(); return; }
     const b = e.target.closest("button");
-    if (!b) return;
-    if (b.dataset.bdauto) { saveBoard(B.autoSetup(H.progress, boardChr, b.dataset.bdauto, st.custom ? [...st.set] : [B.ROOT])); drawBoard(); }
-    else if (b.id === "bd-reset") { delete H.progress.board[boardChr]; H.progress.board[boardChr] = [B.ROOT]; H.saveProgress(); drawBoard(); }
+    if (!b || b.disabled) return;
+    if (b.id === "bd-unlock" && selTile && B.canUnlock(H.progress, boardChr, st.set, selTile)) { st.set.add(selTile); saveBoard(st.set); }
+    else if (b.id === "bd-lock" && selTile) saveBoard(B.lockTile(boardChr, st.set, selTile));
+    else if (b.dataset.bdauto) saveBoard(new Set(B.autoSetup(H.progress, boardChr, b.dataset.bdauto, st.custom ? [...st.set] : [B.ROOT])));
+    else if (b.id === "bd-reset") saveBoard(new Set([B.ROOT]));
+    else if (b.id === "bd-ranks") showRanks = !showRanks;
     else if (b.dataset.bdrank) {
       H.progress.ranks[boardChr] = Math.max(1, Math.min(50, (H.progress.ranks[boardChr] || 1) + Number(b.dataset.bdrank)));
-      H.saveProgress(); drawBoard();
-    }
+      H.saveProgress();
+    } else return;
+    drawBoard();
+  });
+  document.getElementById("modal-root").addEventListener("change", (e) => {
+    if (!boardChr || e.target.id !== "bd-connect") return;
+    H.progress.connect = H.progress.connect || {};
+    const con = H.progress.connect[boardChr] = H.progress.connect[boardChr] || {};
+    if (e.target.value) con[selTile] = e.target.value; else delete con[selTile];
+    H.saveProgress();
+    drawBoard();
   });
 
   // ---------- memories ----------

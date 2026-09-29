@@ -282,12 +282,38 @@ def main():
             "pos": positions.get(d["groupId"], {}),
             "var": [],
         })
-        t["var"].append({"chrs": d.get("characterIds") or None, "eff": tile_effect(d.get("skillTreeEffectId"))})
+        t["var"].append({"chrs": d.get("characterIds") or None, "eff": tile_effect(d.get("skillTreeEffectId")),
+                         "mat": [[c["resourceId"], int(c.get("quantity", 0) or 0)] for c in d.get("consumptions", [])]})
     auto_modes = defaultdict(dict)
     for x in load(E, "SkillTreeNodeAutoSelection.json"):
         d = x["data"]
         auto_modes[tail(d["autoSelectionType"], "_SELECTION_TYPE_").lower()][tail(d["nodeType"], "_NODE_TYPE_").lower()] = int(d.get("priorityRatioPermil", 0) or 0)
     board_model = {cid: ch.get("skillTreeNodePositionGroupId", "tree-model-001") for cid, ch in chars.items() if ch.get("isPlayable")}
+    item_names = {"en": lang(E, "LangItem_Eng.json"), "ja": lang(J, "LangItem_Jpn.json")}
+    items = by_id(E, "Item.json")
+    mat_ids = sorted({m[0] for t in tiles.values() for v in t["var"] for m in v["mat"]})
+    materials = {mid: {"en": item_names["en"].get(items.get(mid, {}).get("nameLangId", ""), mid),
+                       "ja": item_names["ja"].get(items.get(mid, {}).get("nameLangId", ""), "")} for mid in mat_ids}
+    # Connect effects: card -> multiplier per level and the tiles (offsets) it covers.
+    extents = defaultdict(list)
+    for x in load(E, "SkillTreeConnectEffectExtent.json"):
+        extents[x["group_id"]].append([x["position_x"], x["position_y"]])
+    ce = defaultdict(list)
+    for x in load(E, "SkillTreeConnectEffect.json"):
+        ce[x["id"]].append(x["data"])
+    ce_text = {"en": lang(E, "LangGeneratedSkillTreeConnectEffect_Eng.json"), "ja": lang(J, "LangGeneratedSkillTreeConnectEffect_Jpn.json")}
+    connect = {}
+    for c in cards:
+        rows = sorted(ce.get(c.get("skillTreeConnectEffectId") or "", []), key=lambda r: r.get("level", 1))
+        if not rows:
+            continue
+        connect[c["id"]] = {
+            "area": rows[0]["skillTreeConnectEffectExtentGroupId"].split("extent-")[-1],
+            "cells": sorted(extents[rows[0]["skillTreeConnectEffectExtentGroupId"]]),
+            "v": [int(r.get("effectPermilUp", 1000)) for r in rows],
+            "text": [{"en": ce_text["en"].get(r.get("descriptionLangId", ""), ""), "ja": ce_text["ja"].get(r.get("descriptionLangId", ""), "")} for r in rows],
+        }
+    rank_exp = [int(r.get("exp", 0) or 0) for r in sorted([x["data"] for x in load(E, "CharacterLevel.json")], key=lambda r: r["level"])]
 
     limits = {tail(x["data"]["skillTreeEffectType"], "_EFFECT_TYPE_").lower(): int(x["data"]["limit"])
               for x in load(E, "SkillTreeEffectValueLimit.json")}
@@ -308,6 +334,9 @@ def main():
         "tiles": sorted(tiles.values(), key=lambda t: (t["g"], t["grade"])),
         "boardModel": board_model,
         "autoModes": auto_modes,
+        "materials": materials,
+        "connect": connect,
+        "rankExp": rank_exp,
         "boardLimits": limits,
         "groupMembers": {gid: g.get("characterIds", []) for gid, g in groups.items()},
     }

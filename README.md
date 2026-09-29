@@ -9,8 +9,10 @@ GitHub Pages.
 - `index.html` — start page and latest information (live/upcoming banners, announced cards and songs).
 - `my/index.html` — **My Data**: tick the cards you own and set each card's level (limit break shown) and
   Bloom, your Holomem Rank for every holomem, each holomem's **board** (tile-by-tile editor of the real
-  Holo成員面板 layout with points, Dream Rank requirements and Leader/Member/Support auto setup), and how
-  many Memories you have. Backup/restore as a file or text. Everything is stored in your browser.
+  Holo成員面板 layout with points, cube costs, Dream Rank requirements, Connect card placement,
+  a rank → board points table and Leader/Member/Support auto setup), and how many Memories you have.
+- `songs/index.html` — **Songs**: every song with its cover, singers, difficulty levels and note counts,
+  score coefficient, special-skill timings, and links to optimise a unit for it. Backup/restore as a file or text. Everything is stored in your browser.
 - `team/index.html` — **Team Optimizer**, in five steps like holodori.best:
   1. *What unit*: best unit / build around up to 5 core cards (+ optional fixed leader) /
      best card to pull (keeps up to 4 cards, tries every card you don't own and ranks them by score gain).
@@ -87,6 +89,14 @@ limit-break caps and potential table from the master data.
 (★3 cards and the newest announced cards) fall back to a generated face in the talent's colours.
 Add more with `python3 scripts/import_art.py --icons <dir> --full <dir>` (files named `<cardId>.webp`).
 Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
+
+### Song covers
+
+`data/jackets.js` maps song ids to the jacket images on the official site
+(https://www.hololive-dreams.com/en/music), via the
+[holo-dreams-songlist](https://github.com/MinatoIsuki/holo-dreams-songlist) scrape. Images load from the
+official image host, so they need an internet connection; songs not on the official page yet show a
+generated cover. Rebuild with `scripts/build_jackets.py` (run by `update-data.sh`).
 
 ## Disclaimer
 

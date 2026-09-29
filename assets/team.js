@@ -67,6 +67,8 @@
     effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0,
     song: latestSongs[0], diff: "expert", eventSongs: latestSongs.slice(), ratingChr: Object.keys(H.talents)[0],
   }, H.store.get("optimizer", {}));
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("song") && S.songById[qs.get("song")]) { st.song = qs.get("song"); st.target = "score"; if (qs.get("diff")) st.diff = qs.get("diff"); }
   let running = null;
   let lastResult = null;
   const save = () => H.store.set("optimizer", st);
@@ -301,6 +303,8 @@
     return `<div class="panel result">
       ${title ? `<h3>${title}</h3>` : ""}
       <div class="result-head">
+        ${charts.length === 1 ? `<div class="song-current">${H.jacketHTML(song, "sm")}<div><b>${esc(L(song.title))}</b><br><span class="small muted">${esc(U.tx(charts[0].diff))} ${song.diff[charts[0].diff] ? song.diff[charts[0].diff].lv : ""}</span></div></div>` :
+          `<div class="song-current">${charts.slice(0, 4).map((c) => H.jacketHTML(c.song, "xs")).join("")}</div>`}
         <div><div class="small muted">${esc(charts.length > 1 ? tx("avg") : U.tx("estScore"))}</div><div class="big">${fmt(Math.round(avg))}</div>
           <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, avg))}</b></div></div>
         <div><div class="small muted">${esc(U.tx("unitScore"))}</div><div class="big">${fmt(Math.round(d0.unit))}</div>

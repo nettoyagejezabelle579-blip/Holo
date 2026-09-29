@@ -34,17 +34,19 @@
     return `${L(s.title)} — ${L(s.singer) || ""}`;
   }
 
-  // A searchable song <select>. Returns HTML; call bindSongPicker(root, id, onChange) after insertion.
+  // A searchable song list with covers. Returns HTML; call bindSongPicker(root, id, onChange) after insertion.
   function songPickerHTML(id, songId, diff, opts) {
     opts = opts || {};
     const list = songsSorted();
+    const cur = S.songById[songId];
     return `<div class="song-picker" id="${id}">
+      ${cur ? `<div class="song-current">${H.jacketHTML(cur, "sm")}<div><b>${esc(L(cur.title))}</b><br><span class="muted small">${esc(L(cur.singer))}</span></div></div>` : ""}
       <input class="input" type="search" data-role="q" placeholder="${esc(tx("searchSong"))}">
-      <select class="select" data-role="song" size="${opts.size || 8}">${list.map((s) =>
-        `<option value="${esc(s.id)}" ${s.id === songId ? "selected" : ""}>${esc(songLabel(s))}${S.chartIndex[s.id] ? "" : " *"}</option>`).join("")}</select>
+      <div class="song-list" data-role="list" style="max-height:${(opts.size || 8) * 44}px">${list.map((s) =>
+        `<button class="song-opt ${s.id === songId ? "on" : ""}" data-song="${esc(s.id)}">${H.jacketHTML(s, "xs")}
+          <span><b>${esc(L(s.title))}${S.chartIndex[s.id] ? "" : " *"}</b><br><span class="muted small">${esc(L(s.singer))}</span></span></button>`).join("")}</div>
       ${opts.noDiff ? "" : `<div class="seg" data-role="diff">${DIFFS.map((d) => {
-        const s = S.songById[songId];
-        const lv = s && s.diff[d] ? s.diff[d].lv : "";
+        const lv = cur && cur.diff[d] ? cur.diff[d].lv : "";
         return `<button data-diff="${d}" aria-pressed="${d === diff}">${esc(tx(d))} ${lv}</button>`;
       }).join("")}</div>`}
     </div>`;
@@ -52,17 +54,20 @@
   function bindSongPicker(root, id, onChange) {
     const el = root.querySelector("#" + id);
     const q = el.querySelector('[data-role="q"]');
-    const sel = el.querySelector('[data-role="song"]');
+    const list = el.querySelector('[data-role="list"]');
+    const on = list.querySelector(".song-opt.on");
+    if (on) list.scrollTop = on.offsetTop - list.offsetTop - 40;
     q.addEventListener("input", () => {
       const v = q.value.trim().toLowerCase();
-      for (const o of sel.options) {
-        const s = S.songById[o.value];
+      for (const o of list.children) {
+        const s = S.songById[o.dataset.song];
         const txt = (s.title.en + " " + s.title.ja + " " + s.singer.en + " " + s.singer.ja).toLowerCase();
-        o.hidden = v && !txt.includes(v);
+        o.hidden = !!v && !txt.includes(v);
       }
     });
-    sel.addEventListener("change", () => onChange({ song: sel.value }));
     el.addEventListener("click", (e) => {
+      const so = e.target.closest("button[data-song]");
+      if (so) return onChange({ song: so.dataset.song });
       const b = e.target.closest("button[data-diff]");
       if (b) onChange({ diff: b.dataset.diff });
     });

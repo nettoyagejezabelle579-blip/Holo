@@ -29,7 +29,10 @@
     for (const t of list) {
       t.nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => byPos.get(t.x + dx + "," + (t.y + dy))).filter(Boolean).map((n) => n.k);
     }
-    const out = { list, byKey: Object.fromEntries(list.map((t) => [t.k, t])) };
+    // Two of the four layouts are mirror images; Connect ranges are mirrored with them.
+    const b1 = list.find((t) => t.g === "B-001"), r1 = list.find((t) => t.g === "R-001");
+    const out = { list, byKey: Object.fromEntries(list.map((t) => [t.k, t])), byPos,
+      flipX: b1 && b1.x > 0 ? -1 : 1, flipY: r1 && r1.y < 0 ? -1 : 1 };
     cache.set(chr, out);
     return out;
   }
@@ -138,29 +141,70 @@
     return keep;
   }
 
-  // Live-relevant effects from a set of tiles, merged.
-  function effects(chr, set) {
+  // Connect: a ★4/★5 card placed on an unlocked Connect tile multiplies the tiles in its range.
+  function connectLevel(progress, cardId) {
+    const card = H.cardById[cardId];
+    const own = progress.cards && progress.cards[cardId];
+    return card ? H.skillLevelAt(card, "board", own ? own.bloom : 0) : 1;
+  }
+  function connectFootprint(chr, tileKey, cardId) {
     const b = tilesFor(chr);
+    const c = G.connect[cardId];
+    const t = b.byKey[tileKey];
+    if (!c || !t) return [];
+    return c.cells.map(([dx, dy]) => b.byPos.get((t.x + dx * b.flipX) + "," + (t.y + dy * b.flipY))).filter(Boolean).map((x) => x.k);
+  }
+  function connectMultipliers(progress, chr, set) {
+    const mult = new Map();
+    const placed = (progress && progress.connect && progress.connect[chr]) || {};
+    for (const tileKey in placed) {
+      const cardId = placed[tileKey];
+      if (!set.has(tileKey) || !G.connect[cardId]) continue;
+      const v = G.connect[cardId].v[connectLevel(progress, cardId) - 1] || G.connect[cardId].v[0];
+      for (const k of connectFootprint(chr, tileKey, cardId)) mult.set(k, Math.max(mult.get(k) || 1, v / 1000));
+    }
+    return mult;
+  }
+  // Cards already placed on any board (a card can only be on one Connect tile).
+  function placedCards(progress) {
+    const out = {};
+    for (const chr in (progress.connect || {})) for (const k in progress.connect[chr]) out[progress.connect[chr][k]] = { chr, tile: k };
+    return out;
+  }
+
+  // Live-relevant effects from a set of tiles (with Connect bonuses), merged.
+  function effects(chr, set, progress) {
+    const b = tilesFor(chr);
+    const mult = progress ? connectMultipliers(progress, chr, set) : new Map();
     const merged = new Map();
     for (const k of set) {
       const t = b.byKey[k];
       if (!t || !t.eff || !t.eff.live) continue;
       const e = t.eff;
+      const v = e.v * (mult.get(k) || 1);
       const key = [t.type, e.type, e.when, e.tgt, e.grp || "", e.chr || "", e.songTrig || "", e.singerType || ""].join("|");
       const m = merged.get(key);
-      if (m) m.v += e.v;
-      else merged.set(key, Object.assign({}, e, { node: t.type === "all_member" ? "all_member" : t.type }));
+      if (m) m.v += v;
+      else merged.set(key, Object.assign({}, e, { v, node: t.type === "all_member" ? "all_member" : t.type }));
     }
     return [...merged.values()];
   }
 
-  function effectText(e, chr) {
-    const tl = H.talents[chr];
-    let s = H.L(e.text) || e.type;
-    const grp = e.grp && H.D.groups[e.grp] ? H.L(H.D.groups[e.grp].name) : "";
-    return s.replace("[value/10]", (e.v / 10).toFixed(1)).replace("[value]", String(e.v))
-      .replace("[character]", tl ? H.L(tl.short) : "").replace("[character_grouping]", grp);
+  // Holomem Rank table: [{rank, exp (total), points (this rank), total}]
+  function rankTable() {
+    return G.rankPoints.map((total, i) => ({ rank: i + 1, exp: G.rankExp[i] || 0, points: total - (i ? G.rankPoints[i - 1] : 0), total }));
   }
 
-  window.HoloBoard = { ROOT, tilesFor, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey };
+  function effectText(e, chr) {
+    const tl = H.talents[chr];
+    const grp = e.grp && H.D.groups[e.grp] ? H.L(H.D.groups[e.grp].name) : "";
+    const v = Math.round(e.v * 100) / 100;
+    const s = (H.L(e.text) || e.type).replace("[value/10]", (v / 10).toFixed(1)).replace("[value]", String(v))
+      .replace("[character]", tl ? H.L(tl.short) : "").replace("[character_grouping]", grp);
+    return H.plain(s);
+  }
+
+
+  window.HoloBoard = { ROOT, tilesFor, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey,
+    connectLevel, connectFootprint, connectMultipliers, placedCards, rankTable };
 })();

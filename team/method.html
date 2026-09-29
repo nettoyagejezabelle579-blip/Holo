@@ -50,7 +50,15 @@
       <li><b>Member tiles</b> (blue) boost that holomem's card when it is in the unit (flat stats, stat %, active skill rate and frequency).</li>
       <li><b>Support tiles</b> (green) apply to every unit, even when that holomem is not in it.</li>
       <li><b>Song tiles</b> (yellow) add a score bonus on songs by that holomem (max +10% total).</li>
-      <li>Connect effects from cards placed on Connect tiles are not modelled yet.</li>
+      <li><b>Connect tiles</b> (4 per board, the centre one is free): a ★4/★5 card placed there multiplies every tile in its range by its Connect value
+        (e.g. ×1.5, ×2.0 at Bloom 5). A card can only sit on one board. Ranges are mirrored on the mirrored board layouts.</li>
+      <li>Every tile also costs cubes (e.g. the ★★ skill-rate member tile: 4 points + 50 Blue Cubes + 10 Blue Hexa); the editor shows them.</li>
+    </ul>
+    <h3>Board points per Holomem Rank (from the master data)</h3>
+    <p>Rank 2–4: +2 each · 5–9: +3 · 10–14: +5 · 15–19: +6 · 20–24: +7 · 25–29: +8 · 30–50: +10 each.
+      Totals: rank 10 = 26, 20 = 83, 30 = 161, 33 = 191, 40 = 261, 50 = 361. A full board costs about 447 points, so it can't be completed with rank points alone.
+      Rank EXP comes from that holomem's achievements (1–2 EXP each); rank 33 needs 111 EXP in total.</p>
+    <ul style="display:none">
     </ul>
 
     <h2>6. Search</h2>
@@ -65,6 +73,7 @@
   <script src="../data/cards.js"></script>
   <script src="../data/announced.js"></script>
   <script src="../data/art.js"></script>
+  <script src="../data/jackets.js"></script>
   <script src="../assets/common.js"></script>
   <script>Holo.renderHeader("optimizer"); Holo.renderFooter();</script>
 </body>

@@ -5,6 +5,7 @@
   const D = window.HOLO_DATA;
   const ANN = window.HOLO_ANNOUNCED || { banners: [], cards: [] };
   const ART = window.HOLO_ART || {};
+  const JACKETS = window.HOLO_JACKETS || {};
   const CFG = Object.assign({ artBase: "", newDays: 14 }, window.HOLO_CONFIG || {});
 
   // ---------- storage ----------
@@ -25,7 +26,7 @@
   // ---------- i18n ----------
   const STR = {
     en: {
-      home: "Home", cards: "Cards", myData: "My Data", optimizer: "Team Optimizer", teamDetails: "Team Details", talents: "Talents", search: "Search cards, talents, skills…",
+      home: "Home", cards: "Cards", songs: "Songs", myData: "My Data", optimizer: "Team Optimizer", teamDetails: "Team Details", talents: "Talents", search: "Search cards, talents, skills…",
       filters: "Filters", reset: "Reset", results: "{n} cards", rarity: "Rarity", attribute: "Type",
       cute: "Cute", happy: "Happy", pure: "Pure", availability: "Availability", standard: "Standard",
       limited: "Limited", announced: "Announced", banner: "Banner", branch: "Branch", unit: "Unit / Generation",
@@ -60,7 +61,7 @@
       launchStandard: "Launch (standard pool)",
     },
     ja: {
-      home: "ホーム", cards: "カード", myData: "所持データ", optimizer: "編成最適化", teamDetails: "編成詳細", talents: "タレント", search: "カード名・タレント・スキルで検索…",
+      home: "ホーム", cards: "カード", songs: "楽曲", myData: "所持データ", optimizer: "編成最適化", teamDetails: "編成詳細", talents: "タレント", search: "カード名・タレント・スキルで検索…",
       filters: "絞り込み", reset: "リセット", results: "{n}枚", rarity: "レアリティ", attribute: "タイプ",
       cute: "キュート", happy: "ハッピー", pure: "ピュア", availability: "入手区分", standard: "恒常",
       limited: "限定", announced: "発表済み", banner: "ガチャ", branch: "ブランチ", unit: "ユニット・期",
@@ -224,6 +225,15 @@
       `<div class="badges">${badges.join("")}</div>` +
       `<div class="stars" aria-label="${card.rarity} star">${stars(card.rarity)}</div></div>`;
   }
+  // Song cover (jacket) with a generated fallback.
+  function jacketHTML(song, cls) {
+    const url = JACKETS[song.id];
+    const title = L(song.title);
+    const hue = [...song.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+    return `<div class="jacket ${cls || ""}" style="--h:${hue}">` +
+      `<span class="jacket-fallback">${esc(title.slice(0, 24))}</span>` +
+      (url ? `<img loading="lazy" alt="${esc(title)}" src="${esc(url)}" onerror="this.remove()">` : "") + `</div>`;
+  }
   function artUrl(id, kind) {
     const base = CFG.artBase || (document.body.dataset.base || ".") + "/assets/art";
     return base.replace(/\/$/, "") + "/" + kind + "/" + id + ".webp";
@@ -235,7 +245,7 @@
   // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
   function loadProgress() {
     const p = store.get("progress", null) || { v: 1, cards: {}, ranks: {}, board: {}, memories: 0 };
-    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.board = p.board || {}; p.memories = p.memories || 0;
+    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.board = p.board || {}; p.connect = p.connect || {}; p.memories = p.memories || 0;
     delete p.boardPct;
     // Migrate the older "owned" list from the card database.
     const legacy = store.get("owned", null);
@@ -285,6 +295,7 @@
         <nav class="nav">
           <a href="${base}/index.html" class="${active === "home" ? "active" : ""}">${esc(t("home"))}</a>
           <a href="${base}/cards/index.html" class="${active === "cards" ? "active" : ""}">${esc(t("cards"))}</a>
+          <a href="${base}/songs/index.html" class="${active === "songs" ? "active" : ""}">${esc(t("songs"))}</a>
           <a href="${base}/my/index.html" class="${active === "my" ? "active" : ""}">${esc(t("myData"))}</a>
           <a href="${base}/team/index.html" class="${active === "optimizer" ? "active" : ""}">${esc(t("optimizer"))}</a>
           <a href="${base}/team/details.html" class="${active === "details" ? "active" : ""}">${esc(t("teamDetails"))}</a>
@@ -318,7 +329,7 @@
   window.Holo = {
     D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
-    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, owned, favorites, toggleOwned, toggleFavorite,
+    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, jacketHTML, hasJacket: (id) => !!JACKETS[id], owned, favorites, toggleOwned, toggleFavorite,
     progress, saveProgress, setCardProgress, replaceProgress,
     renderHeader, renderFooter,
   };

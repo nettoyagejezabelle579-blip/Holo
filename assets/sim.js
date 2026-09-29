@@ -123,7 +123,7 @@
     for (const chr in H.talents) {
       if (!opts.board) { out[chr] = []; continue; }
       const set = opts.boardFull ? new Set(B.tilesFor(chr).list.map((t) => t.k)) : B.unlocked(progress, chr);
-      out[chr] = B.effects(chr, set);
+      out[chr] = B.effects(chr, set, progress);
     }
     return out;
   }
