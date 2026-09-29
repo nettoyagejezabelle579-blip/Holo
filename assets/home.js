@@ -26,6 +26,16 @@
       topStats: "総合値ランキング（最大Lv＋ポテンシャル5）",
       songs: "発表済みの楽曲", announcedOn: "発表日", songNote: "ホロドリに追加予定。譜面はマスターデータ更新後に反映されます。",
     },
+    zh: {
+      title: "打造你的hololive Dreams最強隊伍",
+      intro: "輸入你持有的卡片、等級、綻放與Holo成員Rank，隊伍最佳化會為任一樂曲、活動樂曲或Holo成員評級找出最佳隊長與五位成員。也可查詢所有卡片、技能與轉蛋資料。",
+      cta2: "隊伍最佳化", cta3: "輸入遊戲進度資料",
+      cta: "查看卡片一覽",
+      talentsN: "可遊玩的Holo成員", cardsN: "卡片", limitedN: "限定★5", bannersN: "期間限定轉蛋",
+      launch: "全球上線", launchText: "hololive Dreams（QualiArts × COVER）於2026年7月23日全球上線，54位Holo成員各有★3・★4・★5卡片。",
+      topStats: "綜合能力排行（最高等級＋綻放5）",
+      songs: "已公布的樂曲", announcedOn: "公布日期", songNote: "即將加入hololive Dreams，譜面會在遊戲資料更新後反映。",
+    },
   };
   const tx = (k) => TEXT[H.lang][k] || TEXT.en[k];
 

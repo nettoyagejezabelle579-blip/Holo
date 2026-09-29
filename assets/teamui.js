@@ -23,6 +23,14 @@
       specialAt: "スペシャル発動", perf: "P", tech: "T", sense: "S", total: "総合", synthetic: "譜面データなし：ノーツを均等配置",
       notes: "ノーツ", openDetails: "編成詳細で開く", ownedOnly: "所持カードのみ",
     },
+    zh: {
+      easy: "Easy", normal: "Normal", hard: "Hard", expert: "Expert", song: "樂曲", difficulty: "難度",
+      searchSong: "搜尋樂曲或演唱者…", leader: "隊長", members: "成員", noOutfit: "無服裝技能",
+      unitScore: "隊伍分數", estScore: "預估分數", scoreRank: "分數評價", pick: "選擇卡片",
+      searchCard: "搜尋卡片…", done: "確定", clear: "清除", slot: "位置", uptime: "主動技能發動率",
+      specialAt: "特殊技能發動", perf: "表", tech: "技", sense: "品", total: "綜合", synthetic: "無譜面資料：音符平均分布",
+      notes: "音符", openDetails: "預覽細節", ownedOnly: "僅限已持有卡片",
+    },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
   const DIFFS = ["easy", "normal", "hard", "expert"];
@@ -61,7 +69,7 @@
       const v = q.value.trim().toLowerCase();
       for (const o of list.children) {
         const s = S.songById[o.dataset.song];
-        const txt = (s.title.en + " " + s.title.ja + " " + s.singer.en + " " + s.singer.ja).toLowerCase();
+        const txt = (s.title.en + " " + s.title.ja + " " + (s.title.zh || "") + " " + s.singer.en + " " + s.singer.ja + " " + (s.singer.zh || "")).toLowerCase();
         o.hidden = !!v && !txt.includes(v);
       }
     });
@@ -83,7 +91,7 @@
         const list = options.pool.map((id) => H.cardById[id]).filter((c) => {
           if (!q) return true;
           const tl = H.talents[c.chr];
-          return [c.title.en, c.title.ja, tl.name.en, tl.name.ja, tl.short.en].join(" ").toLowerCase().includes(q);
+          return [c.title.en, c.title.ja, c.title.zh, tl.name.en, tl.name.ja, tl.short.en].join(" ").toLowerCase().includes(q);
         }).sort((a, b) => H.talents[a.chr].order - H.talents[b.chr].order || b.rarity - a.rarity);
         root.innerHTML = `<div class="modal-backdrop" id="pk-back"><div class="modal" role="dialog" aria-modal="true">
           <div class="modal-head"><strong>${esc(tx("pick"))} (${sel.size}/${options.max})</strong>
@@ -162,6 +170,9 @@
     ja: { member: "メンバー能力", board: "ホロメンボード加算", passive: "パッシブスキル", memory: "メモリー加算", upgrade: "メンバー育成加算", outfit: "衣装スキル",
       active: "アクティブスキル", special: "スペシャルスキル", songBonus: "ボード楽曲加算", event: "イベント特効", outfitSkill: "衣装スキル", activeRow: "アクティブ", overlap: "重複",
       timelineNote: "アクティブの発動枠をすべて表示（毎回発動した場合）。数字はスペシャルスキル。" },
+    zh: { member: "成員能力", board: "Holo成員面板加成", passive: "被動技能", memory: "回憶卡加成", upgrade: "成員強化加成", outfit: "服裝技能",
+      active: "主動技能", special: "特殊技能", songBonus: "面板個人樂曲加成", event: "活動加成", outfitSkill: "服裝技能", activeRow: "主動", overlap: "重疊",
+      timelineNote: "顯示所有主動技能發動區間（假設每次都發動）。數字為特殊技能。" },
   };
   const btx = (k) => (BTX[H.lang] && BTX[H.lang][k]) || BTX.en[k];
 

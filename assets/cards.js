@@ -52,10 +52,10 @@
   // ---------- search index ----------
   function searchText(c) {
     const tl = H.talents[c.chr];
-    const parts = [c.title.en, c.title.ja, tl && tl.name.en, tl && tl.name.ja, tl && tl.short.en, tl && tl.short.ja,
+    const parts = [c.title.en, c.title.ja, c.title.zh, tl && tl.name.en, tl && tl.name.ja, tl && tl.name.zh, tl && tl.short.en, tl && tl.short.ja, tl && tl.short.zh,
       c.leader && c.leader.name.en, c.leader && c.leader.name.ja, ...H.talentGroupNames(c.chr)];
-    for (const slot of ["active", "special", "passive"]) for (const lv of c.skills[slot]) parts.push(H.plain(lv.text.en), H.plain(lv.text.ja));
-    if (c.leader) parts.push(H.plain(c.leader.text.en), H.plain(c.leader.text.ja));
+    for (const slot of ["active", "special", "passive"]) for (const lv of c.skills[slot]) parts.push(H.plain(lv.text.en), H.plain(lv.text.ja), H.plain(lv.text.zh || ""));
+    if (c.leader) parts.push(H.plain(c.leader.text.en), H.plain(c.leader.text.ja), H.plain(c.leader.text.zh || ""), c.leader.name.zh || "");
     return parts.filter(Boolean).join(" \u0001 ").toLowerCase();
   }
   const index = new Map(H.cards.map((c) => [c.id, searchText(c)]));
@@ -549,7 +549,7 @@
             </div>
             <div>
               <h2 class="detail-title">${esc(L(c.title))}</h2>
-              <p class="detail-sub">${esc(tl ? L(tl.name) : "")}${H.lang === "en" && c.title.ja !== c.title.en ? ` · <span lang="ja">${esc(c.title.ja)}</span>` : H.lang === "ja" && c.title.ja !== c.title.en ? ` · ${esc(c.title.en)}` : ""}</p>
+              <p class="detail-sub">${esc(tl ? L(tl.name) : "")}</p>
               ${statsSection}
             </div>
           </div>

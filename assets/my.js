@@ -51,6 +51,28 @@
       connectOwned: "他のボードに配置していない所持★4/★5カードのみ表示します。", rankTable: "ランク別Pt表",
       expTotal: "累計EXP", ptsGain: "獲得Pt", ptsTotal: "累計Pt", nextRank: "次のランク",
     },
+    zh: {
+      title: "遊戲進度資料", intro: "請輸入你在遊戲中的持有狀況。隊伍最佳化只會使用這裡的卡片、等級、綻放與Rank。",
+      tabCards: "卡片", tabHolomem: "Holo成員", tabMemories: "回憶卡", tabBackup: "備份",
+      owned: "已持有", level: "等級", bloom: "綻放", lb: "特訓", search: "以名稱搜尋",
+      onlyOwned: "僅已持有", all: "全部", allMax: "已持有卡片設為最高等級", markStar3: "持有全部★3", clearAll: "清除所有卡片",
+      rank: "Holo成員Rank", board: "面板", boardAuto: "依Rank自動", boardManual: "手動 %", setAllRanks: "將所有Rank設為",
+      memories: "持有的回憶卡", memoriesHelp: "回憶卡架上的回憶卡可提升所有成員的能力。",
+      bonus: "隊伍能力", upgrade: "成員強化加成", upgradeHelp: "每張Lv20以上的持有卡片都會加算（上限50%）。",
+      export: "下載備份", import: "從檔案還原", copy: "複製為文字", paste: "從文字匯入",
+      pasteHere: "在此貼上備份文字", imported: "已匯入", copied: "已複製", confirmClear: "要清除所有已持有卡片嗎？",
+      summaryCards: "卡片", summaryHolomem: "已設定Rank", summaryMem: "回憶卡", summaryUpgrade: "成員強化加成",
+      points: "面板Pt", confirmMark: "要將全部★3卡片設為已持有（最高等級）嗎？",
+      editBoard: "編輯面板", tiles: "解鎖數量", ptsLeft: "剩餘Pt", dream: "夢幻Rank", autoMode: "未編輯成員的自動設置",
+      autoLeader: "自動：隊長", autoMember: "自動：成員", autoSupport: "自動：支援", reset: "重置", close: "關閉",
+      boardHelp: "點選格子查看後，可解鎖（需與已解鎖格子相鄰，並需Pt、素材與夢幻Rank）或取消。自動設置會使用剩餘Pt。",
+      custom: "手動", autoState: "自動", totals: "面板效果", legend: "紅：隊長・藍：成員・綠：支援・黃：樂曲・灰：協力",
+      needDream: "所需夢幻Rank", cost: "消耗", noLive: "不影響Live分數",
+      tapTile: "點選格子即可查看效果、消耗與素材。", unlock: "解鎖", lock: "取消", cantUnlock: "需要相鄰格子已解鎖、足夠的Pt與夢幻Rank",
+      connectHelp: "放置★4/★5卡片後，協力效果會提升範圍內格子的效果。", connectCard: "此協力欄位的卡片",
+      connectOwned: "只列出未放在其他面板上的已持有★4/★5卡片。", rankTable: "各Rank面板Pt表",
+      expTotal: "累計EXP", ptsGain: "獲得Pt", ptsTotal: "累計Pt", nextRank: "下一個Rank",
+    },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
 
@@ -83,7 +105,7 @@
       if (filt.own === "not" && H.owned.has(c.id)) return false;
       if (q) {
         const tl = H.talents[c.chr];
-        const txt = [c.title.en, c.title.ja, tl.name.en, tl.name.ja, tl.short.en, tl.short.ja].join(" ").toLowerCase();
+        const txt = [c.title.en, c.title.ja, c.title.zh, tl.name.en, tl.name.ja, tl.short.en, tl.short.ja].join(" ").toLowerCase();
         if (!txt.includes(q)) return false;
       }
       return true;
@@ -161,7 +183,8 @@
   let boardChr = null, selTile = null, showRanks = false;
   const TILE_ICON = { leader: "L", card: "M", all_member: "S", content: "♪", connection: "C" };
   const TYPE_NAME = { en: { leader: "Leader tile", card: "Member tile", all_member: "Support tile", content: "Song tile", connection: "Connect tile" },
-    ja: { leader: "リーダー効果", card: "メンバー効果", all_member: "サポート効果", content: "楽曲効果", connection: "コネクト" } };
+    ja: { leader: "リーダー効果", card: "メンバー効果", all_member: "サポート効果", content: "楽曲効果", connection: "コネクト" },
+    zh: { leader: "隊長效果", card: "成員效果", all_member: "支援效果", content: "樂曲效果", connection: "協力" } };
   function tileLabel(t) {
     const e = t.eff;
     if (!e) return TILE_ICON[t.type] || "";

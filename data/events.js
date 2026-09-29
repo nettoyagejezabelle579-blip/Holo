@@ -15,7 +15,7 @@ window.HOLO_EVENTS = {
   events: [
     {
       id: "relay-003",
-      name: { en: "Dreamy Deep Blue event", ja: "ドリーミー・ディープブルー イベント" },
+      name: { en: "Dreamy Deep Blue event", ja: "夢みるブルーフロンティア イベント", zh: "夢幻的碧藍新天地 活動" },
       start: "2026-09-29",
       banner: "pickup-260929",
       songs: [
@@ -27,7 +27,7 @@ window.HOLO_EVENTS = {
     },
     {
       id: "relay-002",
-      name: { en: "A Dreamy Summer Escape", ja: "夢幻のサマーエスケープ！？" },
+      name: { en: "A Dreamy Summer Escape", ja: "夢幻のサマーエスケープ！？", zh: "夢幻的夏日逃脫！？" },
       start: "2026-09-19",
       end: "2026-09-27",
       banner: "pickup-260919",

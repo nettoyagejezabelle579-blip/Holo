@@ -49,7 +49,8 @@ GitHub Pages.
   Arrow keys move between cards, `Esc` closes.
 - **Compare** up to four cards side by side.
 - **Collection tracking** (owned + favourites) stored in the browser, with JSON export/import.
-- English / Japanese UI, light / dark / auto theme, mobile layout. Filter state is kept in the URL.
+- English / Japanese / Traditional Chinese (繁體中文) UI with the official in-game text for cards, skills,
+  songs and board tiles in each language; light / dark / auto theme, mobile layout. Filter state is kept in the URL.
 
 ## Score model
 
@@ -85,6 +86,9 @@ Remove them once the real data arrives.
 Stats are `round(levelBase × distribution ÷ 1000 × (1 + potential bonus))`, using the per-card level curve,
 limit-break caps and potential table from the master data.
 
+Traditional Chinese game text comes from the `languages/cht` tables of
+[holodori-net/android-database](https://github.com/holodori-net/android-database) (`--cht` option of the build scripts).
+
 ### Card art
 
 `assets/art/icon/<cardId>.webp` (square card icons with the in-game frame, used on every card tile) and
@@ -96,6 +100,13 @@ these load in your browser (they need internet) and fall back to a generated fac
 remote URL templates are in `assets/config.js`.
 Add more with `python3 scripts/import_art.py --icons <dir> --full <dir>` (files named `<cardId>.webp`).
 Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
+
+### Downloading every picture
+
+`python3 scripts/download_images.py` downloads a picture for every card (card art + full illustration) and
+every song cover into `assets/art/vert`, `assets/art/full` and `assets/jackets`, so the site shows them
+offline. Run it on a computer with internet access (the hosts it uses are listed at the top of the
+script); it only fetches what is missing, and `--manifest-only` just rebuilds the lists.
 
 ### Song covers
 

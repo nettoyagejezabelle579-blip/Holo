@@ -23,6 +23,14 @@
       details: "編成詳細で開く", talent: "タレント", songsN: "{n}曲", rating: "スコアレーティング対象", announced: "発表済みの楽曲",
       combo: "コンボ",
     },
+    zh: {
+      title: "樂曲", search: "搜尋樂曲或演唱者…", all: "全部", original: "原創", cover: "翻唱",
+      solo: "SOLO", group: "組合", every: "全員", sort: "排序", newest: "最新", name: "曲名", level: "Expert等級", notes: "Expert音符數",
+      singer: "演唱者", released: "上線", length: "長度", coef: "分數係數", chart: "譜面資料", yes: "有", no: "無（音符平均分布）",
+      diff: "難度", lv: "等級", noteCount: "音符數", specials: "特殊技能發動時機", fever: "Fever（多人）", optimise: "為此樂曲尋找最佳隊伍",
+      details: "預覽細節", talent: "Holo成員", songsN: "{n} 首", rating: "列入分數評級", announced: "已公布的樂曲",
+      combo: "連擊",
+    },
   };
   const tx = (k, v) => { let s = (TX[H.lang] && TX[H.lang][k]) || TX.en[k]; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
   const root = document.getElementById("songs");
@@ -36,7 +44,7 @@
       if (f.cat && s.cat !== f.cat) return false;
       if (f.type && s.singerType !== f.type) return false;
       if (f.chr && !s.chrs.includes(f.chr)) return false;
-      if (q && !(s.title.en + " " + s.title.ja + " " + s.singer.en + " " + s.singer.ja).toLowerCase().includes(q)) return false;
+      if (q && !(s.title.en + " " + s.title.ja + " " + (s.title.zh || "") + " " + s.singer.en + " " + s.singer.ja + " " + (s.singer.zh || "")).toLowerCase().includes(q)) return false;
       return true;
     });
     const ex = (s) => (s.diff.expert || {});
@@ -85,7 +93,7 @@
         <div>${H.jacketHTML(s, "lg")}</div>
         <div>
           <h2 class="detail-title">${esc(L(s.title))}</h2>
-          <p class="detail-sub">${esc(L(s.singer))}${H.lang === "en" && s.title.ja !== s.title.en ? " · " + esc(s.title.ja) : ""}</p>
+          <p class="detail-sub">${esc(L(s.singer))}</p>
           <dl class="kv">
             <dt>${esc(tx("released"))}</dt><dd>${date(s.start)}</dd>
             <dt>${esc(tx("length"))}</dt><dd>${mm(s.sec)}</dd>
