@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/fetch-images.yml
       - scripts/download_images.py
+      - scripts/probe_image_sources.py
       - data/cards.js
       - data/game.js
 
@@ -28,6 +29,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Probe image sources
+        continue-on-error: true
+        run: python3 scripts/probe_image_sources.py
       - name: Download missing images
         run: python3 scripts/download_images.py
       - name: Commit new images
