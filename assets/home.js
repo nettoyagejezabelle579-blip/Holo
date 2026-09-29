@@ -13,6 +13,7 @@
       talentsN: "Playable talents", cardsN: "Cards", limitedN: "Limited ★5", bannersN: "Pick-up banners",
       launch: "Global launch", launchText: "hololive Dreams (QualiArts × COVER) launched worldwide on 2026-07-23 with 54 playable holomems, each with a ★3, ★4 and ★5 card.",
       topStats: "Highest total stats (Max Lv + Potential 5)",
+      songs: "Announced songs", announcedOn: "Announced", songNote: "Coming to hololive Dreams. Charts will appear once the master data updates.",
     },
     ja: {
       title: "ホロドリ カードデータベース",
@@ -21,6 +22,7 @@
       talentsN: "プレイアブルタレント", cardsN: "カード", limitedN: "限定★5", bannersN: "ピックアップガチャ",
       launch: "グローバルリリース", launchText: "ホロライブドリームス（QualiArts × COVER）は2026年7月23日に全世界でリリース。54人のホロメンがそれぞれ★3・★4・★5カードを持っています。",
       topStats: "総合値ランキング（最大Lv＋ポテンシャル5）",
+      songs: "発表済みの楽曲", announcedOn: "発表日", songNote: "ホロドリに追加予定。譜面はマスターデータ更新後に反映されます。",
     },
   };
   const tx = (k) => TEXT[H.lang][k] || TEXT.en[k];
@@ -48,6 +50,7 @@
 
   function render() {
     const real = H.cards.filter((c) => !c.announced);
+    const songs = (window.HOLO_ANNOUNCED && window.HOLO_ANNOUNCED.songs) || [];
     const pickups = H.bannerList.filter((b) => b.id !== "launch").sort((a, b) => b.date.localeCompare(a.date));
     const top = real.slice().sort((a, b) => H.statsForMode(b, "maxpot")[3] - H.statsForMode(a, "maxpot")[3]).slice(0, 10);
 
@@ -70,7 +73,7 @@
           const cards = H.cards.filter((c) => c.banner === b.id);
           return `<div class="banner-item">
             <h3>${esc(L(b.name))} <span class="status ${st}">${esc(t(st))}</span></h3>
-            <div class="small muted">${esc(b.date)}${b.announced ? ` · ${esc(t("announced"))}` : ""}
+            <div class="small muted">${esc(b.date)}${b.announced ? ` · ${esc(t("announced"))}${b.announcedAt ? " " + esc(b.announcedAt) : ""}` : ""}
               · <a href="cards/index.html?banner=${esc(b.id)}">${esc(t("cards"))} (${cards.length})</a></div>
             <div class="banner-cards">${cards.map(tile).join("")}</div>
           </div>`;
@@ -80,6 +83,12 @@
           <p class="muted">${esc(tx("launchText"))}</p>
         </div>
       </section>
+      ${songs.length ? `<section class="panel">
+        <h2>${esc(tx("songs"))}</h2>
+        <p class="small muted">${esc(tx("songNote"))}</p>
+        <div class="banner-cards">${songs.map((m) => `<div class="stat-card"><b style="font-size:17px">♪ ${esc(m.title)}</b>
+          <span class="small muted">${esc(tx("announcedOn"))}: ${esc(m.announcedAt)}</span></div>`).join("")}</div>
+      </section>` : ""}
       <section class="panel">
         <h2>${esc(tx("topStats"))}</h2>
         <div class="banner-cards">${top.map(tile).join("")}</div>

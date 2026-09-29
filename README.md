@@ -37,9 +37,11 @@ GitHub Pages.
 The current build uses master data from 2026-09-26: 185 cards (54 talents × ★3/★4/★5 plus 23 limited ★5)
 across the launch pool and six pick-up banners up to *Seeking the Summer Cool* (2026-09-19).
 
-Cards that are officially announced but not in the master data yet live in `data/announced.js`
-(currently ★5 *Hoard the Loot!♡* Houshou Marine and ★5 *A Glance of Adventure* Hakui Koyori,
-banner opening 2026-09-29 11:00 JST). Remove them once the real data arrives.
+Cards and songs that are officially announced but not in the master data yet live in `data/announced.js`.
+Currently that is the banner announced on 2026-09-26 and opening 2026-09-29 11:00 JST: ★5 *Hoard the Loot!♡*
+Houshou Marine, ★5 *A Glance of Adventure* Hakui Koyori, and new cards for Kobo Kanaeru and Hakos Baelz
+(titles TBA), plus four announced songs: *Kyapi*, *BAKU LOVE CHEMISTRY*, *PROPOSE* and *Play Dice!*.
+Remove them once the real data arrives.
 
 To refresh:
 
