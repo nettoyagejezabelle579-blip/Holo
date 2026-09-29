@@ -549,7 +549,7 @@
             </div>
             <div>
               <h2 class="detail-title">${esc(L(c.title))}</h2>
-              <p class="detail-sub">${esc(tl ? L(tl.name) : "")}${[c.title.en, c.title.ja, c.title.zh].filter((x, i, a) => x && x !== L(c.title) && a.indexOf(x) === i).map((x) => ` · ${esc(x)}`).join("")}</p>
+              <p class="detail-sub">${esc(tl ? L(tl.name) : "")}</p>
               ${statsSection}
             </div>
           </div>

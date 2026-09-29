@@ -376,6 +376,7 @@
       el.querySelector("#lang-btn").onchange = (e) => {
         setLang(e.target.value);
         draw();
+        renderFooter();
         onChange && onChange();
       };
       el.querySelector("#theme-btn").onclick = () => {
@@ -387,12 +388,18 @@
     draw();
   }
 
+  const FOOTER = {
+    en: "Unofficial fan-made database. Not affiliated with QualiArts Inc. or COVER Corp. hololive Dreams data © QualiArts / COVER Corp.",
+    ja: "非公式のファンメイドデータベースです。QualiArts株式会社・カバー株式会社とは関係ありません。hololive Dreams のデータ © QualiArts / COVER Corp.",
+    zh: "非官方粉絲自製資料庫，與QualiArts及COVER株式會社無關。hololive Dreams 資料 © QualiArts / COVER Corp.",
+  };
   function renderFooter() {
     const el = document.getElementById("site-footer");
     if (!el) return;
     const g = D.generatedFrom || {};
-    el.innerHTML = `Unofficial fan-made database. Not affiliated with QualiArts Inc. or COVER Corp. ` +
-      `hololive Dreams data © QualiArts / COVER Corp.<br>${esc(t("dataVersion"))}: master ${esc((g.masterVersion || "").slice(0, 12))} · ${esc((g.englishCommit || "").split(" ")[1] || "")}`;
+    el.innerHTML = `${esc(FOOTER[lang] || FOOTER.en)}<br>${esc(t("dataVersion"))}: ${esc((g.masterVersion || "").slice(0, 12))} · ${esc((g.englishCommit || "").split(" ")[1] || "")}`;
+    // Pages with per-language sections (e.g. the method page) show only the chosen language.
+    document.querySelectorAll("[data-lang]").forEach((n) => { n.hidden = n.dataset.lang !== lang; });
   }
 
   window.Holo = {

@@ -171,7 +171,7 @@
       active: "アクティブスキル", special: "スペシャルスキル", songBonus: "ボード楽曲加算", event: "イベント特効", outfitSkill: "衣装スキル", activeRow: "アクティブ", overlap: "重複",
       timelineNote: "アクティブの発動枠をすべて表示（毎回発動した場合）。数字はスペシャルスキル。" },
     zh: { member: "成員能力", board: "Holo成員面板加成", passive: "被動技能", memory: "回憶卡加成", upgrade: "成員強化加成", outfit: "服裝技能",
-      active: "主動技能", special: "特殊技能", songBonus: "面板個人樂曲加成", event: "活動加成", outfitSkill: "服裝技能", activeRow: "Active", overlap: "Overlap",
+      active: "主動技能", special: "特殊技能", songBonus: "面板個人樂曲加成", event: "活動加成", outfitSkill: "服裝技能", activeRow: "主動", overlap: "重疊",
       timelineNote: "顯示所有主動技能發動區間（假設每次都發動）。數字為特殊技能。" },
   };
   const btx = (k) => (BTX[H.lang] && BTX[H.lang][k]) || BTX.en[k];

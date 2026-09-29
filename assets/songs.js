@@ -93,7 +93,7 @@
         <div>${H.jacketHTML(s, "lg")}</div>
         <div>
           <h2 class="detail-title">${esc(L(s.title))}</h2>
-          <p class="detail-sub">${esc(L(s.singer))}${[s.title.en, s.title.ja, s.title.zh].filter((x, i, a) => x && x !== L(s.title) && a.indexOf(x) === i).map((x) => " · " + esc(x)).join("")}</p>
+          <p class="detail-sub">${esc(L(s.singer))}</p>
           <dl class="kv">
             <dt>${esc(tx("released"))}</dt><dd>${date(s.start)}</dd>
             <dt>${esc(tx("length"))}</dt><dd>${mm(s.sec)}</dd>

@@ -9,6 +9,7 @@
 <body data-base="..">
   <header class="site-header" id="site-header"></header>
   <main class="container method" style="max-width:860px">
+    <section data-lang="en">
     <h1 class="page-title">How the score is estimated</h1>
     <p class="muted">The complete in-game score formula has not been published. The optimizer uses the pieces that are in the
       game's master data and fills the gaps with the assumptions listed below. Absolute numbers are estimates; the comparison
@@ -44,7 +45,7 @@
     <h2>5. Holomem board</h2>
     <p>Holomem Rank gives board points (e.g. 191 at rank 33, 361 at rank 50). Each holomem's real board (153 tiles, laid out in one of four shapes)
       is simulated tile by tile: a tile can be unlocked when it touches an unlocked tile, you have the points and the Dream Rank it needs.
-      Set up each board in My Data → Holomems exactly like in the game, or use Auto (Leader / Member / Support focus, like 自動設置) which spends the points along the cheapest paths.
+      Set up each board in My Data → Holomems exactly like in the game, or use Auto (Leader / Member / Support focus) which spends the points along the cheapest paths.
       Holomems you have not edited are auto-set with your chosen focus. Note that auto setup assumes you have the unlock materials; if the game shows fewer unlocked tiles, edit the board to match.</p>
     <ul>
       <li><b>Leader tiles</b> (red) apply to the whole unit when that holomem is the leader; some only on songs they sing.</li>
@@ -59,16 +60,14 @@
     <p>Rank 2–4: +2 each · 5–9: +3 · 10–14: +5 · 15–19: +6 · 20–24: +7 · 25–29: +8 · 30–50: +10 each.
       Totals: rank 10 = 26, 20 = 83, 30 = 161, 33 = 191, 40 = 261, 50 = 361. A full board costs about 447 points, so it can't be completed with rank points alone.
       Rank EXP comes from that holomem's achievements (1–2 EXP each); rank 33 needs 111 EXP in total.</p>
-    <ul style="display:none">
-    </ul>
 
     <h2>Events</h2>
-    <p>From the in-game Event bonus screen (活動加成):</p>
+    <p>From the in-game Event bonus screen:</p>
     <ul>
-      <li><b>Score bonus</b> (分數加成): on each designated song, the matching event card in the unit gives <b>+10% Live score</b>
+      <li><b>Score bonus</b>: on each designated song, the matching event card in the unit gives <b>+10% Live score</b>
         (e.g. PROPOSE → Kobo's card, Kyapi → Marine's card).</li>
-      <li><b>Acquisition bonus</b> (獲得加成) for event badges/points: +30% for each event card in the unit (成員加成), +30% when the unit's holomem
-        is an event holomem (holo成員加成), and a Bloom bonus (綻放加成) for every card of an event holomem in the unit:
+      <li><b>Acquisition bonus</b> for event badges/points: +30% for each event card in the unit (member bonus), +30% when the unit's holomem
+        is an event holomem (holomem bonus), and a Bloom bonus for every card of an event holomem in the unit:
         ★3 1/1/2/2/3%, ★4 6/7/8/9/10%, ★5 15/18/22/26/30% at Bloom 1–5.</li>
     </ul>
     <p>Event Pt is estimated as score × (1 + acquisition bonus); the base point formula is not public, so it is shown as a relative value.
@@ -96,6 +95,170 @@
 
     <h2>Data</h2>
     <p>Master data: <a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>. Chart timelines: parsed holodori charts.</p>
+    </section>
+    <section data-lang="ja" hidden>
+    <h1 class="page-title">スコアの推定方法</h1>
+    <p class="muted">ゲーム内の完全なスコア計算式は公開されていません。オプティマイザーはマスターデータにある要素を使い、足りない部分は下記の仮定で補っています。
+      絶対値は推定ですが、ユニット同士の比較を目的として作られています。</p>
+
+    <h2>1. メンバーのステータス</h2>
+    <p>各カードのパフォーマンス・テクニック・センスは、レベル曲線とステータス配分に開花（ポテンシャル）ボーナスを加えたものです
+      （★4/★5 は+10%、★3 は完全開花で+15%）。ホロメンボードの固定値ボーナスを加えた後、すべての割合ボーナスを加算します：
+      パッシブスキル、リーダー衣装スキル、リーダー系ボードタイル、メモリー（メモリースタンド表よりメモリー1つにつき+0.2%）。</p>
+
+    <h2>2. ユニットスコア</h2>
+    <p><code>ユニットスコア = Σ（メンバー × P/T/S）（カードステータス + ボード固定値 + カードステータス × （パッシブ% + 衣装% + ボード% + メモリー% + メンバー強化%））</code>。
+      すべての割合はカード自身のステータスに掛かり、holodori.best の内訳表示（例：メモリー 4.6% × メンバーステータス）を再現します。
+      メンバー強化ボーナスは所持カードすべてのレベルボーナス（Lv20以上）の合計で、ゲーム内ヘルプの通り上限50%です。</p>
+
+    <h2>3. ノーツ</h2>
+    <p>各ノーツのスコアは <code>ユニットスコア × 楽曲係数 × ノーツ係数 × （1 + コンボボーナス）</code> です。ノーツ係数は LiveNote 表から
+      （PERFECT：タップ/ロング 1.00、フリック 1.05、ロング中 0.10、AUTO：0.80 でコンボボーナスなし）。コンボボーナスは100コンボごとに+1%、最大+10%。
+      譜面のタイミング、スペシャルスキルのマーカー、各マーカー時点のコンボ数は解析済み譜面から取得し、譜面データのない楽曲はノーツを均等に配置します。</p>
+
+    <h2>4. スキル</h2>
+    <ul>
+      <li><b>アクティブスキル</b>は曲の開始からクールタイムごとに発動率で判定され、効果時間の間続きます。
+        複数発動中は最も高い効果のみが適用されます（ゲーム内ヘルプ）。オプティマイザーはその最大値の期待値を使います。</li>
+      <li><b>スペシャルスキル</b>は譜面のスペシャルマーカーで編成順（スロット1から）に1回ずつ発動します。スコアサポートは効果中のアクティブのスコアUPを増幅し、
+        スキル発動率UPは効果中の判定の発動率を上げます。</li>
+      <li><b>パッシブスキルとリーダー衣装</b>は条件（タイプ数、ユニットメンバー、リーダー、歌唱メンバー）を満たすと適用されます。
+        「ピュアタイプのメンバー2人」のような対象は、基礎合計値が最も高いメンバーが受けると仮定します。</li>
+      <li>スキルレベルは開花に従います：1 → アクティブ Lv2、3 → スペシャル Lv2、4 → パッシブ Lv2。</li>
+      <li>判定強化とライフ回復はオールパーフェクト前提ではスコアに影響しないため無視します。ライフ条件は「ライフ満タンを維持」の設定に従います。</li>
+    </ul>
+
+    <h2>5. ホロメンボード</h2>
+    <p>ホロメンランクに応じてボードポイントが得られます（例：ランク33で191、ランク50で361）。各ホロメンの実際のボード（153マス、4種類の配置のいずれか）を
+      1マスずつシミュレートします：解放済みのマスに隣接し、ポイントと必要なドリームランクがあれば解放できます。
+      マイデータ → ホロメンで各ボードをゲーム通りに設定するか、自動（リーダー／メンバー／サポート重視、自動設置と同様）で最も安い経路にポイントを使えます。
+      編集していないホロメンは選んだ方針で自動設定されます。自動設置は解放素材を持っている前提なので、ゲーム内の解放マスが少ない場合はボードを編集して合わせてください。</p>
+    <ul>
+      <li><b>リーダータイル</b>（赤）はそのホロメンがリーダーのときユニット全体に適用されます。一部は歌唱曲のみ。</li>
+      <li><b>メンバータイル</b>（青）はそのホロメンのカードがユニットにいるとき強化します（固定値、ステータス%、アクティブ発動率・頻度）。</li>
+      <li><b>サポートタイル</b>（緑）はそのホロメンがいなくても、すべてのユニットに適用されます。</li>
+      <li><b>楽曲タイル</b>（黄）はそのホロメンの楽曲でスコアボーナスを加えます（合計最大+10%）。</li>
+      <li><b>コネクトタイル</b>（ボードごとに4つ、中央は無料）：★4/★5 カードを置くと、範囲内のすべてのタイルがコネクト値倍になります
+        （例：×1.5、開花5で×2.0）。カードは1つのボードにしか置けません。反転配置のボードでは範囲も反転します。</li>
+      <li>各タイルにはキューブも必要です（例：★★ スキル発動率メンバータイル：4ポイント + ブルーキューブ50 + ブルーヘキサ10）。エディターに表示されます。</li>
+    </ul>
+    <h3>ホロメンランクごとのボードポイント（マスターデータより）</h3>
+    <p>ランク2〜4：各+2 · 5〜9：+3 · 10〜14：+5 · 15〜19：+6 · 20〜24：+7 · 25〜29：+8 · 30〜50：各+10。
+      合計：ランク10 = 26、20 = 83、30 = 161、33 = 191、40 = 261、50 = 361。ボード全体には約447ポイント必要なので、ランクポイントだけでは完成できません。
+      ランク経験値はそのホロメンの実績（1つ1〜2 EXP）から得られ、ランク33には合計111 EXPが必要です。</p>
+
+    <h2>イベント</h2>
+    <p>ゲーム内のイベントボーナス画面より：</p>
+    <ul>
+      <li><b>スコアボーナス</b>：対象楽曲で、対応するイベントカードがユニットにいると<b>ライブスコア+10%</b>
+        （例：PROPOSE → こぼのカード、Kyapi → マリンのカード）。</li>
+      <li><b>獲得ボーナス</b>（イベントバッジ／ポイント）：ユニット内のイベントカード1枚につき+30%（メンバーボーナス）、ユニットのホロメンがイベントホロメンなら+30%
+        （ホロメンボーナス）、ユニット内のイベントホロメンのカードごとに開花ボーナス：
+        ★3 1/1/2/2/3%、★4 6/7/8/9/10%、★5 15/18/22/26/30%（開花1〜5）。</li>
+    </ul>
+    <p>イベントPtはスコア × （1 + 獲得ボーナス）で推定します。基礎ポイントの計算式は公開されていないため相対値として表示します。
+      イベントとカードは <code>data/events.js</code> にあります。</p>
+
+    <h2>ボードプランナー</h2>
+    <p>ユニットと楽曲に対して、各ホロメンのボードをそのホロメン自身のランクポイントとドリームランクで再計画します。ユニット内のホロメン（リーダーとメンバー）の
+      ボードは、候補の解放経路ごとにユニット全体のスコアを計算して計画します。それ以外のボードはサポートタイル（全ユニットまたは同じ期生への固定値）と
+      楽曲タイルだけを追加し、測定した感度で評価します。その後、所持している★4/★5カードを最も効果の高い解放済みコネクトタイルに1枚ずつ配置します
+      （1枚につき1ボード）。キューブ素材は合計を表示しますが制限はしません。</p>
+
+    <h2>平均と最大</h2>
+    <p>アクティブスキルは確率で発動するため、同じユニットでもプレイごとにスコアが変わります。<b>平均</b>は期待スコア（全判定での「最も高いアクティブ効果が適用」の
+      厳密な期待値で、数千回のシミュレーションの平均と一致）です。<b>最大</b>はすべてのアクティブスキル判定が成功したときのスコアです。
+      結果にはシミュレーションによる分布（中央80%、上位10%、最高値）も表示されます。オプティマイザーはどちらを最大化するか選べます。最大値で最強のユニットが平均でも最強とは限りません。</p>
+
+    <h2>6. 探索</h2>
+    <p>まず基準ユニットでリーダーを絞り込み、有望なリーダーごとに貪欲法で編成し、改善がなくなるまで所持カードを入れ替えます（ホロメン1人につき1枚、スロット位置の入れ替えを含む）。
+      さらに各タイプ、各ユニット/期生、各リーダー衣装の条件を軸にした初期編成を作り、見つかった最良ユニットでリーダーを再評価します。最終候補は120通りの編成順と
+      2枚同時の入れ替え（「キュート2人以上」のようなシナジー用）で仕上げます。ランダムな所持状況で総当たり（全リーダー × 全5枚の組み合わせ × 全順序）と比較し、
+      標準と徹底は12件中11件で最良ユニットを見つけ、残り1件も0.01%以内でした。全カード所持では標準と徹底は常に一致しました。高速は速い代わりに1〜3%低くなることがあります。</p>
+
+    <h2>データ</h2>
+    <p>マスターデータ：<a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>。譜面タイムライン：解析済みの holodori 譜面。</p>
+    </section>
+    <section data-lang="zh" hidden>
+    <h1 class="page-title">分數的估算方法</h1>
+    <p class="muted">遊戲內完整的分數公式並未公開。最佳化工具使用遊戲主資料中已有的部分，其餘以下列假設補足。
+      絕對數值僅為估算，工具的目的是比較不同隊伍之間的強弱。</p>
+
+    <h2>1. 成員數值</h2>
+    <p>每張卡的表演、技巧、感性來自其等級曲線與數值分配，再加上綻放（潛能）加成（★4/★5 +10%，★3 完全綻放 +15%）。
+      先加上holo成員看板格子的固定加成，再加上所有百分比加成：被動技能、隊長服裝技能、隊長類看板格子及回憶（依回憶架表，每個回憶 +0.2%）。</p>
+
+    <h2>2. 隊伍分數</h2>
+    <p><code>隊伍分數 = Σ（成員 × 表演/技巧/感性）（卡片數值 + 看板固定加成 + 卡片數值 × （被動% + 服裝% + 看板% + 回憶% + 成員強化%））</code>。
+      所有百分比都作用於卡片本身的數值，與 holodori.best 顯示的分項一致（例：回憶 4.6% × 成員數值）。
+      成員強化加成為所有持有卡片的等級加成（Lv20以上）總和，依遊戲內說明上限為50%。</p>
+
+    <h2>3. 音符</h2>
+    <p>每個音符的分數為 <code>隊伍分數 × 歌曲係數 × 音符係數 × （1 + 連擊加成）</code>。音符係數來自 LiveNote 表
+      （PERFECT：點擊/長按 1.00、滑動 1.05、長按持續 0.10；AUTO：0.80 且無連擊加成）。連擊加成為每100連擊 +1%，最多 +10%。
+      譜面時間、特殊技能標記及各標記時的連擊數來自已解析的譜面；沒有譜面資料的歌曲以平均分佈的音符計算。</p>
+
+    <h2>4. 技能</h2>
+    <ul>
+      <li><b>主動技能</b>從歌曲開始每隔冷卻時間依發動機率判定，並持續其效果時間。
+        多個同時發動時只計算效果最高的一個（遊戲內說明）。最佳化工具使用該最大值的期望值。</li>
+      <li><b>特殊技能</b>在譜面的特殊標記處依隊伍順序（第1格先）各發動一次。分數支援會在效果期間放大主動技能的分數提升；
+        技能發動率提升會提高效果期間內判定的發動機率。</li>
+      <li><b>被動技能與隊長服裝</b>在條件（類型數量、團體成員、隊長、演唱者）成立時生效。
+        若技能對象為「2名 Pure 類型成員」，則假設由基礎總值最高的成員獲得。</li>
+      <li>技能等級依綻放提升：1 → 主動 Lv2，3 → 特殊 Lv2，4 → 被動 Lv2。</li>
+      <li>判定強化與生命回復在全 PERFECT 下不影響分數，因此忽略。生命條件依「生命保持全滿」選項判斷。</li>
+    </ul>
+
+    <h2>5. holo成員看板</h2>
+    <p>holo成員等級提供看板點數（例：等級33為191點，等級50為361點）。模擬每位holo成員實際的看板（153格，四種佈局之一），逐格判斷：
+      與已解鎖格子相鄰、點數足夠且符合所需的夢想等級即可解鎖。
+      可在「我的資料 → holo成員」依遊戲內狀態設定每個看板，或使用自動（隊長／成員／支援優先，同遊戲的自動設置）沿最省點數的路徑分配點數。
+      未編輯的holo成員會以所選方針自動設定。自動設置假設你擁有解鎖素材；若遊戲中解鎖的格子較少，請編輯看板使其一致。</p>
+    <ul>
+      <li><b>隊長格子</b>（紅）在該holo成員擔任隊長時作用於整個隊伍；部分僅限其演唱的歌曲。</li>
+      <li><b>成員格子</b>（藍）在該holo成員的卡片於隊伍中時強化該卡（固定數值、數值%、主動技能發動率與頻率）。</li>
+      <li><b>支援格子</b>（綠）即使該holo成員不在隊伍中，也作用於所有隊伍。</li>
+      <li><b>歌曲格子</b>（黃）在該holo成員的歌曲中增加分數加成（合計最多 +10%）。</li>
+      <li><b>連結格子</b>（每個看板4格，中央免費）：放置 ★4/★5 卡片後，範圍內所有格子的效果乘以其連結值
+        （例：×1.5，綻放5時 ×2.0）。每張卡只能放在一個看板上。鏡像佈局的看板範圍也會鏡像。</li>
+      <li>每個格子也需要方塊素材（例：★★ 技能發動率成員格子：4點 + 藍色方塊50 + 藍色六角10），編輯器中會顯示。</li>
+    </ul>
+    <h3>各holo成員等級的看板點數（來自主資料）</h3>
+    <p>等級2〜4：各 +2 · 5〜9：+3 · 10〜14：+5 · 15〜19：+6 · 20〜24：+7 · 25〜29：+8 · 30〜50：各 +10。
+      合計：等級10 = 26、20 = 83、30 = 161、33 = 191、40 = 261、50 = 361。完成整個看板約需447點，僅靠等級點數無法完成。
+      等級經驗值來自該holo成員的成就（每個1〜2 EXP）；等級33共需111 EXP。</p>
+
+    <h2>活動</h2>
+    <p>依遊戲內的活動加成畫面：</p>
+    <ul>
+      <li><b>分數加成</b>：在各指定歌曲中，隊伍內有對應的活動卡片時 <b>Live 分數 +10%</b>
+        （例：PROPOSE → 可波的卡片，Kyapi → 瑪琳的卡片）。</li>
+      <li><b>獲得加成</b>（活動徽章／點數）：隊伍中每張活動卡片 +30%（成員加成），隊伍的holo成員為活動holo成員時 +30%（holo成員加成），
+        以及隊伍中每張活動holo成員卡片的綻放加成：★3 1/1/2/2/3%，★4 6/7/8/9/10%，★5 15/18/22/26/30%（綻放1〜5）。</li>
+    </ul>
+    <p>活動Pt 以 分數 × （1 + 獲得加成）估算；基礎點數公式未公開，因此以相對值顯示。
+      活動及其卡片記錄於 <code>data/events.js</code>。</p>
+
+    <h2>看板規劃</h2>
+    <p>針對指定隊伍與歌曲，以每位holo成員自己的等級點數及你的夢想等級重新規劃其看板。隊伍中holo成員（隊長與成員）的看板，
+      會在每條候選解鎖路徑後計算整個隊伍的分數來規劃。其他看板只追加支援格子（對所有隊伍或同期生的固定數值）與歌曲格子，
+      並以測得的敏感度評估。之後把持有的 ★4/★5 卡片逐張放到效果最大的已解鎖連結格子（每張卡只放一個看板）。方塊素材只統計總數，不作限制。</p>
+
+    <h2>平均與最高</h2>
+    <p>主動技能依機率發動，同一隊伍每次遊玩的分數都不同。<b>平均</b>為期望分數（對所有判定計算「效果最高的主動技能生效」的精確期望值，
+      與數千次模擬的平均一致）。<b>最高</b>為所有主動技能判定皆成功時的分數。結果也會顯示模擬的分佈（中間80%、前10%、最佳值）。
+      最佳化工具可選擇最大化其中一項；最高分最強的隊伍在平均上不一定最強。</p>
+
+    <h2>6. 搜尋</h2>
+    <p>先以基準隊伍篩選隊長；每位有潛力的隊長以貪婪法組隊，再反覆替換你的卡片直到無法改善（每位holo成員一張卡，包含交換格子位置）。
+      另外以每種類型、每個團體/期生、每個隊長服裝條件為核心建立額外起點，再以找到的最佳隊伍重新評估隊長。最終候選以全部120種隊伍順序及
+      同時替換兩張卡（針對「2名以上 Cute」等協同效果）進行最後調整。在隨機持有狀況下與暴力搜尋（每位隊長 × 每組5張卡 × 每種順序）比較：
+      標準與徹底在12次中有11次找到最佳隊伍，其餘1次差距在0.01%以內；全卡持有時標準與徹底結果總是一致。快速較快但可能低1〜3%。</p>
+
+    <h2>資料</h2>
+    <p>主資料：<a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>。譜面時間軸：已解析的 holodori 譜面。</p>
+    </section>
   </main>
   <footer class="site-footer" id="site-footer"></footer>
   <script src="../assets/config.js"></script>
@@ -105,6 +268,10 @@
   <script src="../data/jackets.js"></script>
   <script src="../data/jacket_files.js"></script>
   <script src="../assets/common.js"></script>
-  <script>Holo.renderHeader("optimizer"); Holo.renderFooter();</script>
+  <script>
+    const TITLES = { en: "Score Method", ja: "スコアの計算方法", zh: "分數計算方法" };
+    const setTitle = () => { document.title = (TITLES[Holo.lang] || TITLES.en) + " · holodori DB"; };
+    Holo.renderHeader("optimizer", setTitle); Holo.renderFooter(); setTitle();
+  </script>
 </body>
 </html>
