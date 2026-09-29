@@ -217,69 +217,78 @@ def main():
         rank_points.append(rank_points[-1] + int(r.get("skillTreePointQuantity", 0) or 0))
     rank_points = rank_points[1:]  # index = rank - 1
 
-    # Holomem board: resolve the node variant per talent and total the live-relevant effects.
+    # Holomem board: every tile with its position per tree model, cost, conditions and effect variants.
     st_eff = by_id(E, "SkillTreeEffect.json")
     st_tgt = by_id(E, "SkillTreeEffectTarget.json")
     st_trig = grouped(E, "SkillTreeEffectPassiveTrigger.json", "group_id")
-    nodes = defaultdict(list)
-    for x in load(E, "SkillTreeNode.json"):
-        nodes[(x["data"]["groupId"], x["data"].get("grade", 1))].append(x["data"])
+    conditions = grouped(E, "Condition.json", "group_id")
     chars = by_id(E, "Character.json")
-    playable = [cid for cid, ch in chars.items() if ch.get("isPlayable")]
+    positions = defaultdict(dict)
+    for x in load(E, "SkillTreeNodePosition.json"):
+        d = x["data"]
+        positions[d["skillTreeNodeGroupId"]][d["groupId"]] = [d.get("positionX", 0), d.get("positionY", 0)]
     live_types = {"PERFORMANCE_UP", "TECHNIQUE_UP", "SENSE_UP", "ALL_PARAMETER_UP", "PERFORMANCE_UP_PERMIL_UP",
                   "TECHNIQUE_UP_PERMIL_UP", "SENSE_UP_PERMIL_UP", "ALL_PARAMETER_UP_PERMIL_UP",
                   "ALL_PARAMETER_UP_FOR_CHARACTER_GROUPING", "LIVE_ACTIVE_SKILL_EFFECT_UP_PERMIL_UP",
                   "LIVE_ACTIVE_SKILL_ACTIVATION_PROBABILITY_UP_PERMIL_UP", "LIVE_ACTIVE_SKILL_COOL_TIME_SHORTEN_PERMIL_UP",
                   "LIVE_SCORE_BONUS_ADD_PERMIL_UP_BY_MUSIC_SKILL_TREE_CHARACTER_AND_MUSIC_SINGER_TYPE"}
-    board = {}
-    board_cost = {}
-    for cid in playable:
-        eff_list = []
-        cost = 0
-        for (gid, grade), rows in nodes.items():
-            specific = [r for r in rows if cid in (r.get("characterIds") or [])]
-            generic = [r for r in rows if not r.get("characterIds")]
-            row = (specific or generic or [None])[0]
-            if not row:
-                continue
-            cost += int(row.get("consumptionSkillTreePointQuantity", 0) or 0)
-            e = st_eff.get(row.get("skillTreeEffectId"))
-            if not e:
-                continue
-            et = tail(e["effectType"], "_EFFECT_TYPE_")
-            if et not in live_types:
-                continue
-            tg = st_tgt.get(e.get("skillTreeEffectTargetId"), {})
-            item = {
-                "node": tail(row["type"], "_NODE_TYPE_").lower(),  # all_member | leader | card | content
-                "type": et.lower(),
-                "v": int(e.get("value", 0) or 0),
-                "when": tail(e.get("characterTriggerType", ""), "_TRIGGER_TYPE_").lower(),
-                "tgt": tail(tg.get("type", ""), "_TARGET_TYPE_").lower(),
-            }
-            if tg.get("characterId"):
-                item["chr"] = tg["characterId"]
-            if tg.get("characterGroupingId"):
-                item["grp"] = tg["characterGroupingId"]
-            for t in st_trig.get(e.get("skillTreeEffectPassiveTriggerGroupId"), []):
-                item["songTrig"] = tail(t["type"], "_TRIGGER_TYPE_").lower()
-                if t.get("musicSingerType"):
-                    item["singerType"] = tail(t["musicSingerType"]).lower()
-                if t.get("characterIds"):
-                    item["songChrs"] = t["characterIds"]
-                if t.get("characterGroupingId"):
-                    item["songGrp"] = t["characterGroupingId"]
-            eff_list.append(item)
-        # Merge identical effects to keep the file small.
-        merged = {}
-        for it in eff_list:
-            key = json.dumps({k: v for k, v in it.items() if k != "v"}, sort_keys=True)
-            if key in merged:
-                merged[key]["v"] += it["v"]
-            else:
-                merged[key] = dict(it)
-        board[cid] = list(merged.values())
-        board_cost[cid] = cost
+    st_lang_en = lang(E, "LangGeneratedSkillTreeEffect_Eng.json", "LangSkillTreeEffect_Eng.json")
+    st_lang_ja = lang(J, "LangGeneratedSkillTreeEffect_Jpn.json", "LangSkillTreeEffect_Jpn.json")
+
+    def player_level(cond_id):
+        for c in conditions.get(cond_id, []):
+            if c.get("type", "").endswith("PLAYER_LEVEL") and c.get("min"):
+                return int(c["min"])
+        return 0
+
+    def tile_effect(eid):
+        e = st_eff.get(eid)
+        if not e:
+            return None
+        et = tail(e["effectType"], "_EFFECT_TYPE_")
+        tg = st_tgt.get(e.get("skillTreeEffectTargetId"), {})
+        item = {
+            "type": et.lower(),
+            "v": int(e.get("value", 0) or 0),
+            "when": tail(e.get("characterTriggerType", ""), "_TRIGGER_TYPE_").lower(),
+            "tgt": tail(tg.get("type", ""), "_TARGET_TYPE_").lower(),
+            "live": et in live_types,
+            "text": {"en": st_lang_en.get(e.get("descriptionLangId", ""), ""), "ja": st_lang_ja.get(e.get("descriptionLangId", ""), "")},
+        }
+        if tg.get("characterId"):
+            item["chr"] = tg["characterId"]
+        if tg.get("characterGroupingId"):
+            item["grp"] = tg["characterGroupingId"]
+        for t in st_trig.get(e.get("skillTreeEffectPassiveTriggerGroupId"), []):
+            item["songTrig"] = tail(t["type"], "_TRIGGER_TYPE_").lower()
+            if t.get("musicSingerType"):
+                item["singerType"] = tail(t["musicSingerType"]).lower()
+            if t.get("characterIds"):
+                item["songChrs"] = t["characterIds"]
+            if t.get("characterGroupingId"):
+                item["songGrp"] = t["characterGroupingId"]
+        return item
+
+    tiles = {}
+    for x in load(E, "SkillTreeNode.json"):
+        d = x["data"]
+        key = d["groupId"] + ("" if d.get("grade", 1) == 1 else "#" + str(d["grade"]))
+        t = tiles.setdefault(key, {
+            "k": key, "g": d["groupId"], "grade": d.get("grade", 1),
+            "type": tail(d["type"], "_NODE_TYPE_").lower(),
+            "cost": int(d.get("consumptionSkillTreePointQuantity", 0) or 0),
+            "prio": d.get("autoSelectionPriority", 9),
+            "lvl": max(player_level(d.get("viewConditionGroupId")), player_level(d.get("unlockConditionGroupId"))),
+            "pos": positions.get(d["groupId"], {}),
+            "var": [],
+        })
+        t["var"].append({"chrs": d.get("characterIds") or None, "eff": tile_effect(d.get("skillTreeEffectId"))})
+    auto_modes = defaultdict(dict)
+    for x in load(E, "SkillTreeNodeAutoSelection.json"):
+        d = x["data"]
+        auto_modes[tail(d["autoSelectionType"], "_SELECTION_TYPE_").lower()][tail(d["nodeType"], "_NODE_TYPE_").lower()] = int(d.get("priorityRatioPermil", 0) or 0)
+    board_model = {cid: ch.get("skillTreeNodePositionGroupId", "tree-model-001") for cid, ch in chars.items() if ch.get("isPlayable")}
+
     limits = {tail(x["data"]["skillTreeEffectType"], "_EFFECT_TYPE_").lower(): int(x["data"]["limit"])
               for x in load(E, "SkillTreeEffectValueLimit.json")}
 
@@ -296,8 +305,9 @@ def main():
         "scoreRanks": {k: sorted(v) for k, v in score_ranks.items()},
         "powerRanks": power_ranks,
         "rankPoints": rank_points,
-        "board": board,
-        "boardCost": board_cost,
+        "tiles": sorted(tiles.values(), key=lambda t: (t["g"], t["grade"])),
+        "boardModel": board_model,
+        "autoModes": auto_modes,
         "boardLimits": limits,
         "groupMembers": {gid: g.get("characterIds", []) for gid, g in groups.items()},
     }

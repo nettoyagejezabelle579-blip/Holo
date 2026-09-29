@@ -25,7 +25,7 @@
       pool: "Card pool", poolOwned: "My cards", poolAll: "Every card at max level (theory)", effort: "Search effort", fast: "Fast", normal: "Normal", thorough: "Thorough",
       core: "Core cards", pickCore: "Choose core cards", lockLeader: "Leader", anyLeader: "Any (optimise)", keep: "Cards to keep",
       pullLv: "Assume the new card is", pullBloom: "Bloom",
-      s4: "Holomem board", boardInfo: "Board bonuses are estimated from each holomem's rank in My Data (board points ÷ full board cost). Set exact percentages in My Data → Holomems.",
+      s4: "Holomem board", boardInfo: "Board bonuses come from the tiles unlocked on each holomem's board in My Data → Holomems. Holomems you haven't set up use auto setup with the points from their rank.",
       s5: "Input details", eventSongs: "Songs", addSong: "Add song", ratingLeader: "Leader holomem", latestEvent: "Use latest event songs",
       run: "Find best unit", running: "Searching…", cancel: "Cancel", results: "Result", alternatives: "Other strong units",
       noCards: "You have no cards yet. Add your cards in My Data first.", perSong: "Per song", avg: "Average", rating: "Rating (top 3)",
@@ -49,7 +49,7 @@
       pool: "カード範囲", poolOwned: "所持カード", poolAll: "全カード最大レベル（理論値）", effort: "探索量", fast: "高速", normal: "標準", thorough: "精密",
       core: "指定カード", pickCore: "指定カードを選択", lockLeader: "リーダー", anyLeader: "指定なし（最適化）", keep: "残すカード",
       pullLv: "新カードの想定", pullBloom: "開花",
-      s4: "ホロメンボード", boardInfo: "ボード効果は所持データの各ホロメンランクから推定します（ボードPt ÷ 全解放コスト）。所持データ→ホロメンで正確な割合を設定できます。",
+      s4: "ホロメンボード", boardInfo: "ボード効果は所持データ→ホロメンで解放したマスから計算します。未設定のホロメンはランクのPtで自動設置した状態として計算します。",
       s5: "詳細入力", eventSongs: "楽曲", addSong: "楽曲を追加", ratingLeader: "リーダーのホロメン", latestEvent: "最新イベント楽曲を使用",
       run: "最適ユニットを探す", running: "探索中…", cancel: "中止", results: "結果", alternatives: "その他の強いユニット",
       noCards: "所持カードがありません。先に所持データでカードを登録してください。", perSong: "楽曲別", avg: "平均", rating: "レーティング（上位3曲）",
@@ -192,8 +192,7 @@
     };
   }
   function buildEnv() {
-    const progress = st.boardFull ? Object.assign({}, H.progress, { boardPct: Object.fromEntries(Object.keys(H.talents).map((c) => [c, 100])) }) : H.progress;
-    const env = S.makeEnv(progress, { board: st.board, mode: st.play, lifeFull: st.lifeFull });
+    const env = S.makeEnv(H.progress, { board: st.board, boardFull: st.boardFull, mode: st.play, lifeFull: st.lifeFull });
     return env;
   }
   function overridesForPool() {

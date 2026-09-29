@@ -41,9 +41,17 @@
     </ul>
 
     <h2>5. Holomem board</h2>
-    <p>Each holomem's board is summarised as the total of its live-relevant tiles. Your Holomem Rank gives board points
-      (361 at rank 50); the share of the board you have unlocked is estimated as <code>points ÷ total board cost</code> unless you enter an exact percentage in My Data.
-      Support tiles apply to every unit, member tiles to that holomem's card, leader tiles when that holomem is the leader, and song tiles give a score bonus on their songs (max +10%).</p>
+    <p>Holomem Rank gives board points (e.g. 191 at rank 33, 361 at rank 50). Each holomem's real board (153 tiles, laid out in one of four shapes)
+      is simulated tile by tile: a tile can be unlocked when it touches an unlocked tile, you have the points and the Dream Rank it needs.
+      Set up each board in My Data → Holomems exactly like in the game, or use Auto (Leader / Member / Support focus, like 自動設置) which spends the points along the cheapest paths.
+      Holomems you have not edited are auto-set with your chosen focus. Note that auto setup assumes you have the unlock materials; if the game shows fewer unlocked tiles, edit the board to match.</p>
+    <ul>
+      <li><b>Leader tiles</b> (red) apply to the whole unit when that holomem is the leader; some only on songs they sing.</li>
+      <li><b>Member tiles</b> (blue) boost that holomem's card when it is in the unit (flat stats, stat %, active skill rate and frequency).</li>
+      <li><b>Support tiles</b> (green) apply to every unit, even when that holomem is not in it.</li>
+      <li><b>Song tiles</b> (yellow) add a score bonus on songs by that holomem (max +10% total).</li>
+      <li>Connect effects from cards placed on Connect tiles are not modelled yet.</li>
+    </ul>
 
     <h2>6. Search</h2>
     <p>Leaders are screened with a baseline unit, then each promising leader gets a greedy fill and a swap-until-no-improvement search over your cards

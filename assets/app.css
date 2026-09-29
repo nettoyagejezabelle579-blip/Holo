@@ -396,3 +396,16 @@ a.chip { color: inherit; text-decoration: none; }
 .details-layout > *, .song-picker, .song-picker select { min-width: 0; max-width: 100%; }
 .panel { min-width: 0; overflow-wrap: anywhere; }
 .select, .input { max-width: 100%; }
+.board-wrap { overflow: auto; max-height: 60vh; border: 1px solid var(--border); border-radius: 12px; padding: 10px; background: var(--surface-2); }
+.board-grid { display: grid; gap: 3px; width: max-content; margin: 0 auto; }
+.tile-node { position: relative; width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; font-size: 10.5px; font-weight: 800; padding: 0;
+  color: #fff; opacity: .28; line-height: 1; }
+.tile-node i { position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%); font-size: 8px; font-style: normal; color: var(--star); }
+.tile-node.on { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 8px rgba(0,0,0,.25); }
+.tile-node.can { opacity: .75; border: 2px dashed var(--text); }
+.tile-node.t-leader { background: #e2455b; }
+.tile-node.t-card { background: #3d7dff; }
+.tile-node.t-all_member { background: #22a35a; }
+.tile-node.t-content { background: #e0a500; }
+.tile-node.t-connection { background: #8a8aa0; }
+.board-eff { columns: 2 260px; font-size: 13px; padding-left: 18px; }

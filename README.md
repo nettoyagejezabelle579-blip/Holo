@@ -8,8 +8,9 @@ GitHub Pages.
 
 - `index.html` — start page and latest information (live/upcoming banners, announced cards and songs).
 - `my/index.html` — **My Data**: tick the cards you own and set each card's level (limit break shown) and
-  Bloom, your Holomem Rank for every holomem (drives the holomem board estimate), and how many Memories
-  you have. Backup/restore as a file or text. Everything is stored in your browser.
+  Bloom, your Holomem Rank for every holomem, each holomem's **board** (tile-by-tile editor of the real
+  Holo成員面板 layout with points, Dream Rank requirements and Leader/Member/Support auto setup), and how
+  many Memories you have. Backup/restore as a file or text. Everything is stored in your browser.
 - `team/index.html` — **Team Optimizer**, in five steps like holodori.best:
   1. *What unit*: best unit / build around up to 5 core cards (+ optional fixed leader) /
      best card to pull (keeps up to 4 cards, tries every card you don't own and ranks them by score gain).
@@ -48,7 +49,7 @@ GitHub Pages.
 
 The in-game score formula is not public, so the optimizer uses a documented estimate built from the
 master data (see `team/method.html`): card stats by level/bloom, passive and leader outfit skills,
-holomem board tiles (scaled by rank), memories and the Member Upgrade Bonus give the Unit Score; each
+the tiles unlocked on each holomem board, memories and the Member Upgrade Bonus give the Unit Score; each
 note then scores Unit Score × song coefficient × note coefficient × combo bonus × the expected active
 Score UP (highest active wins, boosted by Score Support), with special skills firing at the chart's
 markers in formation order. Enter one real score in Team Details to rescale all estimates.

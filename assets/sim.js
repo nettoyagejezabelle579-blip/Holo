@@ -116,13 +116,16 @@
     for (const [th, p] of G.posters) if (count >= th) v = p;
     return v;
   }
-  function boardFraction(progress, chr) {
-    const manual = progress.boardPct && progress.boardPct[chr];
-    if (manual != null && manual !== "") return Math.max(0, Math.min(1, manual / 100));
-    const rank = (progress.ranks && progress.ranks[chr]) || 1;
-    const pts = G.rankPoints[Math.max(0, Math.min(G.rankPoints.length - 1, rank - 1))] || 0;
-    const cost = G.boardCost[chr] || 447;
-    return Math.min(1, pts / cost);
+  // Unlocked board tiles → merged live effects for every holomem.
+  function boardEffects(progress, opts) {
+    const B = window.HoloBoard;
+    const out = {};
+    for (const chr in H.talents) {
+      if (!opts.board) { out[chr] = []; continue; }
+      const set = opts.boardFull ? new Set(B.tilesFor(chr).list.map((t) => t.k)) : B.unlocked(progress, chr);
+      out[chr] = B.effects(chr, set);
+    }
+    return out;
   }
   function upgradeBonus(progress) {
     let sum = 0;
@@ -139,17 +142,14 @@
   // opts: { board: bool, mode: "perfect"|"auto", lifeFull: bool, memories, useProgress }
   function makeEnv(progress, opts) {
     opts = Object.assign({ board: true, mode: "perfect", lifeFull: true }, opts || {});
-    const frac = {};
-    for (const chr in H.talents) frac[chr] = opts.board ? boardFraction(progress, chr) : 0;
+    const board = boardEffects(progress, opts);
     // Support-type board tiles apply to every unit.
     const gFlat = [0, 0, 0];
     const grpFlat = {};
     const content = []; // [{chr, singerType, v}]
-    for (const chr in G.board) {
-      const f = frac[chr] || 0;
-      if (!f) continue;
-      for (const e of G.board[chr]) {
-        const v = e.v * f;
+    for (const chr in board) {
+      for (const e of board[chr]) {
+        const v = e.v;
         if (e.node === "all_member") {
           if (e.type === "all_parameter_up") { gFlat[0] += v; gFlat[1] += v; gFlat[2] += v; }
           else if (e.type === "performance_up") gFlat[0] += v;
@@ -164,7 +164,7 @@
     const grpCap = (G.boardLimits || {}).all_parameter_up_for_character_grouping || 900;
     for (const g in grpFlat) grpFlat[g] = Math.min(grpCap, grpFlat[g]);
     return {
-      progress, opts, frac, gFlat, grpFlat, content,
+      progress, opts, board, gFlat, grpFlat, content,
       memory: posterPermil(progress.memories || 0),
       upgrade: upgradeBonus(progress),
       calib: opts.calib != null ? opts.calib : H.store.get("calibration", 1) || 1,
@@ -186,12 +186,13 @@
     const tl = H.talents[card.chr];
     const aLv = H.skillLevelAt(card, "active", bloom), sLv = H.skillLevelAt(card, "special", bloom), pLv = H.skillLevelAt(card, "passive", bloom);
     // Member-type board tiles of this talent.
-    const f = env.frac[card.chr] || 0;
-    const flat = [0, 0, 0];
-    let rate = 0, ctShort = 0;
-    for (const e of G.board[card.chr] || []) {
+    const flat = [0, 0, 0], pct = [0, 0, 0];
+    let rate = 0, ctShort = 0, seu = 0;
+    for (const e of env.board[card.chr] || []) {
       if (e.node !== "card") continue;
-      const v = e.v * f;
+      const v = e.v;
+      if (PCT[e.type]) { pct[0] += v * PCT[e.type][0]; pct[1] += v * PCT[e.type][1]; pct[2] += v * PCT[e.type][2]; continue; }
+      if (e.type === "live_active_skill_effect_up_permil_up") { seu += v; continue; }
       if (e.type === "all_parameter_up") { flat[0] += v; flat[1] += v; flat[2] += v; }
       else if (e.type === "performance_up") flat[0] += v;
       else if (e.type === "technique_up") flat[1] += v;
@@ -205,7 +206,7 @@
       active: sim.active[aLv - 1] || sim.active[0],
       special: sim.special[sLv - 1] || sim.special[0],
       passive: sim.passive[pLv - 1] || sim.passive[0],
-      leader: sim.leader, rate, ctShort,
+      leader: sim.leader, rate, ctShort, pct, seu,
     };
     env.prepared.set(key, m);
     return m;
@@ -273,7 +274,7 @@
     }
     // Recipient priority for capped targets: highest base total first.
     const order = members.map((_, i) => i).sort((a, b) => members[b].baseTotal - members[a].baseTotal || a - b);
-    const acc = { pct: members.map(() => [0, 0, 0]), seu: new Array(n).fill(0) };
+    const acc = { pct: members.map((m) => m.pct.slice()), seu: members.map((m) => m.seu) };
 
     // Leader outfit skill
     const lead = team.leader && team.leader.cardId ? G.sim[team.leader.cardId].leader : null;
@@ -290,11 +291,10 @@
     const leadFlat = [0, 0, 0], leadPct = [0, 0, 0];
     let leadSeu = 0;
     if (leaderChr) {
-      const f = env.frac[leaderChr] || 0;
-      for (const e of f ? G.board[leaderChr] || [] : []) {
+      for (const e of env.board[leaderChr] || []) {
         if (e.node !== "leader") continue;
         if (e.songTrig === "music_skill_tree_character" && !(ctx.songAll || ctx.songChrs.has(leaderChr))) continue;
-        const v = e.v * f;
+        const v = e.v;
         if (e.type === "all_parameter_up") { leadFlat[0] += v; leadFlat[1] += v; leadFlat[2] += v; }
         else if (e.type === "performance_up") leadFlat[0] += v;
         else if (e.type === "technique_up") leadFlat[1] += v;
@@ -427,7 +427,7 @@
   }
 
   window.HoloSim = {
-    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, boardFraction, upgradeBonus,
+    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, boardEffects, upgradeBonus,
     posterPermil, rankFor, hasTimeTrigger, chartIndex,
   };
 })();

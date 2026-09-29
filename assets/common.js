@@ -223,8 +223,9 @@
 
   // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
   function loadProgress() {
-    const p = store.get("progress", null) || { v: 1, cards: {}, ranks: {}, boardPct: {}, memories: 0 };
-    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.boardPct = p.boardPct || {}; p.memories = p.memories || 0;
+    const p = store.get("progress", null) || { v: 1, cards: {}, ranks: {}, board: {}, memories: 0 };
+    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.board = p.board || {}; p.memories = p.memories || 0;
+    delete p.boardPct;
     // Migrate the older "owned" list from the card database.
     const legacy = store.get("owned", null);
     if (legacy && legacy.length) {
@@ -248,7 +249,7 @@
   }
   function replaceProgress(p) {
     for (const k of Object.keys(progress)) delete progress[k];
-    Object.assign(progress, { v: 1, cards: {}, ranks: {}, boardPct: {}, memories: 0 }, p);
+    Object.assign(progress, { v: 1, cards: {}, ranks: {}, board: {}, memories: 0 }, p);
     saveProgress();
   }
   const favorites = new Set(store.get("favorites", []));
