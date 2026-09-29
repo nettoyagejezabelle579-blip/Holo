@@ -181,18 +181,12 @@
 
   // Board editor modal
   let boardChr = null, selTile = null, showRanks = false;
-  const TILE_ICON = { leader: "L", card: "M", all_member: "S", content: "♪", connection: "C" };
   const TYPE_NAME = { en: { leader: "Leader tile", card: "Member tile", all_member: "Support tile", content: "Song tile", connection: "Connect tile" },
     ja: { leader: "リーダー効果", card: "メンバー効果", all_member: "サポート効果", content: "楽曲効果", connection: "コネクト" },
     zh: { leader: "隊長效果", card: "成員效果", all_member: "支援效果", content: "樂曲效果", connection: "協力" } };
-  function tileLabel(t) {
-    const e = t.eff;
-    if (!e) return TILE_ICON[t.type] || "";
-    const map = { performance_up: "P", technique_up: "T", sense_up: "S", all_parameter_up: "All", performance_up_permil_up: "P%", technique_up_permil_up: "T%",
-      sense_up_permil_up: "S%", all_parameter_up_permil_up: "All%", all_parameter_up_for_character_grouping: "G",
-      live_active_skill_effect_up_permil_up: "SE", live_active_skill_activation_probability_up_permil_up: "Rt", live_active_skill_cool_time_shorten_permil_up: "CT",
-      live_score_bonus_add_permil_up_by_music_skill_tree_character_and_music_singer_type: "♪" };
-    return map[e.type] || (TILE_ICON[t.type] || "·");
+  function tileIcon(t) {
+    const [g, pct] = window.HoloBoardView.glyph(t);
+    return `<span class="bv-t inline on t-${t.type} ${t.grade > 1 ? "big" : ""}"><b class="${g.length > 2 ? "sm" : ""}">${esc(g)}</b>${pct ? "<em>%</em>" : ""}</span>`;
   }
   function openBoard(chr) { boardChr = chr; selTile = null; drawBoard(); }
   function saveBoard(set) {
@@ -215,7 +209,7 @@
     const can = B.canUnlock(H.progress, chr, st.set, t.k);
     const mult = B.connectMultipliers(H.progress, chr, st.set).get(t.k);
     const mats = tileMaterials(t);
-    let body = `<div class="tile-detail"><div class="row"><span class="tile-node t-${t.type} on" style="opacity:1">${esc(tileLabel(t))}</span>
+    let body = `<div class="tile-detail"><div class="row">${tileIcon(t)}
       <div><span class="pill">${esc((TYPE_NAME[H.lang] || TYPE_NAME.en)[t.type])}</span> ${"★".repeat(t.grade)}<br>
       <b>${esc(t.eff ? B.effectText(t.eff, chr) : t.type === "connection" ? tx("connectHelp") : "—")}</b>
       ${mult && mult > 1 ? `<br><span class="small" style="color:var(--accent)">Connect ×${mult.toFixed(2)} → ${esc(B.effectText(Object.assign({}, t.eff, { v: t.eff.v * mult }), chr))}</span>` : ""}
@@ -252,20 +246,12 @@
     const tl = H.talents[chr];
     const b = B.tilesFor(chr);
     const st = boardState(chr);
-    const xs = b.list.map((t) => t.x), ys = b.list.map((t) => t.y);
-    const minX = Math.min(...xs), maxX = Math.max(...xs), maxY = Math.max(...ys), minY = Math.min(...ys);
     const con = (H.progress.connect || {})[chr] || {};
     let foot = new Set();
     for (const k in con) if (st.set.has(k)) B.connectFootprint(chr, k, con[k]).forEach((x) => foot.add(x));
     if (selTile && b.byKey[selTile] && b.byKey[selTile].type === "connection" && con[selTile]) foot = new Set(B.connectFootprint(chr, selTile, con[selTile]));
-    const cells = b.list.map((t) => {
-      const on = st.set.has(t.k);
-      const can = !on && B.canUnlock(H.progress, chr, st.set, t.k);
-      const placed = t.type === "connection" && con[t.k] && on;
-      const title = (t.eff ? B.effectText(t.eff, chr) : t.type) + ` · ${tx("points")} ${t.cost}` + (t.lvl ? ` · ${tx("needDream")} ${t.lvl}` : "");
-      return `<button class="tile-node t-${t.type} ${on ? "on" : can ? "can" : ""} ${foot.has(t.k) ? "foot" : ""} ${selTile === t.k ? "sel" : ""}" data-tile="${esc(t.k)}" title="${esc(title)}"
-        style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}">${placed && H.hasArt(con[t.k]) ? H.imgChain(H.cardImageUrls(con[t.k], "icon"), "") : esc(tileLabel(t))}${t.grade > 1 ? "<i>★★</i>" : ""}</button>`;
-    }).join("");
+    const view = window.HoloBoardView.html(chr, { set: st.set, connect: con, foot, sel: selTile, interactive: true, key: "edit-" + chr,
+      can: (k) => B.canUnlock(H.progress, chr, st.set, k), height: "min(62vh, 640px)" });
     const eff = B.effects(chr, st.set, H.progress);
     const r = H.progress.ranks[chr] || 1;
     const next = B.rankTable()[r];
@@ -288,12 +274,13 @@
         ${showRanks ? rankTableHTML(chr) : ""}
         <p class="small muted">${esc(tx("boardHelp"))}<br>${esc(tx("legend"))}</p>
         <div class="board-layout">
-          <div class="board-wrap"><div class="board-grid" style="grid-template-columns:repeat(${maxX - minX + 1},34px);grid-template-rows:repeat(${maxY - minY + 1},34px)">${cells}</div></div>
+          <div>${view}</div>
           ${detailPanel(chr, st)}
         </div>
         <h3>${esc(tx("totals"))}</h3>
         <ul class="board-eff">${eff.map((e) => `<li><span class="pill">${esc((TYPE_NAME[H.lang] || TYPE_NAME.en)[e.node] || e.node)}</span> ${esc(B.effectText(e, chr))}</li>`).join("") || "<li class='muted'>—</li>"}</ul>
       </div></div></div>`;
+    window.HoloBoardView.init(root2);
   }
   document.getElementById("modal-root").addEventListener("click", (e) => {
     if (!boardChr) return;
