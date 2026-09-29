@@ -34,6 +34,7 @@
     const lvl = B.playerLevel(progress);
     const talents = Object.keys(H.talents);
     const teamChrs = new Set(ids.map((id) => H.cardById[id].chr).concat(leader ? [leader.chr] : []));
+    // Holomems whose song tiles can count on these songs (every board has an all-hololive-song tile).
     const singers = new Set(o.charts.flatMap((c) => c.song.singerType === "all" ? talents : c.song.chrs));
 
     // Current state
@@ -99,8 +100,7 @@
         return 0;
       }
       if (t.type === "content") {
-        const st = e.singerType || "all";
-        const ok = o.charts.some((c) => (c.song.singerType === "all" || c.song.chrs.includes(chr)) && (st === "all" || st === c.song.singerType));
+        const ok = o.charts.some((c) => S.songTileApplies(e.singerType || "all", chr, c.song));
         return ok ? e.v * perSong / o.charts.length : 0;
       }
       return 0;

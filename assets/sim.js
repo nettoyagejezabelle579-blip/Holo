@@ -291,7 +291,8 @@
         case "deck_card_character_grouping": if ((ctx.grpCount[t.grp] || 0) < (t.n || 1)) return false; break;
         case "deck_leader_character": if (!t.chrs.includes(ctx.leaderChr)) return false; break;
         case "deck_leader_character_grouping": if (!ctx.leaderGroups.includes(t.grp)) return false; break;
-        case "music_character": if (!ctx.songAll && !t.chrs.some((c) => ctx.songChrs.has(c))) return false; break;
+        // "When X is included as a singer": all-hololive songs list no singers, so it only counts on songs X is credited on.
+        case "music_character": if (!t.chrs.some((c) => ctx.songChrs.has(c))) return false; break;
         case "combo_gte": if (combo == null || combo < t.n) return false; break;
         case "life_gte": if (!ctx.lifeFull) return false; break;
         case "life_lte": if (ctx.lifeFull) return false; break;
@@ -360,6 +361,13 @@
     return { members: out, gFlat, grpFlat, content };
   }
 
+  // Song (yellow) board tiles: solo → "solo songs by X", group → "unit songs featuring X",
+  // all → "when playing all-hololive (全体) songs" (no singer condition).
+  function songTileApplies(singerType, chr, song) {
+    if (singerType === "all") return song.singerType === "all";
+    return singerType === song.singerType && song.chrs.includes(chr);
+  }
+
   // ---------- evaluation ----------
   // team = { leader: { chr, cardId|null }, members: [prepared member ×1..5] }
   // luck: "avg" (expected score, default) | "max" (every active check succeeds) | function () -> [0,1) (one random play)
@@ -402,7 +410,7 @@
     if (leaderChr) {
       for (const e of (env.role ? env.role.eff.leader[leaderChr] : env.board[leaderChr]) || []) {
         if (e.node !== "leader") continue;
-        if (e.songTrig === "music_skill_tree_character" && !(ctx.songAll || ctx.songChrs.has(leaderChr))) continue;
+        if (e.songTrig === "music_skill_tree_character" && !ctx.songChrs.has(leaderChr)) continue;
         const v = e.v;
         if (e.type === "all_parameter_up") { leadFlat[0] += v; leadFlat[1] += v; leadFlat[2] += v; }
         else if (e.type === "performance_up") leadFlat[0] += v;
@@ -442,8 +450,7 @@
     // Song bonus from content-type board tiles (capped)
     let songBonus = 0;
     for (const c of content) {
-      if (!(ctx.songAll || ctx.songChrs.has(c.chr))) continue;
-      if (c.singerType !== "all" && c.singerType !== song.singerType) continue;
+      if (!songTileApplies(c.singerType, c.chr, song)) continue;
       songBonus += c.v;
     }
     songBonus = Math.min((G.boardLimits || {}).live_score_bonus_add_permil_up_by_music_skill_tree_character_and_music_singer_type || 100, songBonus);
@@ -592,7 +599,7 @@
   }
 
   window.HoloSim = {
-    songById, loadChart, loadCharts, getChart, makeEnv, boardOpts, prepare, evaluate, simulate, EVENTS, eventSong, eventOf, eventPtBonus, boardEffects, upgradeBonus,
+    songById, loadChart, loadCharts, getChart, makeEnv, boardOpts, songTileApplies, prepare, evaluate, simulate, EVENTS, eventSong, eventOf, eventPtBonus, boardEffects, upgradeBonus,
     posterPermil, rankFor, hasTimeTrigger, chartIndex,
   };
 })();
