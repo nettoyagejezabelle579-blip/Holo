@@ -112,11 +112,55 @@
     return [...set];
   }
 
-  // The unlocked tiles the optimizer should use for a holomem.
+  // The tiles you have unlocked (My Data). Boards you haven't set up have only the centre tile:
+  // points are never spent automatically.
   function unlocked(progress, chr) {
     const saved = progress.board && progress.board[chr];
-    if (saved && saved.length) return new Set(saved.concat(ROOT));
-    return new Set(autoSetup(progress, chr, (progress.boardMode && progress.boardMode[chr]) || progress.boardAutoMode || "leader"));
+    return new Set((saved || []).concat(ROOT));
+  }
+  function isSet(progress, chr) {
+    const saved = progress.board && progress.board[chr];
+    return !!(saved && saved.length);
+  }
+
+  // Board planned for the holomem's role in a unit, from its rank points (used by the optimizer to
+  // compare units as if every board were set up for them):
+  //   leader  → leader tiles, then member tiles, then support/song tiles
+  //   member  → member tiles, then support/song tiles (leader tiles do nothing for a non-leader)
+  //   support → support and song tiles only (the holomem is not in the unit)
+  const ROLE_W = {
+    leader: { leader: 3, card: 2, all_member: 1, content: 0.6 },
+    member: { card: 3, all_member: 1, content: 0.6 },
+    support: { all_member: 3, content: 1 },
+  };
+  const roleCache = new Map();
+  function roleSetup(progress, chr, role) {
+    const key = chr + "|" + role + "|" + pointsFor(progress, chr) + "|" + playerLevel(progress);
+    if (roleCache.has(key)) return roleCache.get(key);
+    const b = tilesFor(chr);
+    const w = ROLE_W[role];
+    const set = new Set([ROOT]);
+    const lvl = playerLevel(progress);
+    let left = pointsFor(progress, chr);
+    for (let guard = 0; guard < 200 && left > 0; guard++) {
+      const { dist, prev } = pathCosts(chr, set, lvl);
+      let best = null, bestScore = 0;
+      for (const t of b.list) {
+        if (set.has(t.k) || !dist.has(t.k) || !t.eff || !t.eff.live || !w[t.type]) continue;
+        const cost = dist.get(t.k);
+        if (cost > left) continue;
+        // value of the whole path (tiles on the way count too)
+        let v = 0, k = t.k;
+        while (k && !set.has(k)) { const x = b.byKey[k]; if (x.eff && x.eff.live && w[x.type]) v += w[x.type] * x.grade; k = prev.get(k); }
+        const score = v / Math.max(1, cost) - t.prio * 1e-4;
+        if (score > bestScore) { bestScore = score; best = t; }
+      }
+      if (!best) break;
+      let k = best.k;
+      while (k && !set.has(k)) { set.add(k); left -= b.byKey[k].cost; k = prev.get(k); }
+    }
+    roleCache.set(key, set);
+    return set;
   }
 
   function canUnlock(progress, chr, set, key) {
@@ -205,6 +249,6 @@
   }
 
 
-  window.HoloBoard = { ROOT, tilesFor, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey,
+  window.HoloBoard = { ROOT, tilesFor, isSet, roleSetup, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey,
     connectLevel, connectFootprint, connectMultipliers, placedCards, rankTable };
 })();

@@ -22,7 +22,7 @@
       editBoard: "Edit board", tiles: "Tiles unlocked", ptsLeft: "Points left", dream: "Dream Rank", autoMode: "Auto setup for holomems you haven't edited",
       autoLeader: "Auto: Leader", autoMember: "Auto: Member", autoSupport: "Auto: Support", reset: "Reset", close: "Close",
       boardHelp: "Tap a tile to see it, then Unlock (it must touch an unlocked tile, and needs points, materials and Dream Rank) or Lock. Auto setup spends the points left.",
-      custom: "custom", autoState: "auto", totals: "Board effects", legend: "Red: Leader · Blue: Member · Green: Support · Yellow: Song · Grey: Connect",
+      custom: "set up", autoState: "not set up", boardNote: "Boards are only what you set up here (points are never spent automatically). Enter the tiles you have in game, or leave them empty and let Team Optimizer → Plan my boards tell you how to spend the points for a unit.", totals: "Board effects", legend: "Red: Leader · Blue: Member · Green: Support · Yellow: Song · Grey: Connect",
       needDream: "Needs Dream Rank", cost: "Cost", noLive: "no effect on Live score",
       tapTile: "Tap a tile to see its effect, cost and materials.", unlock: "Unlock", lock: "Lock", cantUnlock: "needs an unlocked neighbour, enough points and Dream Rank",
       connectHelp: "Place a ★4/★5 card here: its Connect effect multiplies the board tiles in its range.", connectCard: "Card on this Connect tile",
@@ -44,7 +44,7 @@
       editBoard: "ボードを編集", tiles: "解放数", ptsLeft: "残りPt", dream: "ドリームランク", autoMode: "未編集ホロメンの自動設置",
       autoLeader: "自動：リーダー", autoMember: "自動：メンバー", autoSupport: "自動：サポート", reset: "リセット", close: "閉じる",
       boardHelp: "マスをタップして確認し、解放（解放済みマスに隣接・Pt・素材・ドリームランクが必要）または解除します。自動設置は残りPtを使います。",
-      custom: "手動", autoState: "自動", totals: "ボード効果", legend: "赤：リーダー・青：メンバー・緑：サポート・黄：楽曲・灰：コネクト",
+      custom: "設定済み", autoState: "未設定", boardNote: "ボードはここで設定した内容のみ使います（Ptは自動で使いません）。ゲーム内の解放マスを入力するか、空のままにしてユニット最適化 → ボードを計画 でユニットに合わせたPtの使い方を確認してください。", totals: "ボード効果", legend: "赤：リーダー・青：メンバー・緑：サポート・黄：楽曲・灰：コネクト",
       needDream: "必要ドリームランク", cost: "コスト", noLive: "ライブスコアに影響なし",
       tapTile: "マスをタップすると効果・コスト・素材を表示します。", unlock: "解放", lock: "解除", cantUnlock: "隣接マスの解放・Pt・ドリームランクが必要",
       connectHelp: "★4/★5カードを配置すると、コネクト効果で範囲内のマス効果がアップします。", connectCard: "このコネクトマスのカード",
@@ -66,7 +66,7 @@
       editBoard: "編輯面板", tiles: "解鎖數量", ptsLeft: "剩餘Pt", dream: "夢幻Rank", autoMode: "未編輯成員的自動設置",
       autoLeader: "自動：隊長", autoMember: "自動：成員", autoSupport: "自動：支援", reset: "重置", close: "關閉",
       boardHelp: "點選格子查看後，可解鎖（需與已解鎖格子相鄰，並需Pt、素材與夢幻Rank）或取消。自動設置會使用剩餘Pt。",
-      custom: "手動", autoState: "自動", totals: "面板效果", legend: "紅：隊長・藍：成員・綠：支援・黃：樂曲・灰：協力",
+      custom: "已設定", autoState: "未設定", boardNote: "面板只使用你在此設定的內容（不會自動使用Pt）。請輸入遊戲中已解鎖的格子，或保持空白，並在隊伍最佳化 → 規劃面板 中查看針對隊伍的Pt分配方式。", totals: "面板效果", legend: "紅：隊長・藍：成員・綠：支援・黃：樂曲・灰：協力",
       needDream: "所需夢幻Rank", cost: "消耗", noLive: "不影響Live分數",
       tapTile: "點選格子即可查看效果、消耗與素材。", unlock: "解鎖", lock: "取消", cantUnlock: "需要相鄰格子已解鎖、足夠的Pt與夢幻Rank",
       connectHelp: "放置★4/★5卡片後，協力效果會提升範圍內格子的效果。", connectCard: "此協力欄位的卡片",
@@ -149,7 +149,7 @@
   function boardState(chr) {
     const set = B.unlocked(H.progress, chr);
     const pts = B.pointsFor(H.progress, chr);
-    return { set, pts, left: pts - B.spent(chr, set), tiles: set.size - 1, custom: !!(H.progress.board[chr] && H.progress.board[chr].length) };
+    return { set, pts, left: pts - B.spent(chr, set), tiles: set.size - 1, custom: B.isSet(H.progress, chr) };
   }
   function rankInfo(chr) {
     const r = H.progress.ranks[chr] || 1;
@@ -159,13 +159,12 @@
   function renderHolomem() {
     const prods = Object.entries(H.D.productions).sort((a, b) => a[1].order - b[1].order);
     const talents = Object.entries(H.talents).sort((a, b) => a[1].order - b[1].order);
-    const mode = H.progress.boardAutoMode || "leader";
     return `<div class="toolbar"><span>${esc(tx("setAllRanks"))}</span>
         <input class="input" id="all-rank" type="number" min="1" max="50" value="20" style="width:80px">
         <button class="icon-btn" id="apply-all-rank">OK</button>
         <span>${esc(tx("dream"))}</span><input class="input" id="dream" type="number" min="1" max="200" value="${B.playerLevel(H.progress)}" style="width:80px">
-        <span>${esc(tx("autoMode"))}</span>
-        <span class="seg">${["leader", "member", "support"].map((m) => `<button data-automode="${m}" aria-pressed="${mode === m}">${esc(tx("auto" + m[0].toUpperCase() + m.slice(1)).replace(/^[^:：]*[:：]\s*/, ""))}</button>`).join("")}</span></div>
+      </div>
+      <p class="small muted">${esc(tx("boardNote"))}</p>
       ${prods.map(([pid, p]) => `<h3>${esc(L(p.name))}</h3><div class="rank-grid">` + talents.filter(([, t]) => t.production === pid).map(([chr, t]) => {
         const r = H.progress.ranks[chr] || 1;
         return `<div class="rank-card" data-chr="${esc(chr)}">
@@ -403,7 +402,6 @@
     if (b.dataset.rarity != null) { filt.rarity = b.dataset.rarity; render(); }
     else if (b.dataset.own) { filt.own = b.dataset.own; render(); }
     else if (b.dataset.board) openBoard(b.dataset.board);
-    else if (b.dataset.automode) { H.progress.boardAutoMode = b.dataset.automode; H.saveProgress(); render(); }
     else if (b.id === "all-max") {
       for (const id in H.progress.cards) H.progress.cards[id].lv = H.maxLevel(H.cardById[id]);
       H.saveProgress(); render();

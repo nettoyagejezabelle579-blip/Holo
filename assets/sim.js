@@ -153,6 +153,10 @@
     }
     return out;
   }
+  // Board source setting → makeEnv options.
+  function boardOpts(src) {
+    return { board: src !== "off", boardFull: src === "full", boardRole: !src || src === "role" };
+  }
   function upgradeBonus(progress) {
     let sum = 0;
     for (const id in progress.cards) {
@@ -167,31 +171,84 @@
 
   // opts: { board: bool, mode: "perfect"|"auto", lifeFull: bool, memories, useProgress }
   // boardOverride: optional {chr: [effects]} (used by the board planner to try variations quickly).
-  function makeEnv(progress, opts, boardOverride) {
-    opts = Object.assign({ board: true, mode: "perfect", lifeFull: true }, opts || {});
-    const board = boardOverride || boardEffects(progress, opts);
-    // Support-type board tiles apply to every unit.
-    const gFlat = [0, 0, 0];
-    const grpFlat = {};
-    const content = []; // [{chr, singerType, v}]
-    for (const chr in board) {
-      for (const e of board[chr]) {
-        const v = e.v;
-        if (e.node === "all_member") {
-          if (e.type === "all_parameter_up") { gFlat[0] += v; gFlat[1] += v; gFlat[2] += v; }
-          else if (e.type === "performance_up") gFlat[0] += v;
-          else if (e.type === "technique_up") gFlat[1] += v;
-          else if (e.type === "sense_up") gFlat[2] += v;
-          else if (e.type === "all_parameter_up_for_character_grouping" && e.grp) grpFlat[e.grp] = (grpFlat[e.grp] || 0) + v;
-        } else if (e.node === "content" && e.type.startsWith("live_score_bonus")) {
-          content.push({ chr, singerType: e.singerType || "all", v });
-        }
+  // Support-type (all units) and song-type parts of one board.
+  function supportPart(chr, effs) {
+    const g = [0, 0, 0], grp = {}, content = [];
+    for (const e of effs) {
+      const v = e.v;
+      if (e.node === "all_member") {
+        if (e.type === "all_parameter_up") { g[0] += v; g[1] += v; g[2] += v; }
+        else if (e.type === "performance_up") g[0] += v;
+        else if (e.type === "technique_up") g[1] += v;
+        else if (e.type === "sense_up") g[2] += v;
+        else if (e.type === "all_parameter_up_for_character_grouping" && e.grp) grp[e.grp] = (grp[e.grp] || 0) + v;
+      } else if (e.node === "content" && e.type.startsWith("live_score_bonus")) {
+        content.push({ chr, singerType: e.singerType || "all", v });
       }
     }
+    return { g, grp, content };
+  }
+  // Member-type part of one board (applies to that holomem's card in the unit).
+  function cardPart(effs) {
+    const flat = [0, 0, 0], pct = [0, 0, 0];
+    let rate = 0, ctShort = 0, seu = 0;
+    for (const e of effs || []) {
+      if (e.node !== "card") continue;
+      const v = e.v;
+      if (PCT[e.type]) { pct[0] += v * PCT[e.type][0]; pct[1] += v * PCT[e.type][1]; pct[2] += v * PCT[e.type][2]; continue; }
+      if (e.type === "live_active_skill_effect_up_permil_up") { seu += v; continue; }
+      if (e.type === "all_parameter_up") { flat[0] += v; flat[1] += v; flat[2] += v; }
+      else if (e.type === "performance_up") flat[0] += v;
+      else if (e.type === "technique_up") flat[1] += v;
+      else if (e.type === "sense_up") flat[2] += v;
+      else if (e.type === "live_active_skill_activation_probability_up_permil_up") rate += v;
+      else if (e.type === "live_active_skill_cool_time_shorten_permil_up") ctShort += v;
+    }
+    return { flat, pct, rate, ctShort, seu };
+  }
+
+  // opts: { board: bool, boardFull: bool, boardRole: bool, mode: "perfect"|"auto", lifeFull: bool }
+  //   boardRole: every board is planned for the holomem's role in the unit being scored (leader /
+  //   member / not in the unit) from its rank points, instead of the boards saved in My Data.
+  // boardOverride: optional {chr: [effects]} (used by the board planner to try variations quickly).
+  function makeEnv(progress, opts, boardOverride) {
+    opts = Object.assign({ board: true, mode: "perfect", lifeFull: true }, opts || {});
+    let board = boardOverride || null, role = null, supBoard;
+    if (!board && opts.board && opts.boardRole && !opts.boardFull) {
+      const B = window.HoloBoard;
+      role = { eff: { leader: {}, member: {}, support: {} }, sup: { leader: {}, member: {}, support: {} }, lead: {} };
+      for (const chr in H.talents) {
+        for (const r of ["leader", "member", "support"]) {
+          const eff = B.effects(chr, B.roleSetup(progress, chr, r), progress);
+          role.eff[r][chr] = eff;
+          role.sup[r][chr] = supportPart(chr, eff);
+        }
+        // The leader's own card uses the leader board's member tiles (difference to the member board).
+        const a = cardPart(role.eff.leader[chr]), b = cardPart(role.eff.member[chr]);
+        role.lead[chr] = { flat: a.flat.map((x, i) => x - b.flat[i]), pct: a.pct.map((x, i) => x - b.pct[i]),
+          rate: a.rate - b.rate, ctShort: a.ctShort - b.ctShort, seu: a.seu - b.seu };
+      }
+      board = role.eff.member; // member tiles for prepare()
+      supBoard = role.eff.support; // every board is a support board unless its holomem is in the unit
+    } else {
+      board = board || boardEffects(progress, opts);
+      supBoard = board;
+    }
+    // Support-type board tiles apply to every unit.
+    const gFlat = [0, 0, 0];
+    const grpRaw = {};
+    const content = []; // [{chr, singerType, v}]
+    for (const chr in supBoard) {
+      const p = supportPart(chr, supBoard[chr]);
+      for (let k = 0; k < 3; k++) gFlat[k] += p.g[k];
+      for (const g in p.grp) grpRaw[g] = (grpRaw[g] || 0) + p.grp[g];
+      content.push(...p.content);
+    }
     const grpCap = (G.boardLimits || {}).all_parameter_up_for_character_grouping || 900;
-    for (const g in grpFlat) grpFlat[g] = Math.min(grpCap, grpFlat[g]);
+    const grpFlat = {};
+    for (const g in grpRaw) grpFlat[g] = Math.min(grpCap, grpRaw[g]);
     return {
-      progress, opts, board, gFlat, grpFlat, content,
+      progress, opts, board, gFlat, grpFlat, grpRaw, grpCap, content, role, leadAdj: new Map(),
       memory: posterPermil(progress.memories || 0),
       upgrade: upgradeBonus(progress),
       calib: opts.calib != null ? opts.calib : H.store.get("calibration", 1) || 1,
@@ -213,20 +270,7 @@
     const tl = H.talents[card.chr];
     const aLv = H.skillLevelAt(card, "active", bloom), sLv = H.skillLevelAt(card, "special", bloom), pLv = H.skillLevelAt(card, "passive", bloom);
     // Member-type board tiles of this talent.
-    const flat = [0, 0, 0], pct = [0, 0, 0];
-    let rate = 0, ctShort = 0, seu = 0;
-    for (const e of env.board[card.chr] || []) {
-      if (e.node !== "card") continue;
-      const v = e.v;
-      if (PCT[e.type]) { pct[0] += v * PCT[e.type][0]; pct[1] += v * PCT[e.type][1]; pct[2] += v * PCT[e.type][2]; continue; }
-      if (e.type === "live_active_skill_effect_up_permil_up") { seu += v; continue; }
-      if (e.type === "all_parameter_up") { flat[0] += v; flat[1] += v; flat[2] += v; }
-      else if (e.type === "performance_up") flat[0] += v;
-      else if (e.type === "technique_up") flat[1] += v;
-      else if (e.type === "sense_up") flat[2] += v;
-      else if (e.type === "live_active_skill_activation_probability_up_permil_up") rate += v;
-      else if (e.type === "live_active_skill_cool_time_shorten_permil_up") ctShort += v;
-    }
+    const { flat, pct, rate, ctShort, seu } = cardPart(env.board[card.chr]);
     m = {
       id: cardId, card, chr: card.chr, attr: card.attr, groups: tl ? tl.groups : [],
       lv, bloom, base: s, baseTotal: s[3], flat,
@@ -284,16 +328,50 @@
     }
   }
 
+  // Boards planned for this unit's roles: the holomems in the unit use their leader/member board
+  // (its support/song tiles replace the support board's), the leader's card gets the leader board's member tiles.
+  function roleBoards(env, members, leaderChr) {
+    const R = env.role;
+    const chrs = new Set(members.map((m) => m.chr));
+    if (leaderChr) chrs.add(leaderChr);
+    const gFlat = env.gFlat.slice(), grp = Object.assign({}, env.grpRaw);
+    const content = env.content.filter((c) => !chrs.has(c.chr));
+    for (const chr of chrs) {
+      const a = R.sup[chr === leaderChr ? "leader" : "member"][chr], b = R.sup.support[chr];
+      if (!a || !b) continue;
+      for (let k = 0; k < 3; k++) gFlat[k] += a.g[k] - b.g[k];
+      for (const g in a.grp) grp[g] = (grp[g] || 0) + a.grp[g];
+      for (const g in b.grp) grp[g] = (grp[g] || 0) - b.grp[g];
+      content.push(...a.content);
+    }
+    const grpFlat = {};
+    for (const g in grp) grpFlat[g] = Math.min(env.grpCap, grp[g]);
+    const out = leaderChr && R.lead[leaderChr] ? members.map((m) => {
+      if (m.chr !== leaderChr) return m;
+      let x = env.leadAdj.get(m);
+      if (!x) {
+        const d = R.lead[leaderChr];
+        x = Object.assign({}, m, { flat: m.flat.map((v, i) => v + d.flat[i]), pct: m.pct.map((v, i) => v + d.pct[i]),
+          rate: m.rate + d.rate, ctShort: m.ctShort + d.ctShort, seu: m.seu + d.seu });
+        env.leadAdj.set(m, x);
+      }
+      return x;
+    }) : members;
+    return { members: out, gFlat, grpFlat, content };
+  }
+
   // ---------- evaluation ----------
   // team = { leader: { chr, cardId|null }, members: [prepared member ×1..5] }
   // luck: "avg" (expected score, default) | "max" (every active check succeeds) | function () -> [0,1) (one random play)
   function evaluate(env, team, chart, detail, luck) {
     luck = luck || "avg";
     const rolls = typeof luck === "function" ? new Map() : null;
-    const members = team.members;
+    let members = team.members;
     const n = members.length;
     const song = chart.song;
     const leaderChr = team.leader ? team.leader.chr : null;
+    let gFlat = env.gFlat, grpFlat = env.grpFlat, content = env.content;
+    if (env.role) ({ members, gFlat, grpFlat, content } = roleBoards(env, members, leaderChr));
     const ctx = {
       attrCount: { cute: 0, happy: 0, pure: 0 }, grpCount: {},
       leaderChr, leaderGroups: leaderChr && H.talents[leaderChr] ? H.talents[leaderChr].groups : [],
@@ -322,7 +400,7 @@
     const leadFlat = [0, 0, 0], leadPct = [0, 0, 0];
     let leadSeu = 0;
     if (leaderChr) {
-      for (const e of env.board[leaderChr] || []) {
+      for (const e of (env.role ? env.role.eff.leader[leaderChr] : env.board[leaderChr]) || []) {
         if (e.node !== "leader") continue;
         if (e.songTrig === "music_skill_tree_character" && !(ctx.songAll || ctx.songChrs.has(leaderChr))) continue;
         const v = e.v;
@@ -346,8 +424,8 @@
       const row = detail ? [0, 0, 0] : null;
       for (let k = 0; k < 3; k++) {
         const b = m.base[k];
-        let flat = m.flat[k] + env.gFlat[k] + leadFlat[k];
-        for (const g of m.groups) flat += env.grpFlat[g] || 0;
+        let flat = m.flat[k] + gFlat[k] + leadFlat[k];
+        for (const g of m.groups) flat += grpFlat[g] || 0;
         const boardPct = m.pct[k] + leadPct[k];
         const v = b + flat + b * (boardPct + acc.pas[i][k] + acc.out[i][k] + env.memory + upg) / 1000;
         unit += v;
@@ -363,7 +441,7 @@
 
     // Song bonus from content-type board tiles (capped)
     let songBonus = 0;
-    for (const c of env.content) {
+    for (const c of content) {
       if (!(ctx.songAll || ctx.songChrs.has(c.chr))) continue;
       if (c.singerType !== "all" && c.singerType !== song.singerType) continue;
       songBonus += c.v;
@@ -514,7 +592,7 @@
   }
 
   window.HoloSim = {
-    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, simulate, EVENTS, eventSong, eventOf, eventPtBonus, boardEffects, upgradeBonus,
+    songById, loadChart, loadCharts, getChart, makeEnv, boardOpts, prepare, evaluate, simulate, EVENTS, eventSong, eventOf, eventPtBonus, boardEffects, upgradeBonus,
     posterPermil, rankFor, hasTimeTrigger, chartIndex,
   };
 })();

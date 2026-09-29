@@ -132,7 +132,6 @@
       const tiles = B.tilesFor(chr);
       const budget = B.pointsFor(progress, chr);
       const targets = tiles.list.filter((t) => useful(chr, t));
-      if (!targets.length) { done++; continue; }
       const exact = teamChrs.has(chr);
       // Boards of holomems in the unit are re-planned from scratch (boards can be reset in game);
       // other boards keep what you have and only spend their leftover points.
@@ -163,6 +162,25 @@
         left -= bestPath.reduce((a, k) => a + tiles.byKey[k].cost, 0);
         cur = bestScore;
         if (o.signal && o.signal.cancelled) break;
+      }
+      // Leftover points: support (green) and song (yellow) tiles, including reward tiles. They never
+      // lower this unit's score and help other units / rewards. Leader (red) tiles are only taken on
+      // the leader's board, member (blue) tiles only on unit members' boards.
+      for (let guard = 0; guard < 150 && left > 0; guard++) {
+        const { dist, prev } = paths(tiles, set);
+        let best = null, bestV = 0;
+        for (const t of tiles.list) {
+          if (set.has(t.k) || !dist.has(t.k) || !t.eff || (t.type !== "all_member" && t.type !== "content")) continue;
+          const cost = dist.get(t.k);
+          if (cost > left || cost === 0) continue;
+          const path = pathTo(prev, set, t.k);
+          if (path.some((k) => { const x = tiles.byKey[k]; return (x.type === "leader" && !(leader && leader.chr === chr)) || (x.type === "card" && !exact); })) continue;
+          const v = path.reduce((a, k) => a + ((tiles.byKey[k].eff && tiles.byKey[k].eff.live ? 2 : 1) * tiles.byKey[k].grade), 0) / cost;
+          if (v > bestV) { bestV = v; best = path; }
+        }
+        if (!best) break;
+        best.forEach((x) => set.add(x));
+        left -= best.reduce((a, k) => a + tiles.byKey[k].cost, 0);
       }
       // Keep the old board when the plan is not better.
       const newEff = effOf(chr, set);

@@ -29,7 +29,7 @@
       pool: "Card pool", poolOwned: "My cards", poolAll: "Every card at max level (theory)", effort: "Search effort", fast: "Fast", normal: "Normal", thorough: "Thorough",
       core: "Core cards", pickCore: "Choose core cards", lockLeader: "Leader", anyLeader: "Any (optimise)", keep: "Cards to keep",
       pullLv: "Assume the new card is", pullBloom: "Bloom",
-      s4: "Holomem board", boardInfo: "Board bonuses come from the tiles unlocked on each holomem's board in My Data → Holomems. Holomems you haven't set up use auto setup with the points from their rank.",
+      s4: "Holomem board", boardInfo: "How holomem boards are counted when comparing units.", bRole: "Planned for each unit (recommended)", bRoleHelp: "Every board is set up for its holomem's role in the unit being tried, using the points from its rank: the leader gets leader (red) tiles, unit members get member (blue) tiles, everyone else gets support (green) and song (yellow) tiles. Use \"Plan my boards\" on a result to see exactly which tiles to unlock.", bSaved: "My saved boards", bSavedHelp: "Only the tiles you set up in My Data → Holomems (boards you haven't set up count as empty).", bFull: "All tiles unlocked (theory)", bOff: "No board", bFullHelp: "Every tile of every board unlocked.", bOffHelp: "Board bonuses are ignored.",
       s5: "Input details", eventSongs: "Songs", addSong: "Add song", ratingLeader: "Leader holomem", latestEvent: "Use latest event songs",
       run: "Find best unit", running: "Searching…", cancel: "Cancel", results: "Result", alternatives: "Other strong units",
       noCards: "You have no cards yet. Add your cards in My Data first.", perSong: "Per song", avg: "Average", rating: "Rating (top 3)",
@@ -67,7 +67,7 @@
       pool: "カード範囲", poolOwned: "所持カード", poolAll: "全カード最大レベル（理論値）", effort: "探索量", fast: "高速", normal: "標準", thorough: "精密",
       core: "指定カード", pickCore: "指定カードを選択", lockLeader: "リーダー", anyLeader: "指定なし（最適化）", keep: "残すカード",
       pullLv: "新カードの想定", pullBloom: "開花",
-      s4: "ホロメンボード", boardInfo: "ボード効果は所持データ→ホロメンで解放したマスから計算します。未設定のホロメンはランクのPtで自動設置した状態として計算します。",
+      s4: "ホロメンボード", boardInfo: "ユニットを比較するときのボードの扱い。", bRole: "ユニットごとに計画（推奨）", bRoleHelp: "試すユニットでの役割に合わせて、ランクのPtで各ボードを設定して計算します：リーダーはリーダー（赤）マス、ユニットのメンバーはメンバー（青）マス、それ以外はサポート（緑）と楽曲（黄）マス。結果の「ボードを計画」で解放するマスを確認できます。", bSaved: "保存したボード", bSavedHelp: "所持データ→ホロメンで設定したマスのみ（未設定のボードは空として計算）。", bFull: "全マス解放（理論値）", bOff: "ボードなし", bFullHelp: "全ボードの全マスを解放した状態。", bOffHelp: "ボード効果を無視します。",
       s5: "詳細入力", eventSongs: "楽曲", addSong: "楽曲を追加", ratingLeader: "リーダーのホロメン", latestEvent: "最新イベント楽曲を使用",
       run: "最適ユニットを探す", running: "探索中…", cancel: "中止", results: "結果", alternatives: "その他の強いユニット",
       noCards: "所持カードがありません。先に所持データでカードを登録してください。", perSong: "楽曲別", avg: "平均", rating: "レーティング（上位3曲）",
@@ -105,7 +105,7 @@
       pool: "卡片範圍", poolOwned: "我的卡片", poolAll: "全部卡片最高等級（理論值）", effort: "搜尋強度", fast: "快速", normal: "標準", thorough: "精密",
       core: "核心卡片", pickCore: "選擇卡片", lockLeader: "隊長", anyLeader: "不指定（最佳化）", keep: "保留的卡片",
       pullLv: "新卡片假設為", pullBloom: "綻放",
-      s4: "Holo成員面板", boardInfo: "面板效果依照遊戲進度資料→Holo成員中解鎖的格子計算。未編輯的成員會以其Rank的Pt自動設置後計算。",
+      s4: "Holo成員面板", boardInfo: "比較隊伍時如何計算Holo成員面板。", bRole: "依每個隊伍規劃（推薦）", bRoleHelp: "依照成員在所試隊伍中的角色，以其Rank的Pt設定面板後計算：隊長使用隊長（紅）格子，隊伍成員使用成員（藍）格子，其他成員使用支援（綠）與樂曲（黃）格子。可在結果中按「為此隊伍規劃面板」查看需解鎖的格子。", bSaved: "已儲存的面板", bSavedHelp: "只使用在遊戲進度資料→Holo成員中設定的格子（未設定的面板視為空白）。", bFull: "全部格子解鎖（理論值）", bOff: "不使用面板", bFullHelp: "所有面板的所有格子皆解鎖。", bOffHelp: "忽略面板效果。",
       s5: "輸入細節", eventSongs: "樂曲", addSong: "新增樂曲", ratingLeader: "擔任隊長的Holo成員", latestEvent: "使用最新活動樂曲",
       run: "尋找最佳隊伍", running: "搜尋中…", cancel: "取消", results: "您的最佳隊伍", alternatives: "其他強力隊伍",
       noCards: "你還沒有持有任何卡片，請先到遊戲進度資料登錄卡片。", perSong: "各樂曲", avg: "平均", rating: "評級（前3首）",
@@ -129,11 +129,13 @@
 
   const latestSongs = U.songsSorted().filter((s) => S.chartIndex[s.id] || true).slice(0, 4).map((s) => s.id);
   const st = Object.assign({
-    mode: "best", target: "score", play: "perfect", lifeFull: true, board: true, boardFull: false, pool: "owned",
+    mode: "best", target: "score", play: "perfect", lifeFull: true, boardSrc: "role", pool: "owned",
     effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0, luck: "avg",
     song: latestSongs[0], diff: "expert", eventSongs: latestSongs.slice(), ratingChr: Object.keys(H.talents)[0],
     eventId: (S.EVENTS.events[0] || {}).id, eventSong: "all",
   }, H.store.get("optimizer", {}));
+  if (!["role", "saved", "full", "off"].includes(st.boardSrc)) st.boardSrc = "role";
+  delete st.board; delete st.boardFull;
   const qs = new URLSearchParams(location.search);
   if (qs.get("song") && S.songById[qs.get("song")]) { st.song = qs.get("song"); st.target = "score"; if (qs.get("diff")) st.diff = qs.get("diff"); }
   let running = null;
@@ -196,7 +198,8 @@
         <div><span class="lbl">${esc(tx("pullLv"))}</span>Lv max · ${esc(tx("pullBloom"))} ${seg("pullBloom", [[0, "0"], [1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]])}</div>`;
     }
     s3 += `</div>`;
-    const s4 = `<p class="muted">${esc(tx("boardInfo"))}</p><div class="opt-rows"><div>${toggle("board", tx("board"))}</div><div>${toggle("boardFull", tx("boardFull"))}</div></div>`;
+    const s4 = `<p class="muted">${esc(tx("boardInfo"))}</p><div class="opt-rows"><div>${seg("boardSrc", [["role", tx("bRole")], ["saved", tx("bSaved")], ["full", tx("bFull")], ["off", tx("bOff")]])}</div>
+      <p class="small muted">${esc(tx({ role: "bRoleHelp", saved: "bSavedHelp", full: "bFullHelp", off: "bOffHelp" }[st.boardSrc] || "bRoleHelp"))}</p></div>`;
     let s5 = "";
     if (st.target === "score") {
       s5 = U.songPickerHTML("song-pick", st.song, st.diff);
@@ -291,7 +294,7 @@
     };
   }
   function buildEnv() {
-    const env = S.makeEnv(H.progress, { board: st.board, boardFull: st.boardFull, mode: st.play, lifeFull: st.lifeFull });
+    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.play, lifeFull: st.lifeFull }));
     return env;
   }
   function overridesForPool() {
