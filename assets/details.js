@@ -37,6 +37,20 @@
       maximum: "最大", maxHelp: "アクティブスキルが全発動", spread: "2,000回のシミュレーション", worst: "最低", typical: "通常（中央80%）",
       median: "中央値", bestSeen: "最高記録",
     },
+    zh: {
+      title: "隊伍詳情", intro: "手動組成隊伍，查看隊伍分數、預估分數以及每位成員的貢獻。",
+      leader: "隊長", members: "成員（編組順序）", change: "變更成員", playMode: "遊玩方式",
+      perfect: "ALL PERFECT", auto: "AUTO", board: "使用Holo成員面板", life: "生命值保持全滿",
+      breakdown: "分數明細", baseScore: "音符（無技能）", skillScore: "技能加成", songBonus: "樂曲加成（面板）",
+      upgrade: "成員強化加成", memory: "回憶卡", member: "成員", uptime: "主動技能發動率", special: "特殊技能",
+      specialAt: "發動", support: "分數支援", rate: "發動率", empty: "選擇隊長與成員後會顯示預估值。",
+      notOwned: "未持有：以最高等級、綻放0計算", moveUp: "往左", optimiseOrder: "最佳編組順序",
+      chart: "譜面", notes: "音符", synthetic: "無譜面資料：音符平均分布",
+      calibrate: "以實際分數校正", calibHelp: "用此隊伍與此樂曲實際遊玩後輸入分數，全站的預估值都會以相同倍率校正。",
+      apply: "套用", reset: "重置", factor: "目前倍率",
+      maximum: "最高", maxHelp: "所有主動技能皆發動", spread: "2,000 次模擬遊玩", worst: "最低", typical: "一般（中間80%）",
+      median: "中位數", bestSeen: "最佳紀錄",
+    },
   };
   const tx = (k) => (TX[H.lang] && TX[H.lang][k]) || TX.en[k];
   const root = document.getElementById("details");
@@ -106,7 +120,7 @@
     }).join("");
     return `<div class="panel result">
         <div class="result-head">
-          <div><div class="small muted">${esc(U.tx("estScore"))} (${esc(H.lang === "ja" ? "平均" : "average")})</div><div class="big">${fmt(Math.round(r.score))}</div>
+          <div><div class="small muted">${esc(U.tx("estScore"))} (${esc({ ja: "平均", zh: "平均" }[H.lang] || "average")})</div><div class="big">${fmt(Math.round(r.score))}</div>
             <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, r.score))}</b></div></div>
           <div><div class="small muted">${esc(tx("maximum"))}</div><div class="big">${fmt(Math.round(r.spread.max))}</div>
             <div class="small">${esc(U.scoreRank(song, r.spread.max))} · <span class="muted">${esc(tx("maxHelp"))}</span></div></div>

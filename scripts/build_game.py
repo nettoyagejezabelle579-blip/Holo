@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build data/game.js: the structured mechanics used by the team optimizer.
 
-Usage: python3 scripts/build_game.py --eng <holodori-db-eng-diff> --jpn <holodori-db-jpn-diff>
+Usage: python3 scripts/build_game.py --eng <holodori-db-eng-diff> --jpn <holodori-db-jpn-diff> [--cht <android-database/languages/cht>]
 
 Everything here is read straight from the HolodoriDB master data dumps:
 structured skill effects/triggers per card, leader outfit skills, songs and
@@ -10,6 +10,7 @@ the Member Upgrade Bonus per card level and holomem board totals per talent.
 """
 import argparse
 import json
+import re
 import os
 from collections import defaultdict
 
@@ -49,11 +50,30 @@ def lang(base, *names):
             out[x["id"]] = x["data"].get("text", "").strip()
     return out
 
+def lang_cht(base, *names):
+    """Traditional Chinese text from holodori-net/android-database (languages/cht/LangX.json)."""
+    out = {}
+    if not base:
+        return out
+    for name in names:
+        path = os.path.join(base, re.sub(r"_(Eng|Jpn)\.json$", ".json", name))
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as f:
+            for x in json.load(f):
+                d = x.get("data", x)
+                key = d.get("id", x.get("id"))
+                if key is not None:
+                    out[key] = (d.get("text") or "").strip()
+    return out
+
+
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--eng", required=True)
     ap.add_argument("--jpn", required=True)
+    ap.add_argument("--cht", default="", help="android-database/languages/cht (Traditional Chinese)")
     ap.add_argument("--out", default=os.path.join(ROOT, "data", "game.js"))
     args = ap.parse_args()
     E, J = args.eng, args.jpn
@@ -159,6 +179,7 @@ def main():
     # Songs
     en = lang(E, "LangMusic_Eng.json")
     ja = lang(J, "LangMusic_Jpn.json")
+    zh = lang_cht(args.cht, "LangMusic.json")
     diffs = defaultdict(dict)
     for x in load(E, "MusicDifficulty.json"):
         d = x["data"]
@@ -173,8 +194,10 @@ def main():
         m = x["data"]
         songs.append({
             "id": m["id"],
-            "title": {"en": en.get(m["titleLangId"], m["id"]), "ja": ja.get(m["titleLangId"], "") or en.get(m["titleLangId"], m["id"])},
-            "singer": {"en": en.get(m.get("characterGroupDisplayNameLangId", ""), ""), "ja": ja.get(m.get("characterGroupDisplayNameLangId", ""), "")},
+            "title": {"en": en.get(m["titleLangId"], m["id"]), "ja": ja.get(m["titleLangId"], "") or en.get(m["titleLangId"], m["id"]),
+                      "zh": zh.get(m["titleLangId"], "") or en.get(m["titleLangId"], m["id"])},
+            "singer": {"en": en.get(m.get("characterGroupDisplayNameLangId", ""), ""), "ja": ja.get(m.get("characterGroupDisplayNameLangId", ""), ""),
+                       "zh": zh.get(m.get("characterGroupDisplayNameLangId", ""), "") or en.get(m.get("characterGroupDisplayNameLangId", ""), "")},
             "singerType": tail(m.get("musicSingerType", "")).lower(),
             "chrs": m.get("characterIds", []),
             "sec": m.get("playingSeconds", 120),
@@ -235,6 +258,7 @@ def main():
                   "LIVE_SCORE_BONUS_ADD_PERMIL_UP_BY_MUSIC_SKILL_TREE_CHARACTER_AND_MUSIC_SINGER_TYPE"}
     st_lang_en = lang(E, "LangGeneratedSkillTreeEffect_Eng.json", "LangSkillTreeEffect_Eng.json")
     st_lang_ja = lang(J, "LangGeneratedSkillTreeEffect_Jpn.json", "LangSkillTreeEffect_Jpn.json")
+    st_lang_zh = lang_cht(args.cht, "LangGeneratedSkillTreeEffect.json", "LangSkillTreeEffect.json")
 
     def player_level(cond_id):
         for c in conditions.get(cond_id, []):
@@ -254,7 +278,8 @@ def main():
             "when": tail(e.get("characterTriggerType", ""), "_TRIGGER_TYPE_").lower(),
             "tgt": tail(tg.get("type", ""), "_TARGET_TYPE_").lower(),
             "live": et in live_types,
-            "text": {"en": st_lang_en.get(e.get("descriptionLangId", ""), ""), "ja": st_lang_ja.get(e.get("descriptionLangId", ""), "")},
+            "text": {"en": st_lang_en.get(e.get("descriptionLangId", ""), ""), "ja": st_lang_ja.get(e.get("descriptionLangId", ""), ""),
+                     "zh": st_lang_zh.get(e.get("descriptionLangId", ""), "")},
         }
         if tg.get("characterId"):
             item["chr"] = tg["characterId"]
@@ -290,11 +315,12 @@ def main():
         d = x["data"]
         auto_modes[tail(d["autoSelectionType"], "_SELECTION_TYPE_").lower()][tail(d["nodeType"], "_NODE_TYPE_").lower()] = int(d.get("priorityRatioPermil", 0) or 0)
     board_model = {cid: ch.get("skillTreeNodePositionGroupId", "tree-model-001") for cid, ch in chars.items() if ch.get("isPlayable")}
-    item_names = {"en": lang(E, "LangItem_Eng.json"), "ja": lang(J, "LangItem_Jpn.json")}
+    item_names = {"en": lang(E, "LangItem_Eng.json"), "ja": lang(J, "LangItem_Jpn.json"), "zh": lang_cht(args.cht, "LangItem.json")}
     items = by_id(E, "Item.json")
     mat_ids = sorted({m[0] for t in tiles.values() for v in t["var"] for m in v["mat"]})
     materials = {mid: {"en": item_names["en"].get(items.get(mid, {}).get("nameLangId", ""), mid),
-                       "ja": item_names["ja"].get(items.get(mid, {}).get("nameLangId", ""), "")} for mid in mat_ids}
+                       "ja": item_names["ja"].get(items.get(mid, {}).get("nameLangId", ""), ""),
+                       "zh": item_names["zh"].get(items.get(mid, {}).get("nameLangId", ""), "")} for mid in mat_ids}
     # Connect effects: card -> multiplier per level and the tiles (offsets) it covers.
     extents = defaultdict(list)
     for x in load(E, "SkillTreeConnectEffectExtent.json"):
@@ -302,7 +328,8 @@ def main():
     ce = defaultdict(list)
     for x in load(E, "SkillTreeConnectEffect.json"):
         ce[x["id"]].append(x["data"])
-    ce_text = {"en": lang(E, "LangGeneratedSkillTreeConnectEffect_Eng.json"), "ja": lang(J, "LangGeneratedSkillTreeConnectEffect_Jpn.json")}
+    ce_text = {"en": lang(E, "LangGeneratedSkillTreeConnectEffect_Eng.json"), "ja": lang(J, "LangGeneratedSkillTreeConnectEffect_Jpn.json"),
+               "zh": lang_cht(args.cht, "LangGeneratedSkillTreeConnectEffect.json")}
     connect = {}
     for c in cards:
         rows = sorted(ce.get(c.get("skillTreeConnectEffectId") or "", []), key=lambda r: r.get("level", 1))
@@ -312,7 +339,8 @@ def main():
             "area": rows[0]["skillTreeConnectEffectExtentGroupId"].split("extent-")[-1],
             "cells": sorted(extents[rows[0]["skillTreeConnectEffectExtentGroupId"]]),
             "v": [int(r.get("effectPermilUp", 1000)) for r in rows],
-            "text": [{"en": ce_text["en"].get(r.get("descriptionLangId", ""), ""), "ja": ce_text["ja"].get(r.get("descriptionLangId", ""), "")} for r in rows],
+            "text": [{"en": ce_text["en"].get(r.get("descriptionLangId", ""), ""), "ja": ce_text["ja"].get(r.get("descriptionLangId", ""), ""),
+                      "zh": ce_text["zh"].get(r.get("descriptionLangId", ""), "")} for r in rows],
         }
     rank_exp = [int(r.get("exp", 0) or 0) for r in sorted([x["data"] for x in load(E, "CharacterLevel.json")], key=lambda r: r["level"])]
 

@@ -49,7 +49,8 @@ GitHub Pages.
   Arrow keys move between cards, `Esc` closes.
 - **Compare** up to four cards side by side.
 - **Collection tracking** (owned + favourites) stored in the browser, with JSON export/import.
-- English / Japanese UI, light / dark / auto theme, mobile layout. Filter state is kept in the URL.
+- English / Japanese / Traditional Chinese (繁體中文) UI with the official in-game text for cards, skills,
+  songs and board tiles in each language; light / dark / auto theme, mobile layout. Filter state is kept in the URL.
 
 ## Score model
 
@@ -84,6 +85,9 @@ Remove them once the real data arrives.
 
 Stats are `round(levelBase × distribution ÷ 1000 × (1 + potential bonus))`, using the per-card level curve,
 limit-break caps and potential table from the master data.
+
+Traditional Chinese game text comes from the `languages/cht` tables of
+[holodori-net/android-database](https://github.com/holodori-net/android-database) (`--cht` option of the build scripts).
 
 ### Card art
 
