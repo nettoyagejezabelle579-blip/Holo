@@ -15,8 +15,9 @@ if [ -d ".cache/yagoo-dori/.git" ]; then
   git -C .cache/yagoo-dori pull --ff-only -q
 else
   git clone -q --depth 1 --filter=blob:none --sparse https://github.com/asciisyaez/yagoo-dori.git .cache/yagoo-dori
-  git -C .cache/yagoo-dori sparse-checkout set data/generated
+  git -C .cache/yagoo-dori sparse-checkout set data/generated apps/web/public/game/cards apps/web/public/game/previews
 fi
 python3 scripts/build_data.py --eng .cache/holodori-db-eng-diff --jpn .cache/holodori-db-jpn-diff
 python3 scripts/build_game.py --eng .cache/holodori-db-eng-diff --jpn .cache/holodori-db-jpn-diff
 python3 scripts/build_charts.py --timelines .cache/yagoo-dori/data/generated/holodori-chart-timelines.json
+python3 scripts/import_art.py --icons .cache/yagoo-dori/apps/web/public/game/cards --full .cache/yagoo-dori/apps/web/public/game/previews

@@ -409,3 +409,17 @@ a.chip { color: inherit; text-decoration: none; }
 .tile-node.t-content { background: #e0a500; }
 .tile-node.t-connection { background: #8a8aa0; }
 .board-eff { columns: 2 260px; font-size: 13px; padding-left: 18px; }
+
+/* ---------- card art ---------- */
+.art { aspect-ratio: 1 / 1; }
+.art.has-img { background: #111; }
+.art.has-img .art-name, .art.has-img .stars { display: none; }
+.art.has-img::after { background: none; }
+.art.has-img img { object-fit: cover; }
+.art .badges { z-index: 2; }
+.art.has-img .badge.cute, .art.has-img .badge.happy, .art.has-img .badge.pure { display: none; }
+.art.has-img .badges { top: 6px; left: 34%; right: 6px; justify-content: flex-end; }
+.tile .art.has-img .badges { right: 40px; }
+.hero-art { width: 100%; aspect-ratio: 16 / 9; max-height: 440px; overflow: hidden; background: #111; }
+.hero-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid.compact .art.has-img .badges { display: none; }

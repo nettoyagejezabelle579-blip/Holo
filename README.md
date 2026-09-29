@@ -81,8 +81,12 @@ limit-break caps and potential table from the master data.
 
 ### Card art
 
-Card art is not bundled. Tiles show a generated face in the talent's colours. To show real art, put
-`<assetId>.webp` files somewhere and set `artBase` in `assets/config.js`.
+`assets/art/icon/<cardId>.webp` (square card icons with the in-game frame, used on every card tile) and
+`assets/art/full/<cardId>.webp` (wide illustrations, shown at the top of the card detail view) cover all
+★4 and ★5 cards up to the 2026-09-19 banner; `data/art.js` lists which cards have art. Cards without art
+(★3 cards and the newest announced cards) fall back to a generated face in the talent's colours.
+Add more with `python3 scripts/import_art.py --icons <dir> --full <dir>` (files named `<cardId>.webp`).
+Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
 
 ## Disclaimer
 

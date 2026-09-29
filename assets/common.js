@@ -4,6 +4,7 @@
 
   const D = window.HOLO_DATA;
   const ANN = window.HOLO_ANNOUNCED || { banners: [], cards: [] };
+  const ART = window.HOLO_ART || {};
   const CFG = Object.assign({ artBase: "", newDays: 14 }, window.HOLO_CONFIG || {});
 
   // ---------- storage ----------
@@ -212,13 +213,23 @@
     if (card.announced) badges.push(`<span class="badge announced">${esc(t("announced"))}</span>`);
     else if (card.limited) badges.push(`<span class="badge limited">${esc(t("limited"))}</span>`);
     if (isNew(card) && !opts.noNew) badges.push(`<span class="badge new">${esc(t("newBadge"))}</span>`);
-    const img = CFG.artBase && card.asset
-      ? `<img loading="lazy" alt="" src="${esc(CFG.artBase.replace(/\/$/, ""))}/${esc(card.asset)}.webp" onerror="this.remove()">`
+    const kinds = ART[card.id] || [];
+    const kind = opts.full && kinds.includes("full") ? "full" : kinds.includes("icon") ? "icon" : null;
+    const alt = esc(L(tl.name) + " " + L(card.title));
+    const img = kind
+      ? `<img loading="lazy" alt="${alt}" src="${esc(artUrl(card.id, kind))}" onerror="this.parentNode.classList.remove('has-img');this.remove()">`
       : "";
-    return `<div class="art" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
+    return `<div class="art ${kind ? "has-img art-" + kind : ""}" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
       `<div class="art-name">${esc(L(tl.short))}</div>${img}` +
       `<div class="badges">${badges.join("")}</div>` +
       `<div class="stars" aria-label="${card.rarity} star">${stars(card.rarity)}</div></div>`;
+  }
+  function artUrl(id, kind) {
+    const base = CFG.artBase || (document.body.dataset.base || ".") + "/assets/art";
+    return base.replace(/\/$/, "") + "/" + kind + "/" + id + ".webp";
+  }
+  function hasArt(id, kind) {
+    return (ART[id] || []).includes(kind || "icon");
   }
 
   // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
@@ -307,7 +318,7 @@
   window.Holo = {
     D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
-    skillLevelAt, isNew, talentGroupNames, artHTML, owned, favorites, toggleOwned, toggleFavorite,
+    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, owned, favorites, toggleOwned, toggleFavorite,
     progress, saveProgress, setCardProgress, replaceProgress,
     renderHeader, renderFooter,
   };
