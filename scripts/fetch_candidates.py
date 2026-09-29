@@ -32,61 +32,8 @@ def save(url, name):
         log.append(f"ERR {name} {e} {url}")
 
 
-# 1. Official posts on X (public embed API)
-TWEETS = {"kobo_en": "2104405748877025465", "jp_2104043": "2104043348562419965", "gacha_en": "2104758648845337052",
-          "trend_2104061": "2104061137918808440", "paradise_en": "2012442267831943495"}
-for name, tid in TWEETS.items():
-    try:
-        d = json.loads(get(f"https://cdn.syndication.twimg.com/tweet-result?id={tid}&lang=en&token=4"))
-        log.append(f"TWEET {name}: {d.get('text', '')[:300]!r}")
-        for i, m in enumerate(d.get("mediaDetails", []) or []):
-            u = m.get("media_url_https")
-            if u:
-                save(u + "?name=orig", f"x_{name}_{i}")
-        for k in ("quoted_tweet", "parent"):
-            q = d.get(k) or {}
-            for i, m in enumerate(q.get("mediaDetails", []) or []):
-                if m.get("media_url_https"):
-                    save(m["media_url_https"] + "?name=orig", f"x_{name}_{k}_{i}")
-    except Exception as e:  # noqa: BLE001
-        log.append(f"TWEET ERR {name} {e}")
-
-# 2. Articles / wiki pages: images near the new card names
-PAGES = {"dengeki": "https://dengekionline.com/article/202609/89416",
-         "gamerch_marine": "https://gamerch.com/hololive-dreams/998672",
-         "appmedia_marine": "https://appmedia.jp/hololive-dreams/80234884"}
-KEYS = ["お宝独占", "振り向きざま", "波間に揺れる", "これがボクのイチオシ", "Hoard", "Glance", "Tidal", "Absolute", "マリン", "こより", "こぼ", "ベールズ", "水着"]
-for name, url in PAGES.items():
-    try:
-        html = get(url)
-        imgs = []
-        for m in re.finditer(r'<img[^>]+>', html):
-            tag = m.group(0)
-            src = re.search(r'(?:data-src|data-original|src)="([^"]+)"', tag)
-            if not src:
-                continue
-            s = src.group(1)
-            ctx = tag + html[m.end(): m.end() + 200]
-            alt = re.search(r'alt="([^"]*)"', tag)
-            if any(k in ctx for k in KEYS) or name == "dengeki":
-                imgs.append((s, alt.group(1) if alt else ""))
-        log.append(f"PAGE {name}: {len(html)} bytes, {len(imgs)} candidate images")
-        seen = set()
-        for i, (s, alt) in enumerate(imgs[:40]):
-            if s in seen or s.startswith("data:") or s.endswith(".svg") or ".gif" in s:
-                continue
-            seen.add(s)
-            if s.startswith("//"):
-                s = "https:" + s
-            elif s.startswith("/"):
-                s = re.match(r"https?://[^/]+", url).group(0) + s
-            log.append(f"  IMG {name}_{i} alt={alt[:60]!r}")
-            save(s, f"{name}_{i}")
-    except Exception as e:  # noqa: BLE001
-        log.append(f"PAGE ERR {name} {e}")
-
 # 3. YouTube thumbnails for the newest songs (their MV art)
-MV = {"m0376": "c2hbKnXIa_c", "m0375": "UPSSUSLlwjY", "m0548": "-H4bB6hxeEs", "m0413": "65R4ZpEuzvM", "m0358": "hDALUZZrE5U", "m0357": "na6bysYNuS0"}
+MV = {"m0354": "11VKhxkxlDs"}
 for sid, vid in MV.items():
     for q in ("maxresdefault", "sddefault", "hqdefault"):
         n = len(log)
