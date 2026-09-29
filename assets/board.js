@@ -205,7 +205,9 @@
       const cardId = placed[tileKey];
       if (!set.has(tileKey) || !G.connect[cardId]) continue;
       const v = G.connect[cardId].v[connectLevel(progress, cardId) - 1] || G.connect[cardId].v[0];
-      for (const k of connectFootprint(chr, tileKey, cardId)) mult.set(k, Math.max(mult.get(k) || 1, v / 1000));
+      // "Board effect UP X%" adds X% on top of the tile (in game: +50 tile with a 140% card shows +120).
+      // Overlapping ranges are assumed to add up.
+      for (const k of connectFootprint(chr, tileKey, cardId)) mult.set(k, (mult.get(k) || 1) + v / 1000);
     }
     return mult;
   }

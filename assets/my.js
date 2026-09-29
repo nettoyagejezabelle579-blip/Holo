@@ -211,7 +211,7 @@
     let body = `<div class="tile-detail"><div class="row">${tileIcon(t)}
       <div><span class="pill">${esc((TYPE_NAME[H.lang] || TYPE_NAME.en)[t.type])}</span> ${"★".repeat(t.grade)}<br>
       <b>${esc(t.eff ? B.effectText(t.eff, chr) : t.type === "connection" ? tx("connectHelp") : "—")}</b>
-      ${mult && mult > 1 ? `<br><span class="small" style="color:var(--accent)">Connect ×${mult.toFixed(2)} → ${esc(B.effectText(Object.assign({}, t.eff, { v: t.eff.v * mult }), chr))}</span>` : ""}
+      ${mult && mult > 1 ? `<br><span class="small" style="color:var(--accent)">Connect +${Math.round((mult - 1) * 100)}% → ${esc(B.effectText(Object.assign({}, t.eff, { v: t.eff.v * mult }), chr))}</span>` : ""}
       ${t.eff && !t.eff.live ? `<br><span class="small muted">${esc(tx("noLive"))}</span>` : ""}</div></div>
       <dl class="kv"><dt>${esc(tx("points"))}</dt><dd>${t.cost}</dd>
         ${mats.map(([id, q]) => `<dt>${esc(L((G.materials || {})[id] || { en: id }))}</dt><dd>${fmt(q)}</dd>`).join("")}
@@ -226,7 +226,7 @@
       body += `<h4 style="margin:12px 0 6px">${esc(tx("connectCard"))}</h4>
         <select class="select" id="bd-connect" style="width:100%"><option value="">—</option>${options.map((id) => {
           const c = H.cardById[id];
-          return `<option value="${esc(id)}" ${id === cur ? "selected" : ""}>${H.stars(c.rarity)} ${esc(L(H.talents[c.chr].short))} · ${esc(L(c.title))} · ${esc(G.connect[id].area)} ×${(G.connect[id].v[B.connectLevel(H.progress, id) - 1] / 1000).toFixed(2)}</option>`;
+          return `<option value="${esc(id)}" ${id === cur ? "selected" : ""}>${H.stars(c.rarity)} ${esc(L(H.talents[c.chr].short))} · ${esc(L(c.title))} · ${esc(G.connect[id].area)} +${G.connect[id].v[B.connectLevel(H.progress, id) - 1] / 10}%</option>`;
         }).join("")}</select>
         ${cur ? `<p class="small">${esc(H.plain(L(G.connect[cur].text[B.connectLevel(H.progress, cur) - 1])))}</p>` : `<p class="small muted">${esc(tx("connectOwned"))}</p>`}`;
     }
