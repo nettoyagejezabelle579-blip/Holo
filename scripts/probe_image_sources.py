@@ -38,3 +38,24 @@ for mid in ["m0001", "m0548", "m0325", "m9999"]:
         u = CDN + pt.format(id=mid)
         print("PROBE", status(u), u)
 
+
+# Official site: images whose alt text / nearby text mentions the newest songs and cards.
+import re
+KEYS = ["Kyapi", "PROPOSE", "Play Dice", "BAKU", "PARADISE", "KONKON", "Wonky", "マリン", "こより", "こぼ", "ベールズ", "Hoard", "Glance", "Tidal", "Absolute"]
+for page in ["https://www.hololive-dreams.com/", "https://www.hololive-dreams.com/music/", "https://www.hololive-dreams.com/news/",
+             "https://www.hololive-dreams.com/en/", "https://www.hololive-dreams.com/en/music/", "https://www.hololive-dreams.com/en/news/"]:
+    try:
+        with urllib.request.urlopen(urllib.request.Request(page, headers=UA), timeout=40) as r:
+            html = r.read().decode("utf-8", "replace")
+    except Exception as e:  # noqa: BLE001
+        print("PAGE ERR", page, e)
+        continue
+    imgs = re.findall(r"https://images\.microcms-assets\.io/[^\"'\s)]+", html)
+    print("PAGE", page, len(html), "bytes,", len(set(imgs)), "microcms images")
+    for k in KEYS:
+        for m in re.finditer(re.escape(k), html):
+            seg = html[max(0, m.start() - 600): m.end() + 600]
+            urls = sorted(set(re.findall(r"https://images\.microcms-assets\.io/[^\"'\s)]+", seg)))
+            links = sorted(set(re.findall(r'href="([^"]+)"', seg)))[:4]
+            print("HIT", k, "|", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", seg))[500:760], "|", urls[:3], "|", links)
+            break
