@@ -495,3 +495,5 @@ a.chip { color: inherit; text-decoration: none; }
 .mini-tile img { width: 100%; height: 100%; object-fit: cover; }
 .mini-tile.t-leader { background: #e2455b; } .mini-tile.t-card { background: #3d7dff; } .mini-tile.t-all_member { background: #22a35a; }
 .mini-tile.t-content { background: #e0a500; } .mini-tile.t-connection { background: #8a8aa0; }
+.art.art-remote img { object-fit: cover; object-position: center 20%; }
+.hero-art img[src*="img_card_vert"] { object-fit: contain; }

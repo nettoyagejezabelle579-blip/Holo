@@ -63,10 +63,16 @@
     </ul>
 
     <h2>Events</h2>
-    <p>On an event song, having that song's event card in the unit adds <b>+10% live score</b> (counted once), per the in-game event rules
-      (see Game8's event guides). <b>Event Pt</b> is estimated as score × (1 + event card bonus): +30% per event card in the unit, +30% more for the
-      event's new ★5 cards, and up to +30% for full Bloom (+6% per stage). The absolute point formula is not public, so Event Pt is shown as a relative value.
-      Events and their bonus cards are listed in <code>data/events.js</code>.</p>
+    <p>From the in-game Event bonus screen (活動加成):</p>
+    <ul>
+      <li><b>Score bonus</b> (分數加成): on each designated song, the matching event card in the unit gives <b>+10% Live score</b>
+        (e.g. PROPOSE → Kobo's card, Kyapi → Marine's card).</li>
+      <li><b>Acquisition bonus</b> (獲得加成) for event badges/points: +30% for each event card in the unit (成員加成), +30% when the unit's holomem
+        is an event holomem (holo成員加成), and a Bloom bonus (綻放加成) for every card of an event holomem in the unit:
+        ★3 1/1/2/2/3%, ★4 6/7/8/9/10%, ★5 15/18/22/26/30% at Bloom 1–5.</li>
+    </ul>
+    <p>Event Pt is estimated as score × (1 + acquisition bonus); the base point formula is not public, so it is shown as a relative value.
+      Events and their cards are in <code>data/events.js</code>.</p>
 
     <h2>Board planner</h2>
     <p>For a unit and song, each holomem board is re-planned with that holomem's own rank points and your Dream Rank. Boards of holomems in the unit

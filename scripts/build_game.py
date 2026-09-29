@@ -184,6 +184,7 @@ def main():
             "cat": tail(m.get("categoryType", "")).lower(),
             "rating": bool(m.get("isHighestScoreRatingTarget")),
             "rank": m.get("singleLiveScoreEvaluationRankGroupId", "live_score_rank-s001"),
+            "jacket": m.get("jacketAssetId", m["id"]),
             "order": m.get("order", 0),
             "diff": diffs[m["id"]],
         })

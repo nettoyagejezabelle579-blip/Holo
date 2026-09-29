@@ -1,10 +1,17 @@
 // Live events: event songs and their bonus cards. Edit by hand for new events.
-// Rules (Game8 / in-game event help):
-//  - Live score: +10% on an event song when that song's bonus card is in the unit (applies once).
-//  - Event Pt: +30% per event bonus card in the unit, +30% more for the event's new ★5 cards,
-//    and a Bloom bonus up to +30% at full Bloom (+6% per Bloom stage).
+// Rules (in-game Event bonus screen, 活動加成):
+//  Score bonus (分數加成): +10% Live score on each designated song when that song's card is in the unit.
+//  Acquisition bonus (獲得加成) for event badges/points:
+//   - member bonus (成員加成): +30% for each event card in the unit
+//   - holomem bonus (holo成員加成): +30% when the unit's holomem (leader) is one of the event holomems
+//   - bloom bonus (綻放加成): per event holomem card in the unit, by rarity and Bloom stage 1-5
 window.HOLO_EVENTS = {
-  rules: { scoreBonus: 0.10, ptPerCard: 0.30, ptNewCard: 0.30, ptBloomPerStage: 0.06 },
+  rules: {
+    scoreBonus: 0.10,
+    ptPerCard: 0.30,
+    ptHolomem: 0.30,
+    ptBloom: { 3: [0, 0.01, 0.01, 0.02, 0.02, 0.03], 4: [0, 0.06, 0.07, 0.08, 0.09, 0.10], 5: [0, 0.15, 0.18, 0.22, 0.26, 0.30] },
+  },
   events: [
     {
       id: "relay-003",

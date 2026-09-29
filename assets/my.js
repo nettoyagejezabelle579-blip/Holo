@@ -241,7 +241,7 @@
       const placed = t.type === "connection" && con[t.k] && on;
       const title = (t.eff ? B.effectText(t.eff, chr) : t.type) + ` · ${tx("points")} ${t.cost}` + (t.lvl ? ` · ${tx("needDream")} ${t.lvl}` : "");
       return `<button class="tile-node t-${t.type} ${on ? "on" : can ? "can" : ""} ${foot.has(t.k) ? "foot" : ""} ${selTile === t.k ? "sel" : ""}" data-tile="${esc(t.k)}" title="${esc(title)}"
-        style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}">${placed && H.hasArt(con[t.k]) ? `<img src="${esc(H.artUrl(con[t.k], "icon"))}" alt="">` : esc(tileLabel(t))}${t.grade > 1 ? "<i>★★</i>" : ""}</button>`;
+        style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}">${placed && H.hasArt(con[t.k]) ? H.imgChain(H.cardImageUrls(con[t.k], "icon"), "") : esc(tileLabel(t))}${t.grade > 1 ? "<i>★★</i>" : ""}</button>`;
     }).join("");
     const eff = B.effects(chr, st.set, H.progress);
     const r = H.progress.ranks[chr] || 1;

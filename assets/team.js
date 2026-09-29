@@ -19,10 +19,11 @@
       s2: "What should be maximised?", t_score: "Score", t_score_d: "Highest Live score on one song.",
       t_event: "Event songs", t_event_d: "Highest average score over several songs (e.g. the current event songs).",
       t_rating: "Holomem Score Rating", t_rating_d: "Best top-3 song scores with one holomem as leader, with song recommendations.",
-      t_pt: "Event Pt", t_pt_d: "Most event points on an event song: score × event card bonuses (+30% per event card, +30% new ★5, Bloom bonus).",
+      t_pt: "Event Pt", t_pt_d: "Most event badges/points: score × (1 + acquisition bonus: +30% per event card, +30% event holomem as leader, Bloom bonus).",
+      ptMember: "event cards", ptHolomem: "event holomem leader", ptBloom: "Bloom",
       t_event_d2: "Highest score on an event song, including the +10% event card bonus.",
       event: "Event", eventSong: "Song", allEventSongs: "All event songs (average)", bonusHave: "You own the +10% bonus card for this song:",
-      bonusMissing: "You don't own the card that gives +10% on this song:", ptEstimate: "Event Pt (relative)", ptNote: "score × (1 + event card bonus); the absolute point formula is not public",
+      bonusMissing: "You don't own the card that gives +10% on this song:", ptEstimate: "Event Pt (relative)", ptNote: "score × (1 + acquisition bonus); the base point formula is not public, so this is relative",
       keepFresh: "Keep this data up to date for accurate results:", cards: "Cards", holomems: "Ranked holomems", memories: "Memories",
       s3: "Options", playMode: "Play", perfect: "ALL PERFECT", auto: "AUTO", life: "LIFE stays full", board: "Use holomem board", boardFull: "Treat all boards as fully unlocked",
       pool: "Card pool", poolOwned: "My cards", poolAll: "Every card at max level (theory)", effort: "Search effort", fast: "Fast", normal: "Normal", thorough: "Thorough",
@@ -56,10 +57,11 @@
       s2: "何を最大化しますか？", t_score: "スコア", t_score_d: "1曲のライブスコアを最大化。",
       t_event: "イベント楽曲", t_event_d: "複数曲（イベント楽曲など）の平均スコアを最大化。",
       t_rating: "ホロメンスコアレーティング", t_rating_d: "指定ホロメンをリーダーにした上位3曲の合計を最大化し、楽曲を提案します。",
-      t_pt: "イベントPt", t_pt_d: "イベント楽曲で最も多くのPtを獲得：スコア×イベント特効（1枚+30%、新★5+30%、開花ボーナス）。",
+      t_pt: "イベントPt", t_pt_d: "イベント徽章/Ptを最大化：スコア×(1+獲得加成：イベントカード1枚+30%、イベントホロメンがリーダーで+30%、開花加成)。",
+      ptMember: "成員加成", ptHolomem: "holo成員加成", ptBloom: "綻放加成",
       t_event_d2: "イベント楽曲のスコアを最大化（特効カードの+10%を含む）。",
       event: "イベント", eventSong: "楽曲", allEventSongs: "全イベント楽曲（平均）", bonusHave: "この楽曲の+10%特効カードを所持しています：",
-      bonusMissing: "この楽曲で+10%のスコア特効を持つカードを所持していません：", ptEstimate: "イベントPt（相対値）", ptNote: "スコア×(1+特効ボーナス)。Ptの絶対値の計算式は非公開",
+      bonusMissing: "この楽曲で+10%のスコア特効を持つカードを所持していません：", ptEstimate: "イベントPt（相対値）", ptNote: "スコア×(1+獲得加成)。基本Ptの計算式は非公開のため相対値です",
       keepFresh: "正確な結果のため、以下のデータを最新に保ってください：", cards: "カード", holomems: "ランク入力済み", memories: "メモリー",
       s3: "オプション", playMode: "プレイ", perfect: "ALL PERFECT", auto: "AUTO", life: "ライフ満タン", board: "ホロメンボードを使用", boardFull: "全ボードを完全解放として計算",
       pool: "カード範囲", poolOwned: "所持カード", poolAll: "全カード最大レベル（理論値）", effort: "探索量", fast: "高速", normal: "標準", thorough: "精密",
@@ -412,9 +414,13 @@
     const hypo = {};
     for (const id of ids) if (overrides && overrides[id] && !H.progress.cards[id]) hypo[id] = overrides[id];
     const n = (v) => fmt(Math.round(v));
-    const ptB = charts.map((c) => S.eventPtBonus(env, team, c.songId));
+    const ptD = charts.map((c) => S.eventPtBonus(env, team, c.songId, true));
+    const ptB = ptD.map((x) => x.total);
+    const pd = ptD.reduce((a, x) => (x.total > a.total ? x : a), { total: -1 });
     const ptBlock = ptB.some((b) => b > 0) || st.target === "pt" ? `<div class="spread"><span><b>${esc(tx("ptEstimate"))}</b>: ${n(details.reduce((a, d, i) => a + d.score * (1 + ptB[i]), 0) / details.length)}</span>
-      <span>+${Math.round(Math.max(...ptB) * 100)}%</span><span class="small muted">${esc(tx("ptNote"))}</span></div>` : "";
+      <span>+${Math.round(pd.total * 100)}%</span>
+      <span class="small">${esc(tx("ptMember"))} +${Math.round((pd.member || 0) * 100)}% · ${esc(tx("ptHolomem"))} +${Math.round((pd.holomem || 0) * 100)}% · ${esc(tx("ptBloom"))} +${Math.round((pd.bloom || 0) * 100)}%</span>
+      <span class="small muted">${esc(tx("ptNote"))}</span></div>` : "";
     return `<div class="panel result">
       ${title ? `<h3>${title}</h3>` : ""}
       <div class="result-head">

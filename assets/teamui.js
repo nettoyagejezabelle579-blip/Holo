@@ -223,7 +223,7 @@
       const con = board.connect[t.k];
       const cls = added.has(t.k) ? "added" : removed.has(t.k) ? "removed" : "";
       return `<span class="mini-tile t-${t.type} ${on ? "on" : ""} ${cls}" style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}"
-        title="${esc(t.eff ? B.effectText(t.eff, chr) : t.type)}">${con && H.hasArt(con) ? `<img src="${esc(H.artUrl(con, "icon"))}" alt="">` : ""}</span>`;
+        title="${esc(t.eff ? B.effectText(t.eff, chr) : t.type)}">${con && H.hasArt(con) ? H.imgChain(H.cardImageUrls(con, "icon"), "") : ""}</span>`;
     }).join("");
     return `<div class="board-wrap"><div class="mini-board" style="grid-template-columns:repeat(${maxX - minX + 1},14px);grid-template-rows:repeat(${maxY - minY + 1},14px)">${cells}</div></div>`;
   }

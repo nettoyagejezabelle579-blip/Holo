@@ -50,18 +50,22 @@
   function eventOf(songId) {
     return EVENTS.events.find((e) => e.songs.some((s) => s.song === songId)) || null;
   }
-  // Event Pt multiplier for a unit: +30% per event card, +30% more for the event's new ★5, + Bloom bonus.
-  function eventPtBonus(env, team, songId) {
+  // Event badge/point multiplier for a unit (in-game 獲得加成): +30% per event card in the unit,
+  // +30% when the leader is an event holomem, plus a Bloom bonus for every event holomem card.
+  function eventPtBonus(env, team, songId, detail) {
     const e = eventOf(songId);
-    if (!e) return 0;
+    if (!e) return detail ? { total: 0 } : 0;
     const cards = new Set(e.songs.flatMap((s) => s.cards));
+    const holomems = new Set(e.songs.map((s) => s.chr));
     const r = EVENTS.rules;
-    let b = 0;
+    let member = 0, bloom = 0;
     for (const m of team.members) {
-      if (!cards.has(m.id)) continue;
-      b += r.ptPerCard + (H.cardById[m.id].banner === e.banner ? r.ptNewCard : 0) + r.ptBloomPerStage * (m.bloom || 0);
+      if (cards.has(m.id)) member += r.ptPerCard;
+      if (holomems.has(m.chr)) bloom += ((r.ptBloom || {})[H.cardById[m.id].rarity] || [])[m.bloom || 0] || 0;
     }
-    return b;
+    const holomem = team.leader && holomems.has(team.leader.chr) ? r.ptHolomem || 0 : 0;
+    const total = member + holomem + bloom;
+    return detail ? { total, member, holomem, bloom } : total;
   }
   const chartCache = new Map();
 

@@ -6,7 +6,16 @@
   const ANN = window.HOLO_ANNOUNCED || { banners: [], cards: [] };
   const ART = window.HOLO_ART || {};
   const JACKETS = window.HOLO_JACKETS || {};
-  const CFG = Object.assign({ artBase: "", newDays: 14 }, window.HOLO_CONFIG || {});
+  const CFG = Object.assign({ artBase: "", newDays: 14, remoteCardArt: "", remoteCardFull: "", remoteJacket: "" }, window.HOLO_CONFIG || {});
+  // <img> that walks a list of sources and finally removes itself (the generated face shows through).
+  function imgChain(urls, alt, extra) {
+    urls = urls.filter(Boolean);
+    if (!urls.length) return "";
+    const rest = esc(JSON.stringify(urls.slice(1)));
+    return `<img loading="lazy" alt="${esc(alt)}" src="${esc(urls[0])}" data-next="${rest}" ${extra || ""}
+      onerror="var n=JSON.parse(this.dataset.next||'[]');if(n.length){this.dataset.next=JSON.stringify(n.slice(1));this.src=n[0];}else{if(this.parentNode&&this.parentNode.classList)this.parentNode.classList.remove('has-img');this.remove();}">`;
+  }
+  const fill = (tpl, id) => (tpl && id ? tpl.split("{id}").join(id) : "");
 
   // ---------- storage ----------
   const store = {
@@ -215,11 +224,11 @@
     else if (card.limited) badges.push(`<span class="badge limited">${esc(t("limited"))}</span>`);
     if (isNew(card) && !opts.noNew) badges.push(`<span class="badge new">${esc(t("newBadge"))}</span>`);
     const kinds = ART[card.id] || [];
-    const kind = opts.full && kinds.includes("full") ? "full" : kinds.includes("icon") ? "icon" : null;
-    const alt = esc(L(tl.name) + " " + L(card.title));
-    const img = kind
-      ? `<img loading="lazy" alt="${alt}" src="${esc(artUrl(card.id, kind))}" onerror="this.parentNode.classList.remove('has-img');this.remove()">`
-      : "";
+    const local = opts.full && kinds.includes("full") ? artUrl(card.id, "full") : kinds.includes("icon") ? artUrl(card.id, "icon") : "";
+    const remote = card.asset ? (opts.full ? fill(CFG.remoteCardFull, card.asset) : fill(CFG.remoteCardArt, card.asset)) : "";
+    const kind = local ? (opts.full && kinds.includes("full") ? "full" : "icon") : remote ? "remote" : null;
+    const alt = L(tl.name) + " " + L(card.title);
+    const img = imgChain([local, remote, !opts.full ? "" : fill(CFG.remoteCardArt, card.asset)], alt);
     return `<div class="art ${kind ? "has-img art-" + kind : ""}" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
       `<div class="art-name">${esc(L(tl.short))}</div>${img}` +
       `<div class="badges">${badges.join("")}</div>` +
@@ -227,19 +236,30 @@
   }
   // Song cover (jacket) with a generated fallback.
   function jacketHTML(song, cls) {
-    const url = JACKETS[song.id];
     const title = L(song.title);
+    const urls = [JACKETS[song.id], fill(CFG.remoteJacket, song.jacket || song.id)];
     const hue = [...song.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
     return `<div class="jacket ${cls || ""}" style="--h:${hue}">` +
       `<span class="jacket-fallback">${esc(title.slice(0, 24))}</span>` +
-      (url ? `<img loading="lazy" alt="${esc(title)}" src="${esc(url)}" onerror="this.remove()">` : "") + `</div>`;
+      imgChain(urls, title) + `</div>`;
   }
   function artUrl(id, kind) {
     const base = CFG.artBase || (document.body.dataset.base || ".") + "/assets/art";
     return base.replace(/\/$/, "") + "/" + kind + "/" + id + ".webp";
   }
   function hasArt(id, kind) {
-    return (ART[id] || []).includes(kind || "icon");
+    if ((ART[id] || []).includes(kind || "icon")) return true;
+    const c = cardById[id];
+    return !!(c && c.asset && (kind === "full" ? CFG.remoteCardFull : CFG.remoteCardArt));
+  }
+  // Best image URL for a card (bundled first, then remote).
+  function cardImageUrls(id, kind) {
+    const c = cardById[id];
+    const out = [];
+    if ((ART[id] || []).includes(kind)) out.push(artUrl(id, kind));
+    if (c && c.asset) out.push(fill(kind === "full" ? CFG.remoteCardFull : CFG.remoteCardArt, c.asset));
+    if (kind === "full" && c && c.asset) out.push(fill(CFG.remoteCardArt, c.asset));
+    return out.filter(Boolean);
   }
 
   // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
@@ -329,7 +349,7 @@
   window.Holo = {
     D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
-    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, jacketHTML, hasJacket: (id) => !!JACKETS[id], owned, favorites, toggleOwned, toggleFavorite,
+    skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, cardImageUrls, imgChain, jacketHTML, hasJacket: (id) => !!JACKETS[id], owned, favorites, toggleOwned, toggleFavorite,
     progress, saveProgress, setCardProgress, replaceProgress,
     renderHeader, renderFooter,
   };

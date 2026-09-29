@@ -89,8 +89,11 @@ limit-break caps and potential table from the master data.
 
 `assets/art/icon/<cardId>.webp` (square card icons with the in-game frame, used on every card tile) and
 `assets/art/full/<cardId>.webp` (wide illustrations, shown at the top of the card detail view) cover all
-★4 and ★5 cards up to the 2026-09-19 banner; `data/art.js` lists which cards have art. Cards without art
-(★3 cards and the newest announced cards) fall back to a generated face in the talent's colours.
+★4 and ★5 cards up to the 2026-09-19 banner; `data/art.js` lists which cards have art. Cards without bundled art
+(★3 cards and the newest cards) load the card art from holodori.best's asset API
+(`img_card_vert_<assetId>`), and the card detail view loads the full illustration from `cdn.holodori.dev`;
+these load in your browser (they need internet) and fall back to a generated face if unreachable. The
+remote URL templates are in `assets/config.js`.
 Add more with `python3 scripts/import_art.py --icons <dir> --full <dir>` (files named `<cardId>.webp`).
 Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
 
@@ -99,8 +102,8 @@ Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
 `data/jackets.js` maps song ids to the jacket images on the official site
 (https://www.hololive-dreams.com/en/music), via the
 [holo-dreams-songlist](https://github.com/MinatoIsuki/holo-dreams-songlist) scrape. Images load from the
-official image host, so they need an internet connection; songs not on the official page yet show a
-generated cover. Rebuild with `scripts/build_jackets.py` (run by `update-data.sh`).
+official image host, so they need an internet connection; songs not on the official page yet load
+`img_music_jacket_<jacketAssetId>` from holodori.best's asset API, then fall back to a generated cover. Rebuild with `scripts/build_jackets.py` (run by `update-data.sh`).
 
 ## Disclaimer
 

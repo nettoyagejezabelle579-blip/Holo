@@ -529,7 +529,7 @@
             <button class="icon-btn" id="m-link">${esc(t("copyLink"))}</button>
             <button class="icon-btn" id="m-close" title="${esc(t("close"))}">✕</button>
           </div>
-          ${H.hasArt(c.id, "full") ? `<div class="hero-art"><img alt="${esc(L(c.title))}" src="${esc(H.artUrl(c.id, "full"))}" onerror="this.parentNode.remove()"></div>` : ""}
+          ${H.cardImageUrls(c.id, "full").length ? `<div class="hero-art">${H.imgChain(H.cardImageUrls(c.id, "full"), L(c.title))}</div>` : ""}
           <div class="modal-body">
             <div class="art-col">${H.artHTML(c)}
               <dl class="kv">
