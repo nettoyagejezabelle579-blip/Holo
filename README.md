@@ -97,6 +97,13 @@ remote URL templates are in `assets/config.js`.
 Add more with `python3 scripts/import_art.py --icons <dir> --full <dir>` (files named `<cardId>.webp`).
 Card art © QualiArts / COVER Corp., used for this non-commercial fan site.
 
+### Downloading every picture
+
+`python3 scripts/download_images.py` downloads a picture for every card (card art + full illustration) and
+every song cover into `assets/art/vert`, `assets/art/full` and `assets/jackets`, so the site shows them
+offline. Run it on a computer with internet access (the hosts it uses are listed at the top of the
+script); it only fetches what is missing, and `--manifest-only` just rebuilds the lists.
+
 ### Song covers
 
 `data/jackets.js` maps song ids to the jacket images on the official site

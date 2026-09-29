@@ -21,7 +21,7 @@ def main():
     ap.add_argument("--full")
     args = ap.parse_args()
     art = {}
-    for kind, src in (("icon", args.icons), ("full", args.full)):
+    for kind, src in (("icon", args.icons), ("full", args.full), ("vert", None)):
         dst = os.path.join(ROOT, "assets", "art", kind)
         os.makedirs(dst, exist_ok=True)
         if src:

@@ -6,6 +6,7 @@
   const ANN = window.HOLO_ANNOUNCED || { banners: [], cards: [] };
   const ART = window.HOLO_ART || {};
   const JACKETS = window.HOLO_JACKETS || {};
+  const JACKET_FILES = window.HOLO_JACKET_FILES || {};
   const CFG = Object.assign({ artBase: "", newDays: 14, remoteCardArt: "", remoteCardFull: "", remoteJacket: "" }, window.HOLO_CONFIG || {});
   // <img> that walks a list of sources and finally removes itself (the generated face shows through).
   function imgChain(urls, alt, extra) {
@@ -224,9 +225,10 @@
     else if (card.limited) badges.push(`<span class="badge limited">${esc(t("limited"))}</span>`);
     if (isNew(card) && !opts.noNew) badges.push(`<span class="badge new">${esc(t("newBadge"))}</span>`);
     const kinds = ART[card.id] || [];
-    const local = opts.full && kinds.includes("full") ? artUrl(card.id, "full") : kinds.includes("icon") ? artUrl(card.id, "icon") : "";
+    const local = opts.full && kinds.includes("full") ? artUrl(card.id, "full")
+      : kinds.includes("icon") ? artUrl(card.id, "icon") : kinds.includes("vert") ? artUrl(card.id, "vert") : "";
     const remote = card.asset ? (opts.full ? fill(CFG.remoteCardFull, card.asset) : fill(CFG.remoteCardArt, card.asset)) : "";
-    const kind = local ? (opts.full && kinds.includes("full") ? "full" : "icon") : remote ? "remote" : null;
+    const kind = local ? (opts.full && kinds.includes("full") ? "full" : kinds.includes("icon") ? "icon" : "remote") : remote ? "remote" : null;
     const alt = L(tl.name) + " " + L(card.title);
     const img = imgChain([local, remote, !opts.full ? "" : fill(CFG.remoteCardArt, card.asset)], alt);
     return `<div class="art ${kind ? "has-img art-" + kind : ""}" style="--c1:${esc(tl.color)};--c2:${esc(tl.color2)}">` +
@@ -237,7 +239,8 @@
   // Song cover (jacket) with a generated fallback.
   function jacketHTML(song, cls) {
     const title = L(song.title);
-    const urls = [JACKETS[song.id], fill(CFG.remoteJacket, song.jacket || song.id)];
+    const base = (document.body.dataset.base || ".") + "/assets/jackets/";
+    const urls = [JACKET_FILES[song.id] ? base + JACKET_FILES[song.id] : "", JACKETS[song.id], fill(CFG.remoteJacket, song.jacket || song.id)];
     const hue = [...song.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
     return `<div class="jacket ${cls || ""}" style="--h:${hue}">` +
       `<span class="jacket-fallback">${esc(title.slice(0, 24))}</span>` +
@@ -257,7 +260,9 @@
     const c = cardById[id];
     const out = [];
     if ((ART[id] || []).includes(kind)) out.push(artUrl(id, kind));
+    if (kind === "icon" && (ART[id] || []).includes("vert")) out.push(artUrl(id, "vert"));
     if (c && c.asset) out.push(fill(kind === "full" ? CFG.remoteCardFull : CFG.remoteCardArt, c.asset));
+    if (kind === "full" && (ART[id] || []).includes("vert")) out.push(artUrl(id, "vert"));
     if (kind === "full" && c && c.asset) out.push(fill(CFG.remoteCardArt, c.asset));
     return out.filter(Boolean);
   }
