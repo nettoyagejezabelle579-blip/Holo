@@ -41,6 +41,28 @@
   }
 
   const songById = Object.fromEntries(G.songs.map((s) => [s.id, s]));
+  const EVENTS = window.HOLO_EVENTS || { rules: { scoreBonus: 0.1, ptPerCard: 0.3, ptNewCard: 0.3, ptBloomPerStage: 0.06 }, events: [] };
+  // The newest event that uses this song (with its bonus cards), or null.
+  function eventSong(songId) {
+    for (const e of EVENTS.events) for (const s of e.songs) if (s.song === songId) return Object.assign({ eventId: e.id }, s);
+    return null;
+  }
+  function eventOf(songId) {
+    return EVENTS.events.find((e) => e.songs.some((s) => s.song === songId)) || null;
+  }
+  // Event Pt multiplier for a unit: +30% per event card, +30% more for the event's new ★5, + Bloom bonus.
+  function eventPtBonus(env, team, songId) {
+    const e = eventOf(songId);
+    if (!e) return 0;
+    const cards = new Set(e.songs.flatMap((s) => s.cards));
+    const r = EVENTS.rules;
+    let b = 0;
+    for (const m of team.members) {
+      if (!cards.has(m.id)) continue;
+      b += r.ptPerCard + (H.cardById[m.id].banner === e.banner ? r.ptNewCard : 0) + r.ptBloomPerStage * (m.bloom || 0);
+    }
+    return b;
+  }
   const chartCache = new Map();
 
   function comboBonus(table, combo) {
@@ -140,9 +162,10 @@
   }
 
   // opts: { board: bool, mode: "perfect"|"auto", lifeFull: bool, memories, useProgress }
-  function makeEnv(progress, opts) {
+  // boardOverride: optional {chr: [effects]} (used by the board planner to try variations quickly).
+  function makeEnv(progress, opts, boardOverride) {
     opts = Object.assign({ board: true, mode: "perfect", lifeFull: true }, opts || {});
-    const board = boardEffects(progress, opts);
+    const board = boardOverride || boardEffects(progress, opts);
     // Support-type board tiles apply to every unit.
     const gFlat = [0, 0, 0];
     const grpFlat = {};
@@ -245,12 +268,13 @@
     performance_up_permil_up: [1, 0, 0], technique_up_permil_up: [0, 1, 0], sense_up_permil_up: [0, 0, 1],
     all_parameter_up_permil_up: [1, 1, 1],
   };
-  function applyEffects(effs, members, selfIdx, order, acc) {
+  function applyEffects(effs, members, selfIdx, order, acc, bucket) {
     for (const e of effs) {
       const who = recipients(members, e.tgt, selfIdx, order);
       const pct = PCT[e.type];
+      const tgt = acc[bucket];
       for (const i of who) {
-        if (pct) { acc.pct[i][0] += e.v * pct[0]; acc.pct[i][1] += e.v * pct[1]; acc.pct[i][2] += e.v * pct[2]; }
+        if (pct) { tgt[i][0] += e.v * pct[0]; tgt[i][1] += e.v * pct[1]; tgt[i][2] += e.v * pct[2]; }
         else if (e.type === "live_active_skill_effect_up_permil_up") acc.seu[i] += e.v;
       }
     }
@@ -277,18 +301,18 @@
     }
     // Recipient priority for capped targets: highest base total first.
     const order = members.map((_, i) => i).sort((a, b) => members[b].baseTotal - members[a].baseTotal || a - b);
-    const acc = { pct: members.map((m) => m.pct.slice()), seu: members.map((m) => m.seu) };
+    const acc = { out: members.map(() => [0, 0, 0]), pas: members.map(() => [0, 0, 0]), seu: members.map((m) => m.seu) };
 
     // Leader outfit skill
     const lead = team.leader && team.leader.cardId ? G.sim[team.leader.cardId].leader : null;
     if (lead) {
-      if (trigOk(lead.trig, ctx)) applyEffects(lead.eff, members, -1, order, acc);
-      if (lead.add.length && trigOk(lead.addTrig, ctx)) applyEffects(lead.add, members, -1, order, acc);
+      if (trigOk(lead.trig, ctx)) applyEffects(lead.eff, members, -1, order, acc, "out");
+      if (lead.add.length && trigOk(lead.addTrig, ctx)) applyEffects(lead.add, members, -1, order, acc, "out");
     }
     // Passive skills
     for (let i = 0; i < n; i++) {
       const p = members[i].passive;
-      if (p && trigOk(p.trig, ctx)) applyEffects(p.eff, members, i, order, acc);
+      if (p && trigOk(p.trig, ctx)) applyEffects(p.eff, members, i, order, acc, "pas");
     }
     // Leader-type board tiles of the leader talent
     const leadFlat = [0, 0, 0], leadPct = [0, 0, 0];
@@ -307,24 +331,31 @@
       }
     }
 
-    // Final member stats and Unit Score
-    let raw = 0;
+    // Final member stats and Unit Score. Every percentage bonus applies to the card's own
+    // (level + bloom) stats; flat board bonuses are added on top.
+    let unit = 0;
     const stats = detail ? [] : null;
+    const parts = detail ? { member: 0, board: 0, passive: 0, memory: 0, upgrade: 0, outfit: 0 } : null;
+    const upg = env.upgrade / 10; // permyriad -> permil
     for (let i = 0; i < n; i++) {
       const m = members[i];
-      let tot = 0;
       const row = detail ? [0, 0, 0] : null;
       for (let k = 0; k < 3; k++) {
+        const b = m.base[k];
         let flat = m.flat[k] + env.gFlat[k] + leadFlat[k];
         for (const g of m.groups) flat += env.grpFlat[g] || 0;
-        const v = (m.base[k] + flat) * (1 + (acc.pct[i][k] + leadPct[k] + env.memory) / 1000);
-        tot += v;
-        if (row) row[k] = v;
+        const boardPct = m.pct[k] + leadPct[k];
+        const v = b + flat + b * (boardPct + acc.pas[i][k] + acc.out[i][k] + env.memory + upg) / 1000;
+        unit += v;
+        if (row) {
+          row[k] = v;
+          parts.member += b; parts.board += flat + b * boardPct / 1000; parts.passive += b * acc.pas[i][k] / 1000;
+          parts.memory += b * env.memory / 1000; parts.upgrade += b * upg / 1000; parts.outfit += b * acc.out[i][k] / 1000;
+        }
       }
-      raw += tot;
       if (stats) stats.push(row);
     }
-    const unit = raw * (1 + env.upgrade / 10000);
+    const raw = unit;
 
     // Song bonus from content-type board tiles (capped)
     let songBonus = 0;
@@ -420,14 +451,39 @@
       sumBase += w;
       sumSkill += w * e;
     }
-    const scale = unit * (song.coef / 1000) * (1 + songBonus / 1000) * env.calib;
+    // Event song bonus: +10% when the song's event bonus card is in the unit.
+    const ev = env.opts.event === false ? null : eventSong(song.id);
+    const eventBonus = ev && members.some((m) => ev.cards.includes(m.id)) ? EVENTS.rules.scoreBonus : 0;
+    const scale = unit * (song.coef / 1000) * (1 + songBonus / 1000) * (1 + eventBonus) * env.calib;
     const score = scale * (sumBase + sumSkill);
     if (!detail) return score;
     const totalW = chart.W[chart.W.length - 1] || 1;
+    // Split the skill part into actives alone and what the special skills add on top.
+    let activeOnly = 0;
+    for (let b = 0; b < bounds.length - 1; b++) {
+      const t0 = bounds[b], t1 = bounds[b + 1];
+      if (t1 <= t0) continue;
+      const w = weightBetween(chart, t0, t1);
+      if (w <= 0) continue;
+      const vs = [], ps = [];
+      for (const a of act) {
+        const idx = Math.floor((t0 + 1e-9) / a.ct), c = idx * a.ct;
+        if (idx < 1 || t0 >= c + a.dur) continue;
+        let p = Math.min(1, a.p * (1 + a.rate));
+        if (luck === "max") p = p > 0 ? 1 : 0;
+        vs.push((t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * a.mult); ps.push(p);
+      }
+      const idxs = vs.map((_, j) => j).sort((x, y) => vs[y] - vs[x]);
+      let e = 0, none = 1;
+      for (const j of idxs) { e += vs[j] * ps[j] * none; none *= 1 - ps[j]; }
+      activeOnly += w * e;
+    }
     return {
+      parts, eventBonus, event: ev, activePct: activeOnly / sumBase, specialPct: (sumSkill - activeOnly) / sumBase,
+      timeline: act.map((a) => ({ i: a.i, ct: a.ct, dur: a.dur, p: a.p, checks: a.checks, value: Math.max(a.base, a.add) * a.mult })), end: chart.end,
       score, unit, raw, songBonus, stats, base: scale * sumBase, skill: scale * sumSkill,
       uptime: uptime.map((u) => u / totalW), specials,
-      upgrade: env.upgrade, memory: env.memory, leadFlat, leadPct, pct: acc.pct, seu: acc.seu.map((x) => x + leadSeu),
+      upgrade: env.upgrade, memory: env.memory, leadFlat, leadPct, seu: acc.seu.map((x) => x + leadSeu),
     };
   }
 
@@ -454,7 +510,7 @@
   }
 
   window.HoloSim = {
-    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, simulate, boardEffects, upgradeBonus,
+    songById, loadChart, loadCharts, getChart, makeEnv, prepare, evaluate, simulate, EVENTS, eventSong, eventOf, eventPtBonus, boardEffects, upgradeBonus,
     posterPermil, rankFor, hasTimeTrigger, chartIndex,
   };
 })();

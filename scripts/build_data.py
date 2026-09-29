@@ -28,6 +28,7 @@ BANNERS = [
     ("pickup-260829", (26091001,), "2026-08-29"),
     ("pickup-260908", (26092001,), "2026-09-08"),
     ("pickup-260919", (26093001,), "2026-09-19"),
+    ("pickup-260929", (26101001,), "2026-09-29"),
 ]
 
 EFFECT_KEYS = {
@@ -201,6 +202,9 @@ def main():
         banner, release = ("launch", LAUNCH_DATE)
         if costume and costume.get("order") in wave:
             banner, release = wave[costume["order"]]
+        # Standard-pool cards added after launch (e.g. a new holomem) use the date they first appeared.
+        if banner == "launch" and seen.get(c["id"], LAUNCH_DATE) > "2026-07-26":
+            release = seen[c["id"]]
         lead = None
         if costume and costume.get("liveLeaderSkillId") in leader:
             ls = leader[costume["liveLeaderSkillId"]]

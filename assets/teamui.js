@@ -155,6 +155,79 @@
     </div>`;
   }
 
+  const BTX = {
+    en: { member: "Member stats", board: "Holomem board", passive: "Passive skills", memory: "Memories", upgrade: "Member upgrade", outfit: "Outfit skill",
+      active: "Active skills", special: "Special skills", songBonus: "Board song bonus", event: "Event card bonus", outfitSkill: "Outfit skill", activeRow: "Active", overlap: "Overlap",
+      timelineNote: "Every active window is drawn (as if every check succeeds); numbers mark special skills." },
+    ja: { member: "メンバー能力", board: "ホロメンボード加算", passive: "パッシブスキル", memory: "メモリー加算", upgrade: "メンバー育成加算", outfit: "衣装スキル",
+      active: "アクティブスキル", special: "スペシャルスキル", songBonus: "ボード楽曲加算", event: "イベント特効", outfitSkill: "衣装スキル", activeRow: "アクティブ", overlap: "重複",
+      timelineNote: "アクティブの発動枠をすべて表示（毎回発動した場合）。数字はスペシャルスキル。" },
+  };
+  const btx = (k) => (BTX[H.lang] && BTX[H.lang][k]) || BTX.en[k];
+
+  // Unit Score breakdown + skill percentages, like the in-game result.
+  function breakdownHTML(d, leader) {
+    const p = d.parts;
+    const lc = leader && leader.cardId ? H.cardById[leader.cardId] : null;
+    const item = (k, v, pct) => `<span><b>${esc(btx(k))}</b> ${pct ? (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%" : fmt(Math.round(v))}</span>`;
+    return `${lc && lc.leader ? `<div class="outfit-skill"><span class="pill">${esc(btx("outfitSkill"))}</span> <b>${esc(L(lc.leader.name))}</b> — ${H.richText(L(lc.leader.text))}</div>` : ""}
+      <div class="breakdown">${item("member", p.member)}${item("board", p.board)}${item("passive", p.passive)}${item("memory", p.memory)}${item("upgrade", p.upgrade)}${item("outfit", p.outfit)}
+      ${item("active", d.activePct, true)}${item("special", d.specialPct, true)}${item("songBonus", d.songBonus / 1000, true)}${d.event ? item("event", d.eventBonus, true) : ""}</div>`;
+  }
+
+  // Skill timeline: one row per member with its active windows, then which skill leads and how many overlap.
+  function timelineHTML(d, ids) {
+    const W = 1000, rowH = 22, left = 150, rows = ids.length + 2;
+    const H2 = rows * (rowH + 6) + 30;
+    const end = d.end;
+    const x = (t) => left + (Math.min(t, end) / end) * (W - left - 10);
+    const colors = ids.map((id) => H.talents[H.cardById[id].chr].color);
+    const win = d.timeline.map((a) => a.checks.map((c) => [c, Math.min(end, c + a.dur), a.i, a.value]));
+    let svg = "";
+    for (let t = 0; t <= end; t += 10) svg += `<line x1="${x(t)}" x2="${x(t)}" y1="0" y2="${H2 - 22}" class="tl-grid"/><text x="${x(t)}" y="${H2 - 6}" class="tl-axis">${t}s</text>`;
+    ids.forEach((id, i) => {
+      const y = i * (rowH + 6) + 4;
+      svg += `<text x="4" y="${y + 15}" class="tl-label">${esc(L(H.talents[H.cardById[id].chr].name))}</text>`;
+      const a = d.timeline.find((z) => z.i === i);
+      if (a) for (const [t0, t1] of win[d.timeline.indexOf(a)]) svg += `<rect x="${x(t0)}" y="${y}" width="${Math.max(1, x(t1) - x(t0))}" height="${rowH}" rx="3" fill="${colors[i]}" opacity=".85"/>`;
+      const sp = d.specials.find((z) => z.slot === i);
+      if (sp) svg += `<rect x="${x(sp.t0)}" y="${y - 2}" width="${Math.max(2, x(sp.t1) - x(sp.t0))}" height="${rowH + 4}" rx="3" fill="none" stroke="var(--star)" stroke-width="2"/><text x="${x(sp.t0) + 3}" y="${y + 15}" class="tl-sp">★${i + 1}</text>`;
+    });
+    // Active row: the strongest active skill at each moment; overlap row: how many are active.
+    const bounds = new Set([0, end]);
+    for (const list of win) for (const [a, b] of list) { bounds.add(a); bounds.add(b); }
+    const bs = [...bounds].sort((a, b) => a - b);
+    const ya = ids.length * (rowH + 6) + 4, yo = ya + rowH + 6;
+    svg += `<text x="4" y="${ya + 15}" class="tl-label">${esc(btx("activeRow"))}</text><text x="4" y="${yo + 15}" class="tl-label">${esc(btx("overlap"))}</text>`;
+    for (let k = 0; k < bs.length - 1; k++) {
+      const t0 = bs[k], t1 = bs[k + 1], mid = (t0 + t1) / 2;
+      let best = null, count = 0;
+      for (const list of win) for (const [a, b, i, v] of list) if (mid >= a && mid < b) { count++; if (!best || v > best[1]) best = [i, v]; }
+      if (best) svg += `<rect x="${x(t0)}" y="${ya}" width="${Math.max(0.5, x(t1) - x(t0))}" height="${rowH}" fill="${colors[best[0]]}"/>`;
+      const shade = count === 0 ? "var(--surface)" : count === 1 ? "#cfcfd8" : count === 2 ? "#9a9aa8" : "#66667a";
+      svg += `<rect x="${x(t0)}" y="${yo}" width="${Math.max(0.5, x(t1) - x(t0))}" height="${rowH}" fill="${shade}"/>`;
+    }
+    return `<div class="timeline"><svg viewBox="0 0 ${W} ${H2}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Skill timeline">${svg}</svg>
+      <p class="small muted">${esc(btx("timelineNote"))}</p></div>`;
+  }
+
+  // Small read-only board: new tiles ringed green, removed ringed red, Connect cards shown.
+  function boardMiniHTML(chr, board) {
+    const B = window.HoloBoard;
+    const b = B.tilesFor(chr);
+    const set = new Set(board.set), added = new Set(board.added), removed = new Set(board.removed);
+    const xs = b.list.map((t) => t.x), ys = b.list.map((t) => t.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const cells = b.list.map((t) => {
+      const on = set.has(t.k);
+      const con = board.connect[t.k];
+      const cls = added.has(t.k) ? "added" : removed.has(t.k) ? "removed" : "";
+      return `<span class="mini-tile t-${t.type} ${on ? "on" : ""} ${cls}" style="grid-column:${t.x - minX + 1};grid-row:${maxY - t.y + 1}"
+        title="${esc(t.eff ? B.effectText(t.eff, chr) : t.type)}">${con && H.hasArt(con) ? `<img src="${esc(H.artUrl(con, "icon"))}" alt="">` : ""}</span>`;
+    }).join("");
+    return `<div class="board-wrap"><div class="mini-board" style="grid-template-columns:repeat(${maxX - minX + 1},14px);grid-template-rows:repeat(${maxY - minY + 1},14px)">${cells}</div></div>`;
+  }
+
   function encodeTeam(state) {
     const p = new URLSearchParams();
     if (state.song) p.set("s", state.song);
@@ -175,5 +248,5 @@
     return out;
   }
 
-  window.HoloTeamUI = { tx, DIFFS, songsSorted, songLabel, songPickerHTML, bindSongPicker, pickCards, scoreRank, leaderLabel, teamHTML, encodeTeam, decodeTeam };
+  window.HoloTeamUI = { boardMiniHTML, breakdownHTML, timelineHTML, tx, DIFFS, songsSorted, songLabel, songPickerHTML, bindSongPicker, pickCards, scoreRank, leaderLabel, teamHTML, encodeTeam, decodeTeam };
 })();

@@ -122,6 +122,8 @@
           <div class="spread-bar"><i style="left:${(r.spread.p10 / r.spread.max * 100).toFixed(1)}%;width:${((r.spread.p90 - r.spread.p10) / r.spread.max * 100).toFixed(1)}%"></i>
             <b style="left:${(r.score / r.spread.max * 100).toFixed(1)}%"></b></div></div>
         ${U.teamHTML(st.leader, st.members, { stats: r.stats })}
+        ${U.breakdownHTML(r, st.leader)}
+        ${U.timelineHTML(r, st.members)}
         <div class="table-wrap"><table class="data"><thead><tr><th>#</th><th>${esc(tx("member"))}</th><th class="num">P</th><th class="num">T</th><th class="num">S</th><th class="num">Σ</th>
           <th class="num">${esc(tx("uptime"))}</th><th>${esc(tx("special"))}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
         <h3>${esc(tx("breakdown"))}</h3>

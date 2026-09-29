@@ -19,7 +19,10 @@
       s2: "What should be maximised?", t_score: "Score", t_score_d: "Highest Live score on one song.",
       t_event: "Event songs", t_event_d: "Highest average score over several songs (e.g. the current event songs).",
       t_rating: "Holomem Score Rating", t_rating_d: "Best top-3 song scores with one holomem as leader, with song recommendations.",
-      t_pt: "Event Pt", t_pt_d: "Not available: the event point formula has not been published.",
+      t_pt: "Event Pt", t_pt_d: "Most event points on an event song: score × event card bonuses (+30% per event card, +30% new ★5, Bloom bonus).",
+      t_event_d2: "Highest score on an event song, including the +10% event card bonus.",
+      event: "Event", eventSong: "Song", allEventSongs: "All event songs (average)", bonusHave: "You own the +10% bonus card for this song:",
+      bonusMissing: "You don't own the card that gives +10% on this song:", ptEstimate: "Event Pt (relative)", ptNote: "score × (1 + event card bonus); the absolute point formula is not public",
       keepFresh: "Keep this data up to date for accurate results:", cards: "Cards", holomems: "Ranked holomems", memories: "Memories",
       s3: "Options", playMode: "Play", perfect: "ALL PERFECT", auto: "AUTO", life: "LIFE stays full", board: "Use holomem board", boardFull: "Treat all boards as fully unlocked",
       pool: "Card pool", poolOwned: "My cards", poolAll: "Every card at max level (theory)", effort: "Search effort", fast: "Fast", normal: "Normal", thorough: "Thorough",
@@ -32,7 +35,13 @@
       gain: "Gain", pullResult: "Cards that would improve your unit the most", baseline: "Current best", withCard: "With this card",
       evals: "units evaluated", needCore: "Pick at least one core card.", chartNote: "* songs marked with * have no chart data; notes are spread evenly.",
       method: "How is the score estimated?",
-      goal: "Optimise for", goalAvg: "Average score", goalMax: "Maximum score",
+      timeline: "Skill timeline", goal: "Optimise for",
+      planBoards: "Plan my boards for this unit", planning: "Planning boards…", planTitle: "Board plan", planNow: "Current boards", planAfter: "Optimised",
+      planMats: "Materials needed", planTiles: "+{a} tiles", planRemoved: "−{r} tiles (reset)", planConnect: "{c} Connect cards", planPts: "Board Pt",
+      planSave: "Save board to My Data", planSaveAll: "Save all boards to My Data", planSaved: "Saved ✓", planNone: "Your boards are already the best this planner can find for this unit.",
+      planHelp: "Boards of the holomems in this unit are re-planned from scratch with their rank points (reset the board in game, then unlock the green tiles). Other boards keep your tiles and only spend leftover points on support/song tiles. Cube stock is not checked. Green ring = new tile, red ring = tile removed by the reset.",
+      planScore: "score with this unit", teamBoard: "in unit",
+      planOthers: "Also re-plan other holomems' boards for support tiles (helps every unit, replaces their leader/member tiles)", goalAvg: "Average score", goalMax: "Maximum score",
       goalHelp: "Average = what you get on a typical play (active skills fire by chance). Maximum = every active skill fires.",
       average: "Average", maximum: "Maximum", spread: "Over {n} simulated plays", typical: "Typical (middle 80%)", top10: "Top 10%", bestSeen: "Best seen",
       maxHelp: "all active skills fire",
@@ -47,7 +56,10 @@
       s2: "何を最大化しますか？", t_score: "スコア", t_score_d: "1曲のライブスコアを最大化。",
       t_event: "イベント楽曲", t_event_d: "複数曲（イベント楽曲など）の平均スコアを最大化。",
       t_rating: "ホロメンスコアレーティング", t_rating_d: "指定ホロメンをリーダーにした上位3曲の合計を最大化し、楽曲を提案します。",
-      t_pt: "イベントPt", t_pt_d: "イベントPtの計算式が公開されていないため未対応。",
+      t_pt: "イベントPt", t_pt_d: "イベント楽曲で最も多くのPtを獲得：スコア×イベント特効（1枚+30%、新★5+30%、開花ボーナス）。",
+      t_event_d2: "イベント楽曲のスコアを最大化（特効カードの+10%を含む）。",
+      event: "イベント", eventSong: "楽曲", allEventSongs: "全イベント楽曲（平均）", bonusHave: "この楽曲の+10%特効カードを所持しています：",
+      bonusMissing: "この楽曲で+10%のスコア特効を持つカードを所持していません：", ptEstimate: "イベントPt（相対値）", ptNote: "スコア×(1+特効ボーナス)。Ptの絶対値の計算式は非公開",
       keepFresh: "正確な結果のため、以下のデータを最新に保ってください：", cards: "カード", holomems: "ランク入力済み", memories: "メモリー",
       s3: "オプション", playMode: "プレイ", perfect: "ALL PERFECT", auto: "AUTO", life: "ライフ満タン", board: "ホロメンボードを使用", boardFull: "全ボードを完全解放として計算",
       pool: "カード範囲", poolOwned: "所持カード", poolAll: "全カード最大レベル（理論値）", effort: "探索量", fast: "高速", normal: "標準", thorough: "精密",
@@ -60,7 +72,13 @@
       gain: "上昇", pullResult: "ユニットを最も強化できるカード", baseline: "現在の最強", withCard: "このカード入り",
       evals: "ユニットを評価", needCore: "指定カードを1枚以上選んでください。", chartNote: "* 付きの楽曲は譜面データがないため、ノーツを均等配置して計算します。",
       method: "スコアの推定方法",
-      goal: "最適化の基準", goalAvg: "平均スコア", goalMax: "最大スコア",
+      timeline: "スキルタイムライン", goal: "最適化の基準",
+      planBoards: "このユニット向けにボードを計画", planning: "ボードを計画中…", planTitle: "ボード計画", planNow: "現在のボード", planAfter: "最適化後",
+      planMats: "必要素材", planTiles: "+{a}マス", planRemoved: "−{r}マス（リセット）", planConnect: "コネクト{c}枚", planPts: "ボードPt",
+      planSave: "所持データに保存", planSaveAll: "すべてのボードを所持データに保存", planSaved: "保存しました ✓", planNone: "現在のボードはこのユニットにとって既に最適です。",
+      planHelp: "このユニットのホロメンのボードはランクPtで一から計画します（ゲーム内でリセットして緑のマスを解放）。他のボードは現在のマスを残し、余ったPtでサポート・楽曲マスのみ追加します。キューブの所持数は確認しません。緑枠＝新規解放、赤枠＝リセットで外れるマス。",
+      planScore: "このユニットのスコア", teamBoard: "ユニット内",
+      planOthers: "他のホロメンのボードもサポート効果中心に再計画（全ユニットに有効、リーダー/メンバー効果は外れます）", goalAvg: "平均スコア", goalMax: "最大スコア",
       goalHelp: "平均＝通常のプレイで得られるスコア（アクティブスキルは確率で発動）。最大＝アクティブスキルがすべて発動した場合。",
       average: "平均", maximum: "最大", spread: "{n}回のシミュレーション", typical: "通常（中央80%）", top10: "上位10%", bestSeen: "最高記録",
       maxHelp: "アクティブスキルが全発動",
@@ -74,6 +92,7 @@
     mode: "best", target: "score", play: "perfect", lifeFull: true, board: true, boardFull: false, pool: "owned",
     effort: "normal", core: [], coreLeader: "", keep: [], pullBloom: 0, luck: "avg",
     song: latestSongs[0], diff: "expert", eventSongs: latestSongs.slice(), ratingChr: Object.keys(H.talents)[0],
+    eventId: (S.EVENTS.events[0] || {}).id, eventSong: "all",
   }, H.store.get("optimizer", {}));
   const qs = new URLSearchParams(location.search);
   if (qs.get("song") && S.songById[qs.get("song")]) { st.song = qs.get("song"); st.target = "score"; if (qs.get("diff")) st.diff = qs.get("diff"); }
@@ -115,8 +134,8 @@
     const talentsSorted = Object.entries(H.talents).sort((a, b) => a[1].order - b[1].order);
 
     const s1 = `<div class="opt-grid">${optCard("mode", "best", tx("m_best"), tx("m_best_d"))}${optCard("mode", "core", tx("m_core"), tx("m_core_d"))}${optCard("mode", "pull", tx("m_pull"), tx("m_pull_d"))}</div>`;
-    const s2 = `<div class="opt-grid">${optCard("target", "score", tx("t_score"), tx("t_score_d"))}${optCard("target", "event", tx("t_event"), tx("t_event_d"))}
-      ${optCard("target", "rating", tx("t_rating"), tx("t_rating_d"))}${optCard("target", "pt", tx("t_pt"), tx("t_pt_d"), true)}</div>
+    const s2 = `<div class="opt-grid">${optCard("target", "score", tx("t_score"), tx("t_score_d"))}${optCard("target", "event", tx("t_event"), tx("t_event_d2"))}
+      ${optCard("target", "rating", tx("t_rating"), tx("t_rating_d"))}${optCard("target", "pt", tx("t_pt"), tx("t_pt_d"))}</div>
       <div class="fresh"><span>${esc(tx("keepFresh"))}</span>
         <a class="chip" href="../my/index.html#cards">${esc(tx("cards"))}: ${ownedIds().length}</a>
         <a class="chip" href="../my/index.html#holomem">${esc(tx("holomems"))}: ${Object.values(p.ranks).filter((r) => r > 1).length}</a>
@@ -141,10 +160,26 @@
     let s5 = "";
     if (st.target === "score") {
       s5 = U.songPickerHTML("song-pick", st.song, st.diff);
-    } else if (st.target === "event") {
-      s5 = `<div class="chips" style="margin-bottom:8px">${st.eventSongs.map((id) => `<span class="chip">${esc(L(S.songById[id].title))} <button class="link-btn" data-rm-song="${esc(id)}">✕</button></span>`).join("")}
-        <button class="chip" id="latest-event">${esc(tx("latestEvent"))}</button></div>
-        <p class="small muted">${esc(tx("addSong"))}:</p>${U.songPickerHTML("event-pick", null, st.diff)}`;
+    } else if (st.target === "event" || st.target === "pt") {
+      const ev = S.EVENTS.events.find((e) => e.id === st.eventId) || S.EVENTS.events[0];
+      if (ev) {
+        const songIds = ev.songs.map((x) => x.song);
+        if (st.eventSong !== "all" && !songIds.includes(st.eventSong)) st.eventSong = "all";
+        const shown = st.eventSong === "all" ? ev.songs : ev.songs.filter((x) => x.song === st.eventSong);
+        s5 = `<div class="opt-rows"><div><span class="lbl">${esc(tx("event"))}</span><span class="seg">${S.EVENTS.events.map((e) =>
+            `<button data-event="${esc(e.id)}" aria-pressed="${e.id === ev.id}">${esc(L(e.name))} <span class="small">${esc(e.start.slice(5))}</span></button>`).join("")}</span></div></div>
+          <div class="event-songs">
+            <button class="event-song ${st.eventSong === "all" ? "on" : ""}" data-esong="all"><div class="jacket-stack">${ev.songs.slice(0, 4).map((x) => H.jacketHTML(S.songById[x.song], "xs")).join("")}</div><b>${esc(tx("allEventSongs"))}</b></button>
+            ${ev.songs.map((x) => { const so = S.songById[x.song]; return `<button class="event-song ${st.eventSong === x.song ? "on" : ""}" data-esong="${esc(x.song)}">${H.jacketHTML(so, "sm")}<span><b>${esc(L(so.title))}</b><br><span class="small muted">${esc(L(so.singer))}</span></span></button>`; }).join("")}
+          </div>
+          <div class="opt-rows"><div><span class="lbl">${esc(U.tx("difficulty"))}</span><span class="seg">${U.DIFFS.map((d) => { const so = S.songById[shown[0].song]; return `<button data-set="diff" data-value="${d}" aria-pressed="${st.diff === d}">${esc(U.tx(d))} ${so.diff[d] ? so.diff[d].lv : ""}</button>`; }).join("")}</span></div></div>
+          ${shown.map((x) => {
+            const owned = x.cards.filter((id) => H.progress.cards[id]);
+            const c = H.cardById[x.cards[0]];
+            return `<div class="bonus-box ${owned.length ? "have" : "missing"}"><p>${esc(L(S.songById[x.song].title))}: ${esc(owned.length ? tx("bonusHave") : tx("bonusMissing"))}</p>
+              <div class="bonus-card">${c ? H.artHTML(c, { noNew: true }) : ""}<div>${c ? `<span style="color:var(--star)">${H.stars(c.rarity)}</span><br><b>${esc(L(c.title))}</b><br><span class="muted">${esc(L(H.talents[c.chr].name))}</span>` : ""}</div></div></div>`;
+          }).join("")}`;
+      }
     } else if (st.target === "rating") {
       s5 = `<div class="opt-rows"><div><span class="lbl">${esc(tx("ratingLeader"))}</span><select class="select" id="rating-chr">${talentsSorted.map(([chr, t]) =>
         `<option value="${esc(chr)}" ${st.ratingChr === chr ? "selected" : ""}>${esc(L(t.name))}</option>`).join("")}</select></div>
@@ -163,11 +198,7 @@
       </div>
       <div id="results"></div>`;
     if (st.target === "score") U.bindSongPicker(root, "song-pick", (c) => { if (c.song) st.song = c.song; if (c.diff) st.diff = c.diff; save(); render(); });
-    if (st.target === "event") U.bindSongPicker(root, "event-pick", (c) => {
-      if (c.song && !st.eventSongs.includes(c.song)) st.eventSongs.push(c.song);
-      if (c.diff) st.diff = c.diff;
-      save(); render();
-    });
+
     if (lastResult) showResult(lastResult);
     H.renderFooter();
   }
@@ -177,8 +208,8 @@
     if (!b || b.disabled) return;
     if (b.dataset.group) { st[b.dataset.group] = b.dataset.value; save(); render(); }
     else if (b.dataset.set) { st[b.dataset.set] = isNaN(b.dataset.value) || b.dataset.set === "diff" ? b.dataset.value : Number(b.dataset.value); save(); render(); }
-    else if (b.dataset.rmSong) { st.eventSongs = st.eventSongs.filter((x) => x !== b.dataset.rmSong); save(); render(); }
-    else if (b.id === "latest-event") { st.eventSongs = latestSongs.slice(); save(); render(); }
+    else if (b.dataset.event) { st.eventId = b.dataset.event; st.eventSong = "all"; save(); render(); }
+    else if (b.dataset.esong) { st.eventSong = b.dataset.esong; save(); render(); }
     else if (b.id === "pick-core") {
       const r = await U.pickCards({ max: 5, selected: st.core, pool: poolIds() });
       if (r) { st.core = r; save(); } render();
@@ -187,6 +218,18 @@
       if (r) { st.keep = r; save(); } render();
     } else if (b.id === "run") run();
     else if (b.id === "cancel" && running) running.cancelled = true;
+    else if (b.dataset.plan != null) runPlan(Number(b.dataset.plan), b);
+    else if (b.dataset.saveBoard) {
+      e.preventDefault();
+      const pr = plans[b.dataset.planId];
+      window.HoloBoardPlan.save(b.dataset.saveBoard, pr.boards[b.dataset.saveBoard]);
+      b.textContent = tx("planSaved"); b.disabled = true;
+    } else if (b.dataset.saveAll != null) {
+      const pr = plans[b.dataset.saveAll];
+      for (const chr in pr.boards) window.HoloBoardPlan.save(chr, pr.boards[chr]);
+      root.querySelectorAll(`[data-plan-id="${b.dataset.saveAll}"]`).forEach((x) => { x.textContent = tx("planSaved"); x.disabled = true; });
+      b.textContent = tx("planSaved"); b.disabled = true;
+    }
   });
   root.addEventListener("change", (e) => {
     const el = e.target;
@@ -236,7 +279,12 @@
       let result;
       if (st.target === "rating") result = await runRating(base);
       else {
-        const songs = st.target === "event" ? st.eventSongs : [st.song];
+        let songs = [st.song];
+        if (st.target === "event" || st.target === "pt") {
+          const ev = S.EVENTS.events.find((e) => e.id === st.eventId) || S.EVENTS.events[0];
+          songs = st.eventSong === "all" ? ev.songs.map((x) => x.song) : [st.eventSong];
+          if (st.target === "pt") base.objective = "eventpt";
+        }
         await S.loadCharts(songs);
         const charts = songs.map((id) => S.getChart(id, st.diff, st.play));
         if (st.mode === "pull") result = await runPull(base, charts, songs);
@@ -276,6 +324,54 @@
     return { kind: "rating", rows, env: base.env, overrides: base.overrides, chr };
   }
 
+  const plans = {};
+  async function runPlan(i, btn) {
+    const t = planTargets[i];
+    const out = document.getElementById("plan-" + i);
+    if (!t || !out) return;
+    btn.disabled = true;
+    out.innerHTML = `<div class="progress" style="margin:8px 0"><div class="bar" id="pbar-${i}"></div></div><span class="small muted" id="ptext-${i}">${esc(tx("planning"))}</span>`;
+    const res = await window.HoloBoardPlan.plan({
+      team: { leader: t.leader, ids: t.ids }, charts: t.charts, luck: st.luck,
+      resetOthers: !!(root.querySelector(`[data-plan-others="${i}"]`) || {}).checked,
+      opts: { mode: st.play, lifeFull: st.lifeFull },
+      onProgress: (f, text) => { const b2 = document.getElementById("pbar-" + i); if (b2) b2.style.width = (f * 100).toFixed(1) + "%"; const tt = document.getElementById("ptext-" + i); if (tt) tt.textContent = text; },
+    });
+    plans[i] = res;
+    btn.disabled = false;
+    out.innerHTML = planHTML(res, i);
+  }
+  function planHTML(res, i) {
+    const n = (v) => fmt(Math.round(v));
+    const gain = res.before ? (res.after / res.before - 1) * 100 : 0;
+    const chrs = Object.keys(res.boards).sort((a, b) => (res.boards[b].team - res.boards[a].team) || res.boards[b].added.length - res.boards[a].added.length);
+    const mats = Object.entries(res.materials).sort();
+    return `<div class="plan">
+      <h3>${esc(tx("planTitle"))}</h3>
+      <div class="plan-head"><span>${esc(tx("planNow"))} <b>${n(res.before)}</b></span> → <span>${esc(tx("planAfter"))} <b class="big-inline">${n(res.after)}</b></span>
+        <b style="color:#22a35a">${gain >= 0 ? "+" : ""}${gain.toFixed(2)}%</b> <span class="small muted">(${esc(tx("planScore"))})</span>
+        ${chrs.length ? `<button class="icon-btn" data-save-all="${i}">${esc(tx("planSaveAll"))}</button>` : ""}</div>
+      <p class="small muted">${esc(tx("planHelp"))}</p>
+      ${mats.length ? `<div class="chips"><span class="small muted">${esc(tx("planMats"))}:</span>${mats.map(([id, q]) => `<span class="chip">${esc(L((G.materials || {})[id] || { en: id }))} ${fmt(q)}</span>`).join("")}</div>` : ""}
+      ${chrs.length ? chrs.map((chr) => {
+        const bd = res.boards[chr];
+        const tl = H.talents[chr];
+        const cc = Object.keys(bd.connect).length;
+        return `<details class="plan-board" ${bd.team ? "open" : ""}><summary>
+          <span class="avatar" style="background:linear-gradient(135deg,${esc(tl.color)},${esc(tl.color2)})">${esc(L(tl.short).slice(0, 2))}</span>
+          <b>${esc(L(tl.name))}</b> ${bd.team ? `<span class="pill on">${esc(tx("teamBoard"))}</span>` : ""}
+          <span class="pill">${esc(tx("planTiles").replace("{a}", bd.added.length))}</span>
+          ${bd.removed.length ? `<span class="pill">${esc(tx("planRemoved").replace("{r}", bd.removed.length))}</span>` : ""}
+          ${cc ? `<span class="pill">${esc(tx("planConnect").replace("{c}", cc))}</span>` : ""}
+          <span class="small muted" style="margin-left:auto">${esc(tx("planPts"))} ${bd.spent}/${bd.points}</span>
+          <button class="icon-btn" data-save-board="${esc(chr)}" data-plan-id="${i}">${esc(tx("planSave"))}</button></summary>
+          ${U.boardMiniHTML(chr, bd)}
+          ${cc ? `<div class="chips" style="margin-top:6px">${Object.entries(bd.connect).map(([k, id]) => `<span class="chip">${esc(k)}: ${H.stars(H.cardById[id].rarity)} ${esc(L(H.talents[H.cardById[id].chr].short))} · ${esc(L(H.cardById[id].title))}</span>`).join("")}</div>` : ""}
+        </details>`;
+      }).join("") : `<p>${esc(tx("planNone"))}</p>`}
+    </div>`;
+  }
+
   async function runPull(base, charts, songs) {
     const owned = new Set(base.pool);
     const baseline = await O.optimize(Object.assign({}, base, { charts, effort: "fast", onProgress: progressFn(0, 0.15) }));
@@ -302,7 +398,9 @@
   function detailsLink(leader, ids, song, diff) {
     return `details.html#${U.encodeTeam({ song, diff, mode: st.play, leader, members: ids })}`;
   }
+  const planTargets = [];
   function teamBlock(env, overrides, leader, ids, charts, songs, title) {
+    const planIdx = planTargets.push({ leader, ids, charts }) - 1;
     const team = { leader, members: ids.map((id) => S.prepare(env, id, overrides && overrides[id])) };
     const details = charts.map((c) => S.evaluate(env, team, c, true));
     const maxes = charts.map((c) => S.evaluate(env, team, c, false, "max"));
@@ -314,6 +412,9 @@
     const hypo = {};
     for (const id of ids) if (overrides && overrides[id] && !H.progress.cards[id]) hypo[id] = overrides[id];
     const n = (v) => fmt(Math.round(v));
+    const ptB = charts.map((c) => S.eventPtBonus(env, team, c.songId));
+    const ptBlock = ptB.some((b) => b > 0) || st.target === "pt" ? `<div class="spread"><span><b>${esc(tx("ptEstimate"))}</b>: ${n(details.reduce((a, d, i) => a + d.score * (1 + ptB[i]), 0) / details.length)}</span>
+      <span>+${Math.round(Math.max(...ptB) * 100)}%</span><span class="small muted">${esc(tx("ptNote"))}</span></div>` : "";
     return `<div class="panel result">
       ${title ? `<h3>${title}</h3>` : ""}
       <div class="result-head">
@@ -334,6 +435,11 @@
         <div class="spread-bar"><i style="left:${(spread.p10 / max * 100).toFixed(1)}%;width:${((spread.p90 - spread.p10) / max * 100).toFixed(1)}%"></i>
           <b style="left:${(avg / max * 100).toFixed(1)}%" title="${esc(tx("average"))}"></b></div></div>` : ""}
       ${U.teamHTML(leader, ids, { stats: d0.stats, hypo })}
+      ${U.breakdownHTML(d0, leader)}
+      ${ptBlock}
+      <details class="tl-details" ${title ? "" : "open"}><summary>${esc(tx("timeline"))}</summary>${U.timelineHTML(d0, ids)}</details>
+      ${st.pool === "owned" ? `<div><button class="icon-btn" data-plan="${planIdx}">🧩 ${esc(tx("planBoards"))}</button>
+        <label class="check small"><input type="checkbox" data-plan-others="${planIdx}"> ${esc(tx("planOthers"))}</label><div id="plan-${planIdx}"></div></div>` : ""}
       ${charts.length > 1 ? `<table class="data small-table"><thead><tr><th>${esc(tx("perSong"))}</th><th class="num">${esc(tx("average"))}</th><th class="num">${esc(tx("maximum"))}</th></tr></thead><tbody>
         ${charts.map((c, i) => `<tr><td>${esc(L(c.song.title))} ${c.synthetic ? "*" : ""}</td><td class="num">${n(details[i].score)}</td><td class="num">${n(maxes[i])}</td></tr>`).join("")}</tbody></table>` : ""}
     </div>`;
@@ -342,6 +448,7 @@
   function showResult(r) {
     const el = document.getElementById("results");
     if (!el) return;
+    planTargets.length = 0;
     if (r.kind === "team") {
       if (!r.r.best) { el.innerHTML = `<div class="panel">${esc(tx("noCards"))}</div>`; return; }
       el.innerHTML = `<h2>${esc(tx("results"))}</h2>` +

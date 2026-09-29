@@ -66,7 +66,11 @@
       if (hit !== undefined) return hit;
       const team = { leader, members: ids.map(prep) };
       let s = 0;
-      for (let i = 0; i < charts.length; i++) s += weights[i] * S.evaluate(env, team, charts[i], false, o.luck || "avg");
+      for (let i = 0; i < charts.length; i++) {
+        let v = S.evaluate(env, team, charts[i], false, o.luck || "avg");
+        if (o.objective === "eventpt") v *= 1 + S.eventPtBonus(env, team, charts[i].songId);
+        s += weights[i] * v;
+      }
       evals++;
       cache.set(key, s);
       return s;

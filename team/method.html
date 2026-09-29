@@ -20,8 +20,9 @@
       passive skills, the leader outfit skill, leader-type board tiles and memories (+0.2% per memory from the Memory Stand table).</p>
 
     <h2>2. Unit Score</h2>
-    <p><code>Unit Score = Σ (P + T + S) of the five members × (1 + Member Upgrade Bonus)</code>. The Member Upgrade Bonus is the
-      sum of every owned card's level bonus (Lv 20+), capped at 50%, exactly as the in-game help describes.</p>
+    <p><code>Unit Score = Σ over members and P/T/S of (card stat + flat board bonus + card stat × (passive % + outfit % + board % + memories % + Member Upgrade %))</code>.
+      Every percentage applies to the card's own stats, which reproduces the component split shown by holodori.best (e.g. memories 4.6% × member stats).
+      The Member Upgrade Bonus is the sum of every owned card's level bonus (Lv 20+), capped at 50%, as the in-game help describes.</p>
 
     <h2>3. Notes</h2>
     <p>Each note scores <code>Unit Score × song coefficient × note coefficient × (1 + combo bonus)</code>. Note coefficients come
@@ -60,6 +61,18 @@
       Rank EXP comes from that holomem's achievements (1–2 EXP each); rank 33 needs 111 EXP in total.</p>
     <ul style="display:none">
     </ul>
+
+    <h2>Events</h2>
+    <p>On an event song, having that song's event card in the unit adds <b>+10% live score</b> (counted once), per the in-game event rules
+      (see Game8's event guides). <b>Event Pt</b> is estimated as score × (1 + event card bonus): +30% per event card in the unit, +30% more for the
+      event's new ★5 cards, and up to +30% for full Bloom (+6% per stage). The absolute point formula is not public, so Event Pt is shown as a relative value.
+      Events and their bonus cards are listed in <code>data/events.js</code>.</p>
+
+    <h2>Board planner</h2>
+    <p>For a unit and song, each holomem board is re-planned with that holomem's own rank points and your Dream Rank. Boards of holomems in the unit
+      (leader and members) are planned by scoring the full unit after every candidate unlock path. The other boards only add support tiles
+      (flat stats for every unit or a generation) and song tiles, which are priced from measured sensitivities. Owned ★4/★5 cards are then placed on
+      unlocked Connect tiles one at a time where they add the most (each card on one board only). Cube materials are totalled but not limited.</p>
 
     <h2>Average vs maximum</h2>
     <p>Active skills fire by chance, so the same unit scores differently every play. <b>Average</b> is the expected score (exact expected value of

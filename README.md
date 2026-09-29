@@ -21,8 +21,12 @@ GitHub Pages.
   3. *Options*: ALL PERFECT or AUTO, LIFE assumption, my cards vs. every card maxed (theory), search effort.
   4. *Holomem board*: on/off, or treat every board as fully unlocked.
   5. *Input*: song + difficulty, the event song list, or the rating leader.
-  Results show the leader outfit, the five members in the best formation order, estimated score,
-  score rank, Unit Score and alternative units.
+  Results show the leader outfit and its skill, the five members in the best formation order, average and
+  maximum score with a simulated spread, the Unit Score breakdown (member stats, board, passives, memories,
+  upgrade bonus, outfit, active/special skill %, board song bonus, event card bonus), a skill timeline,
+  Event Pt (relative) on event songs, and a **board plan** per unit: which tiles to unlock on each holomem
+  board with its rank points, where to place Connect cards, the cubes needed, and one-click save to My Data.
+  Event mode picks an event (`data/events.js`) and its songs and shows which +10% bonus cards you own.
 - `team/details.html` — **Team Details**: build a unit by hand; per-member stats, active skill uptime,
   special skill timing and a score breakdown. Also lets you calibrate estimates with a real in-game score.
 - `team/method.html` — how the score is estimated.
