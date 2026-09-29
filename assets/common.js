@@ -24,7 +24,7 @@
   // ---------- i18n ----------
   const STR = {
     en: {
-      home: "Home", cards: "Cards", talents: "Talents", search: "Search cards, talents, skills…",
+      home: "Home", cards: "Cards", myData: "My Data", optimizer: "Team Optimizer", teamDetails: "Team Details", talents: "Talents", search: "Search cards, talents, skills…",
       filters: "Filters", reset: "Reset", results: "{n} cards", rarity: "Rarity", attribute: "Type",
       cute: "Cute", happy: "Happy", pure: "Pure", availability: "Availability", standard: "Standard",
       limited: "Limited", announced: "Announced", banner: "Banner", branch: "Branch", unit: "Unit / Generation",
@@ -59,7 +59,7 @@
       launchStandard: "Launch (standard pool)",
     },
     ja: {
-      home: "ホーム", cards: "カード", talents: "タレント", search: "カード名・タレント・スキルで検索…",
+      home: "ホーム", cards: "カード", myData: "所持データ", optimizer: "編成最適化", teamDetails: "編成詳細", talents: "タレント", search: "カード名・タレント・スキルで検索…",
       filters: "絞り込み", reset: "リセット", results: "{n}枚", rarity: "レアリティ", attribute: "タイプ",
       cute: "キュート", happy: "ハッピー", pure: "ピュア", availability: "入手区分", standard: "恒常",
       limited: "限定", announced: "発表済み", banner: "ガチャ", branch: "ブランチ", unit: "ユニット・期",
@@ -221,12 +221,39 @@
       `<div class="stars" aria-label="${card.rarity} star">${stars(card.rarity)}</div></div>`;
   }
 
-  // ---------- collection ----------
-  const owned = new Set(store.get("owned", []));
+  // ---------- progress (owned cards, levels, bloom, holomem ranks, memories) ----------
+  function loadProgress() {
+    const p = store.get("progress", null) || { v: 1, cards: {}, ranks: {}, boardPct: {}, memories: 0 };
+    p.cards = p.cards || {}; p.ranks = p.ranks || {}; p.boardPct = p.boardPct || {}; p.memories = p.memories || 0;
+    // Migrate the older "owned" list from the card database.
+    const legacy = store.get("owned", null);
+    if (legacy && legacy.length) {
+      for (const id of legacy) if (cardById[id] && !p.cards[id]) p.cards[id] = { lv: maxLevel(cardById[id]), bloom: 0 };
+      store.set("owned", []);
+    }
+    return p;
+  }
+  const progress = loadProgress();
+  const owned = new Set(Object.keys(progress.cards));
+  function saveProgress() {
+    progress.updated = new Date().toISOString();
+    store.set("progress", progress);
+    owned.clear();
+    for (const id in progress.cards) owned.add(id);
+  }
+  function setCardProgress(id, value) {
+    if (value) progress.cards[id] = Object.assign({ lv: maxLevel(cardById[id]), bloom: 0 }, progress.cards[id] || {}, value);
+    else delete progress.cards[id];
+    saveProgress();
+  }
+  function replaceProgress(p) {
+    for (const k of Object.keys(progress)) delete progress[k];
+    Object.assign(progress, { v: 1, cards: {}, ranks: {}, boardPct: {}, memories: 0 }, p);
+    saveProgress();
+  }
   const favorites = new Set(store.get("favorites", []));
   function toggleOwned(id) {
-    owned.has(id) ? owned.delete(id) : owned.add(id);
-    store.set("owned", [...owned]);
+    setCardProgress(id, owned.has(id) ? null : {});
     return owned.has(id);
   }
   function toggleFavorite(id) {
@@ -246,6 +273,9 @@
         <nav class="nav">
           <a href="${base}/index.html" class="${active === "home" ? "active" : ""}">${esc(t("home"))}</a>
           <a href="${base}/cards/index.html" class="${active === "cards" ? "active" : ""}">${esc(t("cards"))}</a>
+          <a href="${base}/my/index.html" class="${active === "my" ? "active" : ""}">${esc(t("myData"))}</a>
+          <a href="${base}/team/index.html" class="${active === "optimizer" ? "active" : ""}">${esc(t("optimizer"))}</a>
+          <a href="${base}/team/details.html" class="${active === "details" ? "active" : ""}">${esc(t("teamDetails"))}</a>
         </nav>
         <div class="header-actions">
           <button class="icon-btn" id="lang-btn" title="Language">${lang === "en" ? "日本語" : "EN"}</button>
@@ -277,6 +307,7 @@
     D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
     skillLevelAt, isNew, talentGroupNames, artHTML, owned, favorites, toggleOwned, toggleFavorite,
+    progress, saveProgress, setCardProgress, replaceProgress,
     renderHeader, renderFooter,
   };
 })();

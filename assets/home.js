@@ -7,8 +7,9 @@
 
   const TEXT = {
     en: {
-      title: "hololive Dreams card database",
-      intro: "Every hololive Dreams card with stats at any level and potential, all skills, leader outfits, banners and the newest releases — searchable in English and Japanese.",
+      title: "Build your strongest hololive Dreams unit",
+      intro: "Enter the cards you own, their levels and blooms and your holomem ranks, then let the Team Optimizer find the best leader and five members for any song, the event songs or your holomem Score Rating. Every card, skill and banner is in the database too.",
+      cta2: "Team Optimizer", cta3: "Enter my data",
       cta: "Browse all cards",
       talentsN: "Playable talents", cardsN: "Cards", limitedN: "Limited ★5", bannersN: "Pick-up banners",
       launch: "Global launch", launchText: "hololive Dreams (QualiArts × COVER) launched worldwide on 2026-07-23 with 54 playable holomems, each with a ★3, ★4 and ★5 card.",
@@ -16,8 +17,9 @@
       songs: "Announced songs", announcedOn: "Announced", songNote: "Coming to hololive Dreams. Charts will appear once the master data updates.",
     },
     ja: {
-      title: "ホロドリ カードデータベース",
-      intro: "ホロライブドリームスの全カードのステータス（任意レベル・ポテンシャル）、スキル、リーダー衣装、ガチャ、最新カードを日英で検索できます。",
+      title: "ホロドリ最強ユニットを作ろう",
+      intro: "所持カード・レベル・開花・ホロメンランクを入力すると、編成最適化が楽曲・イベント楽曲・ホロメンスコアレーティング向けに最適なリーダーとメンバー5人を探します。全カード・スキル・ガチャのデータベースも利用できます。",
+      cta2: "編成最適化", cta3: "所持データを入力",
       cta: "カード一覧を見る",
       talentsN: "プレイアブルタレント", cardsN: "カード", limitedN: "限定★5", bannersN: "ピックアップガチャ",
       launch: "グローバルリリース", launchText: "ホロライブドリームス（QualiArts × COVER）は2026年7月23日に全世界でリリース。54人のホロメンがそれぞれ★3・★4・★5カードを持っています。",
@@ -58,7 +60,9 @@
       <section class="hero">
         <h1>${esc(tx("title"))}</h1>
         <p>${esc(tx("intro"))}</p>
-        <a class="cta" href="cards/index.html">${esc(tx("cta"))} →</a>
+        <a class="cta" href="team/index.html">${esc(tx("cta2"))} →</a>
+        <a class="cta" href="my/index.html" style="margin-left:8px">${esc(tx("cta3"))} →</a>
+        <a class="cta" href="cards/index.html" style="margin-left:8px">${esc(tx("cta"))} →</a>
       </section>
       <div class="stats-row">
         <div class="stat-card"><b>${Object.keys(H.talents).length}</b><span class="muted">${esc(tx("talentsN"))}</span></div>

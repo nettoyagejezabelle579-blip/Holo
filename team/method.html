@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Score Method · holodori DB</title>
+  <link rel="stylesheet" href="../assets/app.css">
+</head>
+<body data-base="..">
+  <header class="site-header" id="site-header"></header>
+  <main class="container method" style="max-width:860px">
+    <h1 class="page-title">How the score is estimated</h1>
+    <p class="muted">The complete in-game score formula has not been published. The optimizer uses the pieces that are in the
+      game's master data and fills the gaps with the assumptions listed below. Absolute numbers are estimates; the comparison
+      between units is what the optimizer is built for.</p>
+
+    <h2>1. Member stats</h2>
+    <p>Each card's Performance, Technique and Sense come from its level curve and stat split, plus the Bloom (potential) bonus
+      (+10% for ★4/★5, +15% for ★3 at full bloom). Flat bonuses from holomem board tiles are added, then all percentage bonuses:
+      passive skills, the leader outfit skill, leader-type board tiles and memories (+0.2% per memory from the Memory Stand table).</p>
+
+    <h2>2. Unit Score</h2>
+    <p><code>Unit Score = Σ (P + T + S) of the five members × (1 + Member Upgrade Bonus)</code>. The Member Upgrade Bonus is the
+      sum of every owned card's level bonus (Lv 20+), capped at 50%, exactly as the in-game help describes.</p>
+
+    <h2>3. Notes</h2>
+    <p>Each note scores <code>Unit Score × song coefficient × note coefficient × (1 + combo bonus)</code>. Note coefficients come
+      from the LiveNote table (PERFECT: tap/hold 1.00, flick 1.05, hold ticks 0.10; AUTO: 0.80 and no combo bonus). The combo bonus is +1% per 100 combo up to +10%.
+      Chart timings, special-skill markers and the combo at each marker come from parsed charts; songs without chart data use evenly spaced notes.</p>
+
+    <h2>4. Skills</h2>
+    <ul>
+      <li><b>Active skills</b> are checked every cooldown (from the start of the song) with their activation chance and last for their duration.
+        When several are active, only the highest effect counts (in-game help). The optimizer uses the expected value of that maximum.</li>
+      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support multiplies active Score UP
+        while it lasts; Skill Rate UP raises the activation chance of checks made during it.</li>
+      <li><b>Passive skills and leader outfits</b> apply when their conditions hold (type count, unit members, leader, song singer).
+        When a skill targets "2 Pure Type Members", the members with the highest base total are assumed to receive it.</li>
+      <li>Skill levels follow Bloom: 1 → Active Lv 2, 3 → Special Lv 2, 4 → Passive Lv 2.</li>
+      <li>Judgement Boost and LIFE recovery do not add score under ALL PERFECT play and are ignored. LIFE conditions follow the "LIFE stays full" option.</li>
+    </ul>
+
+    <h2>5. Holomem board</h2>
+    <p>Each holomem's board is summarised as the total of its live-relevant tiles. Your Holomem Rank gives board points
+      (361 at rank 50); the share of the board you have unlocked is estimated as <code>points ÷ total board cost</code> unless you enter an exact percentage in My Data.
+      Support tiles apply to every unit, member tiles to that holomem's card, leader tiles when that holomem is the leader, and song tiles give a score bonus on their songs (max +10%).</p>
+
+    <h2>6. Search</h2>
+    <p>Leaders are screened with a baseline unit, then each promising leader gets a greedy fill and a swap-until-no-improvement search over your cards
+      (one card per holomem). The best units are then tried in all 120 formation orders.</p>
+
+    <h2>Data</h2>
+    <p>Master data: <a href="https://github.com/HolodoriDB/holodori-db-eng-diff">HolodoriDB</a>. Chart timelines: parsed holodori charts.</p>
+  </main>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../assets/config.js"></script>
+  <script src="../data/cards.js"></script>
+  <script src="../data/announced.js"></script>
+  <script src="../assets/common.js"></script>
+  <script>Holo.renderHeader("optimizer"); Holo.renderFooter();</script>
+</body>
+</html>
