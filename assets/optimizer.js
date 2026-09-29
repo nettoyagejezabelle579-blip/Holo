@@ -10,9 +10,9 @@
   const G = window.HOLO_GAME;
 
   const EFFORT = {
-    fast: { leaders: 5, passes: 4, finalists: 3, pairCand: 12, themes: false },
-    normal: { leaders: 10, passes: 8, finalists: 5, pairCand: 18, themes: true },
-    thorough: { leaders: 24, passes: 12, finalists: 8, pairCand: 26, themes: true },
+    fast: { leaders: 5, passes: 4, finalists: 3, pairCand: 12, themes: false, swapOrderCand: 1 },
+    normal: { leaders: 10, passes: 8, finalists: 5, pairCand: 18, themes: true, swapOrderCand: 3 },
+    thorough: { leaders: 24, passes: 12, finalists: 8, pairCand: 26, themes: true, swapOrderCand: 5 },
   };
 
   function permutations(arr) {
@@ -155,6 +155,28 @@
       }
       return bestTrial ? { ids: bestTrial, score: bestS } : { ids, score: cur };
     }
+    // A swap that only pays off together with a new formation order: for each slot, re-order the
+    // unit around its most promising replacement cards.
+    async function swapOrderSearch(leader, ids) {
+      let best = { ids: ids.slice(), score: score(leader, ids) };
+      for (let slot = 0; slot < ids.length; slot++) {
+        if (locks.includes(ids[slot])) continue;
+        const cands = [];
+        for (const id of pool) {
+          if (!canAdd(ids, id, slot)) continue;
+          const trial = ids.slice();
+          trial[slot] = id;
+          cands.push({ trial, s: score(leader, trial) });
+        }
+        cands.sort((a, b) => b.s - a.s);
+        for (const c of cands.slice(0, cfg.swapOrderCand)) {
+          const ord = bestOrder(leader, c.trial);
+          if (ord.score > best.score + 1e-6) best = ord;
+        }
+        if (evals % 400 < 130) await tick();
+      }
+      return best;
+    }
     // Alternate order search, single swaps and pair swaps until nothing improves.
     async function polish(leader, ids) {
       let r = { ids: ids.slice(), score: score(leader, ids) };
@@ -162,7 +184,9 @@
         const ord = bestOrder(leader, r.ids);
         let ls = await localSearch(leader, ord.ids.slice());
         if (ls.score <= Math.max(r.score, ord.score) + 1e-6) {
-          const pr = await pairSearch(leader, (ord.score > r.score ? ord : r).ids.slice());
+          const cur = ord.score > r.score ? ord : r;
+          let pr = await pairSearch(leader, cur.ids.slice());
+          if (pr.score <= cur.score + 1e-6) pr = await swapOrderSearch(leader, cur.ids.slice());
           if (pr.score <= Math.max(r.score, ord.score) + 1e-6) { if (ord.score > r.score) r = ord; break; }
           ls = await localSearch(leader, pr.ids.slice());
         }
