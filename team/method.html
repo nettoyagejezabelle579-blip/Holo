@@ -34,7 +34,7 @@
     <ul>
       <li><b>Active skills</b> are checked every cooldown (from the start of the song) with their activation chance and last for their duration.
         When several are active, only the highest effect counts (in-game help). The optimizer uses the expected value of that maximum.</li>
-      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support multiplies active Score UP
+      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support X% makes the active Score UP count X% of its value (120% → ×1.2, the rule holodori.best uses)
         while it lasts; Skill Rate UP raises the activation chance of checks made during it.</li>
       <li><b>Passive skills and leader outfits</b> apply when their conditions hold (type count, unit members, leader, song singer).
         When a skill targets "2 Pure Type Members", the members with the highest base total are assumed to receive it.</li>
@@ -123,7 +123,7 @@
     <ul>
       <li><b>アクティブスキル</b>は曲の開始からクールタイムごとに発動率で判定され、効果時間の間続きます。
         複数発動中は最も高い効果のみが適用されます（ゲーム内ヘルプ）。オプティマイザーはその最大値の期待値を使います。</li>
-      <li><b>スペシャルスキル</b>は譜面のスペシャルマーカーで編成順（スロット1から）に1回ずつ発動します。スコアサポートは効果中のアクティブのスコアUPを増幅し、
+      <li><b>スペシャルスキル</b>は譜面のスペシャルマーカーで編成順（スロット1から）に1回ずつ発動します。スコアサポートX%は効果中のアクティブのスコアUPをX%の値にし（120% → ×1.2、holodori.best と同じ）、
         スキル発動率UPは効果中の判定の発動率を上げます。</li>
       <li><b>パッシブスキルとリーダー衣装</b>は条件（タイプ数、ユニットメンバー、リーダー、歌唱メンバー）を満たすと適用されます。
         「ピュアタイプのメンバー2人」のような対象は、基礎合計値が最も高いメンバーが受けると仮定します。</li>
@@ -207,7 +207,7 @@
     <ul>
       <li><b>主動技能</b>從歌曲開始每隔冷卻時間依發動機率判定，並持續其效果時間。
         多個同時發動時只計算效果最高的一個（遊戲內說明）。最佳化工具使用該最大值的期望值。</li>
-      <li><b>特殊技能</b>在譜面的特殊標記處依隊伍順序（第1格先）各發動一次。分數支援會在效果期間放大主動技能的分數提升；
+      <li><b>特殊技能</b>在譜面的特殊標記處依隊伍順序（第1格先）各發動一次。分數支援X%會使效果期間主動技能的分數提升變為X%（120% → ×1.2，與 holodori.best 相同）；
         技能發動率提升會提高效果期間內判定的發動機率。</li>
       <li><b>被動技能與隊長服裝</b>在條件（類型數量、團體成員、隊長、演唱者）成立時生效。
         若技能對象為「2名 Pure 類型成員」，則假設由基礎總值最高的成員獲得。</li>
