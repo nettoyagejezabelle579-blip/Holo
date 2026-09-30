@@ -240,7 +240,9 @@
           if (song) for (const st of ["solo", "group", "all"]) if (songTileApplies(st, chr, song)) songTypes.add(st);
         }
         for (const r of ["leader", "member", "support"]) {
-          const eff = B.effects(chr, B.roleSetup(progress, chr, r, songTypes), progress);
+          const set = B.roleSetup(progress, chr, r, songTypes);
+          const con = B.roleConnect(progress, chr, r, songTypes, set);
+          const eff = B.effects(chr, set, Object.assign({}, progress, { connect: { [chr]: con } }));
           role.eff[r][chr] = eff;
           role.sup[r][chr] = supportPart(chr, eff);
         }

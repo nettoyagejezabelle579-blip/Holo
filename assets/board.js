@@ -172,6 +172,45 @@
     return set;
   }
 
+  // Connect cards for a role-planned board: the owned ★4/★5 cards placed on its unlocked Connect
+  // tiles, best card per tile by how much useful tile value lies in its range (like the board
+  // planner, which gives the unit's and the singers' boards the Connect cards). Cards are not
+  // shared between boards here (a unit has few boards; most players own enough cards).
+  const roleConCache = new Map();
+  function roleConnect(progress, chr, role, songTypes, set) {
+    const types = songTypes || new Set();
+    if (role === "support" && !types.size) return {};
+    const owned = Object.keys(progress.cards || {}).filter((id) => G.connect[id]);
+    if (!owned.length) return {};
+    const key = chr + "|" + role + "|" + [...types].sort().join(",") + "|" + [...set].sort().join(",") + "|" +
+      owned.map((id) => id + ":" + connectLevel(progress, id)).join(",");
+    if (roleConCache.has(key)) return roleConCache.get(key);
+    const b = tilesFor(chr);
+    const w = ROLE_W[role];
+    const useful = (x) => x && x.eff && x.eff.live && w[x.type] && (x.type !== "content" || types.has(x.eff.singerType || "all"));
+    const slots = b.list.filter((t) => t.type === "connection" && set.has(t.k));
+    const out = {}, used = new Set();
+    for (;;) {
+      let best = null;
+      for (const t of slots) {
+        if (out[t.k]) continue;
+        for (const id of owned) {
+          if (used.has(id)) continue;
+          const v = G.connect[id].v[connectLevel(progress, id) - 1] || G.connect[id].v[0];
+          let val = 0;
+          for (const k of connectFootprint(chr, t.k, id)) { const x = b.byKey[k]; if (set.has(k) && useful(x)) val += w[x.type] * x.grade; }
+          val *= v;
+          if (val > 0 && (!best || val > best.val)) best = { k: t.k, id, val };
+        }
+      }
+      if (!best) break;
+      out[best.k] = best.id;
+      used.add(best.id);
+    }
+    roleConCache.set(key, out);
+    return out;
+  }
+
   function canUnlock(progress, chr, set, key) {
     const b = tilesFor(chr);
     const t = b.byKey[key];
@@ -260,6 +299,6 @@
   }
 
 
-  window.HoloBoard = { ROOT, tilesFor, isSet, roleSetup, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey,
+  window.HoloBoard = { ROOT, tilesFor, isSet, roleSetup, roleConnect, pointsFor, playerLevel, spent, autoSetup, unlocked, canUnlock, lockTile, effects, effectText, tileByKey,
     connectLevel, connectFootprint, connectMultipliers, placedCards, rankTable };
 })();

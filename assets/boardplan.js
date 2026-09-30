@@ -197,6 +197,27 @@
       if (o.signal && o.signal.cancelled) break;
     }
 
+    // The unit's boards were planned one at a time, but they work together (their effects do not
+    // simply add up), so also try the boards planned for each holomem's role in the unit (what the
+    // team optimizer assumes) all at once, then board by board, and keep what scores higher.
+    const roleSets = {};
+    for (const chr of teamChrs) {
+      const types = new Set(["solo", "group", "all"].filter((st) => o.charts.some((c) => S.songTileApplies(st, chr, c.song))));
+      roleSets[chr] = new Set(B.roleSetup(progress, chr, leader && leader.chr === chr ? "leader" : "member", types));
+    }
+    {
+      const keep = {};
+      for (const chr of teamChrs) keep[chr] = [sets[chr], boardEff[chr]];
+      const was = score();
+      for (const chr of teamChrs) { sets[chr] = roleSets[chr]; boardEff[chr] = effOf(chr, roleSets[chr]); }
+      if (score() <= was + 1e-6) for (const chr of teamChrs) [sets[chr], boardEff[chr]] = keep[chr];
+    }
+    for (const chr of teamChrs) {
+      const eff = effOf(chr, roleSets[chr]);
+      if (sets[chr] !== roleSets[chr] && score(chr, eff) > score() + 1e-6) { sets[chr] = roleSets[chr]; boardEff[chr] = eff; }
+    }
+    await tick();
+
     // Connect cards: greedy assignment of owned ★4/★5 cards to unlocked Connect tiles.
     const cards = Object.keys(progress.cards).filter((id) => G.connect[id]);
     for (const chr of talents) connect[chr] = {};
