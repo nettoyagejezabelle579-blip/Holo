@@ -1,6 +1,0 @@
-https://dreams.wf-calc.net/simulator?lang=en
-SCRIPTS: /assets/index-DrmNJHqZ.js
-
-Score Simulator | hololive Dreams Lab
-hololive Dreams Lab   Member Data   Outfit Skill Data   Song Data     Score Simulator
-Calculate Live scores for five-Member units, then compare and optimize teams using your owned Members, Outfits, and training progress.
