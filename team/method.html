@@ -26,7 +26,7 @@
       The Member Upgrade Bonus is the sum of every owned card's level bonus (Lv 20+), capped at 50%, as the in-game help describes.</p>
 
     <h2>3. Notes</h2>
-    <p>Each note scores <code>Unit Score × song coefficient × note coefficient × (1 + combo bonus)</code>. Note coefficients come
+    <p>Each note scores <code>Unit Score × 3.75 × note coefficient ÷ (total note coefficient of the song) × (1 + combo bonus)</code>. Every song shares the same score ranks (S+9 = 5,000,000), so a note is worth its share of the song, and a song with more notes does not score more; the scale 3.75 was fitted to holodori.best (Kyapi and BAKU LOVE CHEMISTRY within about 5–10%). Note coefficients come
       from the LiveNote table (PERFECT: tap/hold 1.00, flick 1.05, hold ticks 0.10; AUTO: 0.80 and no combo bonus). The combo bonus is +1% per 100 combo up to +10%.
       Chart timings, special-skill markers and the combo at each marker come from parsed charts; songs without chart data use evenly spaced notes.</p>
 
@@ -115,7 +115,7 @@
       メンバー強化ボーナスは所持カードすべてのレベルボーナス（Lv20以上）の合計で、ゲーム内ヘルプの通り上限50%です。</p>
 
     <h2>3. ノーツ</h2>
-    <p>各ノーツのスコアは <code>ユニットスコア × 楽曲係数 × ノーツ係数 × （1 + コンボボーナス）</code> です。ノーツ係数は LiveNote 表から
+    <p>各ノーツのスコアは <code>ユニットスコア × 3.75 × ノーツ係数 ÷（楽曲のノーツ係数の合計）×（1 + コンボボーナス）</code> です。全楽曲でスコアランクが共通（S+9 = 5,000,000）なので、ノーツは楽曲全体に対する割合で計算し、ノーツ数が多い楽曲ほど高くなることはありません。倍率 3.75 は holodori.best に合わせています（Kyapi・BAKU LOVE CHEMISTRY で約5〜10%以内）。ノーツ係数は LiveNote 表から
       （PERFECT：タップ/ロング 1.00、フリック 1.05、ロング中 0.10、AUTO：0.80 でコンボボーナスなし）。コンボボーナスは100コンボごとに+1%、最大+10%。
       譜面のタイミング、スペシャルスキルのマーカー、各マーカー時点のコンボ数は解析済み譜面から取得し、譜面データのない楽曲はノーツを均等に配置します。</p>
 
@@ -199,7 +199,7 @@
       成員強化加成為所有持有卡片的等級加成（Lv20以上）總和，依遊戲內說明上限為50%。</p>
 
     <h2>3. 音符</h2>
-    <p>每個音符的分數為 <code>隊伍分數 × 歌曲係數 × 音符係數 × （1 + 連擊加成）</code>。音符係數來自 LiveNote 表
+    <p>每個音符的分數為 <code>隊伍分數 × 3.75 × 音符係數 ÷（該歌曲音符係數總和）×（1 + 連擊加成）</code>。所有歌曲的分數評價門檻相同（S+9 = 5,000,000），因此每個音符以其佔整首歌的比例計分，音符較多的歌曲不會因此得分較高；倍率 3.75 依 holodori.best 校準（Kyapi 與 BAKU LOVE CHEMISTRY 相差約5〜10%以內）。音符係數來自 LiveNote 表
       （PERFECT：點擊/長按 1.00、滑動 1.05、長按持續 0.10；AUTO：0.80 且無連擊加成）。連擊加成為每100連擊 +1%，最多 +10%。
       譜面時間、特殊技能標記及各標記時的連擊數來自已解析的譜面；沒有譜面資料的歌曲以平均分佈的音符計算。</p>
 
