@@ -134,11 +134,16 @@
     support: { all_member: 3, content: 1 },
   };
   const roleCache = new Map();
-  function roleSetup(progress, chr, role) {
-    const key = chr + "|" + role + "|" + pointsFor(progress, chr) + "|" + playerLevel(progress);
+  // songTypes: the song (yellow) tile kinds that count for this holomem on the songs being played
+  // ("solo" – its solo songs, FuwaMoco's songs for both twins; "group" – unit songs it sings in;
+  // "all" – all-hololive songs). Yellow tiles of other kinds are useless there and are not taken.
+  function roleSetup(progress, chr, role, songTypes) {
+    const types = songTypes || new Set();
+    const key = chr + "|" + role + "|" + pointsFor(progress, chr) + "|" + playerLevel(progress) + "|" + [...types].sort().join(",");
+    const w = ROLE_W[role];
+    const useful = (x) => x.eff && x.eff.live && w[x.type] && (x.type !== "content" || types.has(x.eff.singerType || "all"));
     if (roleCache.has(key)) return roleCache.get(key);
     const b = tilesFor(chr);
-    const w = ROLE_W[role];
     const set = new Set([ROOT]);
     const lvl = playerLevel(progress);
     let left = pointsFor(progress, chr);
@@ -146,12 +151,12 @@
       const { dist, prev } = pathCosts(chr, set, lvl);
       let best = null, bestScore = 0;
       for (const t of b.list) {
-        if (set.has(t.k) || !dist.has(t.k) || !t.eff || !t.eff.live || !w[t.type]) continue;
+        if (set.has(t.k) || !dist.has(t.k) || !useful(t)) continue;
         const cost = dist.get(t.k);
         if (cost > left) continue;
         // value of the whole path (tiles on the way count too)
         let v = 0, k = t.k;
-        while (k && !set.has(k)) { const x = b.byKey[k]; if (x.eff && x.eff.live && w[x.type]) v += w[x.type] * x.grade; k = prev.get(k); }
+        while (k && !set.has(k)) { const x = b.byKey[k]; if (useful(x)) v += w[x.type] * x.grade; k = prev.get(k); }
         const score = v / Math.max(1, cost) - t.prio * 1e-4;
         if (score > bestScore) { bestScore = score; best = t; }
       }

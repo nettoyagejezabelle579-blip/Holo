@@ -293,8 +293,8 @@
       if (t && text) t.textContent = text;
     };
   }
-  function buildEnv() {
-    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.play, lifeFull: st.lifeFull }));
+  function buildEnv(songs) {
+    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.play, lifeFull: st.lifeFull, songs }));
     return env;
   }
   function overridesForPool() {
@@ -317,7 +317,12 @@
     running = { cancelled: false };
     lastResult = null;
     render();
-    const env = buildEnv();
+    let envSongs = [st.song];
+    if (st.target === "event" || st.target === "pt") {
+      const ev = S.EVENTS.events.find((e) => e.id === st.eventId) || S.EVENTS.events[0];
+      envSongs = st.eventSong === "all" ? ev.songs.map((x) => x.song) : [st.eventSong];
+    } else if (st.target === "rating") envSongs = G.songs.filter((s) => s.chrs.includes(st.ratingChr) || s.singerType === "all").map((s) => s.id);
+    const env = buildEnv(envSongs);
     const overrides = overridesForPool();
     const base = { env, pool, overrides, effort: st.effort, signal: running, luck: st.luck };
     if (st.mode === "core") { base.lockMembers = st.core; base.lockLeader = parseLeader(st.coreLeader); }
@@ -469,7 +474,7 @@
     // With role-planned boards, also show the score with the boards the user actually saved.
     let savedAvg = null;
     if (st.boardSrc === "role") {
-      const envS = S.makeEnv(H.progress, Object.assign(S.boardOpts("saved"), { mode: st.play, lifeFull: st.lifeFull }));
+      const envS = S.makeEnv(H.progress, Object.assign(S.boardOpts("saved"), { mode: st.play, lifeFull: st.lifeFull, songs: charts.map((c) => c.songId) }));
       const teamS = { leader, members: ids.map((id) => S.prepare(envS, id, overrides && overrides[id])) };
       savedAvg = charts.reduce((a, c) => a + S.evaluate(envS, teamS, c), 0) / charts.length;
     }
