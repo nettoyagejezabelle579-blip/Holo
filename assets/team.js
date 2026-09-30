@@ -415,7 +415,7 @@
         const cc = Object.keys(bd.connect).length;
         const changed = bd.added.length || bd.removed.length || conChanged.size;
         return `<details class="plan-board ${changed ? "" : "nochange"}" ${bd.team ? "open" : ""}><summary>
-          <span class="avatar" style="background:linear-gradient(135deg,${esc(tl.color)},${esc(tl.color2)})">${esc(L(tl.short).slice(0, 2))}</span>
+          ${H.avatarHTML(chr)}
           <b>${esc(L(tl.name))}</b> ${bd.team ? `<span class="pill on">${esc(tx("teamBoard"))}</span>` : ""}
           <span class="pill">${esc(tx("planTiles").replace("{a}", bd.added.length))}</span>
           ${bd.removed.length ? `<span class="pill">${esc(tx("planRemoved").replace("{r}", bd.removed.length))}</span>` : ""}

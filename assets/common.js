@@ -16,6 +16,14 @@
     return `<img loading="lazy" alt="${esc(alt)}" src="${esc(urls[0])}" data-next="${rest}" ${extra || ""}
       onerror="var n=JSON.parse(this.dataset.next||'[]');if(n.length){this.dataset.next=JSON.stringify(n.slice(1));this.src=n[0];}else{if(this.parentNode&&this.parentNode.classList)this.parentNode.classList.remove('has-img');this.remove();}">`;
   }
+  // Holomem chibi portrait (assets/holomem/<chr>.webp, listed in data/holomem_icons.js) or coloured initials.
+  function avatarHTML(chr, cls) {
+    const t = talents[chr] || {};
+    const has = (window.HOLO_HOLOMEM_ICONS || {})[chr];
+    const style = `background:linear-gradient(135deg,${esc(t.color || "#888")},${esc(t.color2 || "#555")})`;
+    const initials = esc(L(t.short || t.name || { en: "?" }).slice(0, 2));
+    return `<span class="avatar ${has ? "has-img" : ""} ${cls || ""}" style="${style}">${has ? `<img src="${document.body.dataset.base || "."}/assets/holomem/${esc(chr)}.webp" alt="${initials}" loading="lazy" onerror="this.parentNode.classList.remove('has-img');this.remove()">` : ""}<b>${initials}</b></span>`;
+  }
   const fill = (tpl, id) => (tpl && id ? tpl.split("{id}").join(id) : "");
 
   // ---------- storage ----------
@@ -403,7 +411,7 @@
   }
 
   window.Holo = {
-    D, CFG, store, t, L, setLang, get lang() { return lang; }, esc, richText, plain, fmt, stars,
+    D, CFG, store, t, L, setLang, avatarHTML, get lang() { return lang; }, esc, richText, plain, fmt, stars,
     talents, banners, bannerList, cards, cardById, maxLevel, limitBreakFor, potentialBonus, stats, statsForMode,
     skillLevelAt, isNew, talentGroupNames, artHTML, artUrl, hasArt, cardImageUrls, imgChain, jacketHTML, hasJacket: (id) => !!JACKETS[id], owned, favorites, toggleOwned, toggleFavorite,
     progress, saveProgress, setCardProgress, replaceProgress,
