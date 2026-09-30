@@ -478,10 +478,13 @@
       const effs = s.eff.concat(s.add.length && trigOk(s.trig, ctx, t0, combo) ? s.add : []);
       let sup = 0, rate = 0;
       for (const e of effs) {
-        if (e.type === "score_up_effect_up_permil_up") sup += e.v;
+        // Score Support X%: the Active Score UP in effect counts X% of its value (120% → ×1.2), matching
+        // holodori.best; several supports at once add their excess over 100%.
+        if (e.type === "score_up_effect_up_permil_up") sup += e.v - 1000;
         else if (e.type === "live_active_skill_activation_probability_up_permil_up") rate += e.v;
       }
-      specials.push({ slot: i, t0, t1: t0 + s.dur, sup: sup / 1000, rate: rate / 1000 });
+      const supPct = effs.filter((e) => e.type === "score_up_effect_up_permil_up").reduce((a, e) => a + e.v, 0) / 1000;
+      specials.push({ slot: i, t0, t1: t0 + s.dur, sup: sup / 1000, supPct, rate: rate / 1000 });
     }
     const act = [];
     const bounds = [0, chart.end];
@@ -537,7 +540,7 @@
           p = hit ? 1 : 0;
         }
         if (!p) continue;
-        const v = (t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * (a.mult + sup);
+        const v = (t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * a.mult * (1 + sup);
         vals[k] = v; probs[k] = p; k++;
         if (uptime) uptime[a.i] += w * p;
       }

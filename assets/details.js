@@ -118,7 +118,7 @@
         <td class="num">${fmt(Math.round(s[0]))}</td><td class="num">${fmt(Math.round(s[1]))}</td><td class="num">${fmt(Math.round(s[2]))}</td>
         <td class="num"><b>${fmt(Math.round(s[0] + s[1] + s[2]))}</b></td>
         <td class="num">${(r.uptime[i] * 100).toFixed(1)}%</td>
-        <td>${sp ? `${sp.t0.toFixed(1)}s–${sp.t1.toFixed(1)}s${sp.sup ? ` · ${esc(tx("support"))} ${Math.round(sp.sup * 100)}%` : ""}${sp.rate ? ` · ${esc(tx("rate"))} +${Math.round(sp.rate * 100)}%` : ""}` : "—"}</td>
+        <td>${sp ? `${sp.t0.toFixed(1)}s–${sp.t1.toFixed(1)}s${sp.supPct ? ` · ${esc(tx("support"))} ×${sp.supPct.toFixed(2)}` : ""}${sp.rate ? ` · ${esc(tx("rate"))} +${Math.round(sp.rate * 100)}%` : ""}` : "—"}</td>
         <td>${i > 0 ? `<button class="link-btn" data-up="${i}" title="${esc(tx("moveUp"))}">◀</button>` : ""}</td></tr>`;
     }).join("");
     return `<div class="panel result">
