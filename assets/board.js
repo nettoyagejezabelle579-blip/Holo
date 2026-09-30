@@ -55,24 +55,26 @@
   }
 
   // Cheapest unlock path (sum of tile costs) from the unlocked set to every locked tile.
-  function pathCosts(chr, set, lvl) {
+  // Cheapest unlock paths from `set`. penalty(tile) (optional) makes a tile look more expensive so
+  // routes around it are preferred; dist is still the real point cost of the chosen route.
+  function pathCosts(chr, set, lvl, penalty) {
     const b = tilesFor(chr);
-    const dist = new Map(), prev = new Map();
+    const dist = new Map(), prev = new Map(), w = new Map();
     const queue = [];
-    for (const k of set) { dist.set(k, 0); queue.push(k); }
+    for (const k of set) { dist.set(k, 0); w.set(k, 0); queue.push(k); }
     // Small graph (153 tiles): simple Dijkstra with a linear scan.
     const done = new Set();
     while (queue.length) {
       let bi = 0;
-      for (let i = 1; i < queue.length; i++) if (dist.get(queue[i]) < dist.get(queue[bi])) bi = i;
+      for (let i = 1; i < queue.length; i++) if (w.get(queue[i]) < w.get(queue[bi])) bi = i;
       const k = queue.splice(bi, 1)[0];
       if (done.has(k)) continue;
       done.add(k);
       for (const nk of b.byKey[k].nb) {
         const n = b.byKey[nk];
         if (set.has(nk) || n.lvl > lvl) continue;
-        const d = dist.get(k) + n.cost;
-        if (!dist.has(nk) || d < dist.get(nk)) { dist.set(nk, d); prev.set(nk, k); queue.push(nk); }
+        const d = w.get(k) + n.cost + (penalty ? penalty(n) : 0);
+        if (!w.has(nk) || d < w.get(nk)) { w.set(nk, d); dist.set(nk, dist.get(k) + n.cost); prev.set(nk, k); queue.push(nk); }
       }
     }
     return { dist, prev };
@@ -142,13 +144,15 @@
     const key = chr + "|" + role + "|" + pointsFor(progress, chr) + "|" + playerLevel(progress) + "|" + [...types].sort().join(",");
     const w = ROLE_W[role];
     const useful = (x) => x.eff && x.eff.live && w[x.type] && (x.type !== "content" || types.has(x.eff.singerType || "all"));
+    // Song (yellow) tiles that do nothing here are only crossed when there is no other way.
+    const avoid = (x) => (x.type === "content" && !useful(x) ? 1000 : 0);
     if (roleCache.has(key)) return roleCache.get(key);
     const b = tilesFor(chr);
     const set = new Set([ROOT]);
     const lvl = playerLevel(progress);
     let left = pointsFor(progress, chr);
     for (let guard = 0; guard < 200 && left > 0; guard++) {
-      const { dist, prev } = pathCosts(chr, set, lvl);
+      const { dist, prev } = pathCosts(chr, set, lvl, avoid);
       let best = null, bestScore = 0;
       for (const t of b.list) {
         if (set.has(t.k) || !dist.has(t.k) || !useful(t)) continue;

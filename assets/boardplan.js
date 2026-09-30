@@ -60,13 +60,16 @@
     const prevSets = Object.fromEntries(talents.map((c) => [c, new Set(sets[c])]));
     const prevConnect = JSON.parse(JSON.stringify(connect));
 
+    // Song (yellow) tiles that do nothing for this holomem on these songs are only crossed when there
+    // is no other way; dist is the real point cost of the chosen route.
+    const songUseless = (chr, t) => t.type === "content" && !(t.eff && t.eff.live && o.charts.some((c) => S.songTileApplies(t.eff.singerType || "all", chr, c.song)));
     // Which tile types can matter for this unit on each board.
     function useful(chr, t) {
       if (!t.eff || !t.eff.live) return false;
       if (t.type === "all_member") return true;
       if (t.type === "leader") return leader && leader.chr === chr;
       if (t.type === "card") return ids.some((id) => H.cardById[id].chr === chr);
-      if (t.type === "content") return singers.has(chr);
+      if (t.type === "content") return !songUseless(chr, t);
       return false;
     }
     const order = talents.slice().sort((a, b) => (teamChrs.has(b) ? 1 : 0) - (teamChrs.has(a) ? 1 : 0));
@@ -107,20 +110,20 @@
     }
 
     // Cheapest unlock path from the unlocked set to every reachable locked tile.
-    function paths(tiles, set) {
-      const dist = new Map(), prev = new Map(), queue = [...set], seen = new Set();
-      for (const k of set) dist.set(k, 0);
+    function paths(tiles, set, chr) {
+      const dist = new Map(), prev = new Map(), w = new Map(), queue = [...set], seen = new Set();
+      for (const k of set) { dist.set(k, 0); w.set(k, 0); }
       while (queue.length) {
         let bi = 0;
-        for (let i = 1; i < queue.length; i++) if (dist.get(queue[i]) < dist.get(queue[bi])) bi = i;
+        for (let i = 1; i < queue.length; i++) if (w.get(queue[i]) < w.get(queue[bi])) bi = i;
         const k = queue.splice(bi, 1)[0];
         if (seen.has(k)) continue;
         seen.add(k);
         for (const nk of tiles.byKey[k].nb) {
           const n = tiles.byKey[nk];
           if (set.has(nk) || n.lvl > lvl) continue;
-          const d = dist.get(k) + n.cost;
-          if (!dist.has(nk) || d < dist.get(nk)) { dist.set(nk, d); prev.set(nk, k); queue.push(nk); }
+          const d = w.get(k) + n.cost + (songUseless(chr, n) ? 1000 : 0);
+          if (!w.has(nk) || d < w.get(nk)) { w.set(nk, d); dist.set(nk, dist.get(k) + n.cost); prev.set(nk, k); queue.push(nk); }
         }
       }
       return { dist, prev };
@@ -139,7 +142,7 @@
       let cur = exact ? score(chr, effOf(chr, set)) : 0;
       let left = budget - B.spent(chr, set);
       for (let guard = 0; guard < 150 && left > 0; guard++) {
-        const { dist, prev } = paths(tiles, set);
+        const { dist, prev } = paths(tiles, set, chr);
         let bestPath = null, bestRatio = 0, bestScore = cur;
         for (const t of targets) {
           if (set.has(t.k) || !dist.has(t.k)) continue;
@@ -168,12 +171,12 @@
       // lower this unit's score and help other units / rewards. Leader (red) tiles are only taken on
       // the leader's board, member (blue) tiles only on unit members' boards.
       for (let guard = 0; guard < 150 && left > 0; guard++) {
-        const { dist, prev } = paths(tiles, set);
+        const { dist, prev } = paths(tiles, set, chr);
         let best = null, bestV = 0;
         for (const t of tiles.list) {
           if (set.has(t.k) || !dist.has(t.k) || !t.eff || (t.type !== "all_member" && t.type !== "content")) continue;
           // Yellow tiles only count on songs this holomem sings (or all-hololive songs for that tile kind).
-          if (t.type === "content" && !o.charts.some((c) => S.songTileApplies(t.eff.singerType || "all", chr, c.song))) continue;
+          if (songUseless(chr, t)) continue;
           const cost = dist.get(t.k);
           if (cost > left || cost === 0) continue;
           const path = pathTo(prev, set, t.k);
