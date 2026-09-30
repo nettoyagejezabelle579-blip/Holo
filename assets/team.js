@@ -44,7 +44,7 @@
       planScore: "score with this unit", onlyChanges: "Only show boards and tiles that need changes", conNew: "new", teamBoard: "in unit",
       planOthers: "Also re-plan other holomems' boards for support tiles (helps every unit, replaces their leader/member tiles)", goalAvg: "Average score", goalMax: "Maximum score",
       goalHelp: "Average = what you get on a typical play (active skills fire by chance). Maximum = every active skill fires.",
-      average: "Average", maximum: "Maximum", spread: "Over {n} simulated plays", typical: "Typical (middle 80%)", top10: "Top 10%", bestSeen: "Best seen",
+      withSaved: "With the boards saved in My Data: {v}", boardGap: "The score above assumes each holomem board is set up for this unit (Plan my boards shows how). If your in-game boards differ, enter them in My Data, or calibrate with a real score on Team Details.", average: "Average", maximum: "Maximum", spread: "Over {n} simulated plays", typical: "Typical (middle 80%)", top10: "Top 10%", bestSeen: "Best seen",
       maxHelp: "all active skills fire",
     },
     ja: {
@@ -82,7 +82,7 @@
       planScore: "このユニットのスコア", onlyChanges: "変更が必要なボードとマスのみ表示", conNew: "新規", teamBoard: "ユニット内",
       planOthers: "他のホロメンのボードもサポート効果中心に再計画（全ユニットに有効、リーダー/メンバー効果は外れます）", goalAvg: "平均スコア", goalMax: "最大スコア",
       goalHelp: "平均＝通常のプレイで得られるスコア（アクティブスキルは確率で発動）。最大＝アクティブスキルがすべて発動した場合。",
-      average: "平均", maximum: "最大", spread: "{n}回のシミュレーション", typical: "通常（中央80%）", top10: "上位10%", bestSeen: "最高記録",
+      withSaved: "所持データに保存したボードの場合: {v}", boardGap: "上のスコアは各ホロメンのボードをこのユニット向けに設定した場合です（ボードを計画で確認できます）。ゲーム内のボードが違う場合は所持データに入力するか、編成詳細で実際のスコアで補正してください。", average: "平均", maximum: "最大", spread: "{n}回のシミュレーション", typical: "通常（中央80%）", top10: "上位10%", bestSeen: "最高記録",
       maxHelp: "アクティブスキルが全発動",
     },
     zh: {
@@ -120,7 +120,7 @@
       planScore: "此隊伍的分數", onlyChanges: "僅檢視需變更欄位", conNew: "新配置", teamBoard: "隊伍內",
       planOthers: "也將其他Holo成員的面板改以支援效果為主規劃（對所有隊伍有效，但會移除其隊長/成員效果）", goalAvg: "平均分數", goalMax: "最高分數",
       goalHelp: "平均＝一般遊玩可得的分數（主動技能依機率發動）。最高＝所有主動技能皆發動時的分數。",
-      average: "預估平均樂曲分數", maximum: "最高", spread: "{n} 次模擬遊玩", typical: "一般（中間80%）", top10: "前10%", bestSeen: "最佳紀錄",
+      withSaved: "以遊戲進度資料中已儲存的面板計算：{v}", boardGap: "上方分數假設每位holo成員的面板已為此隊伍規劃（可按「為此隊伍規劃面板」查看）。若遊戲內的面板不同，請在遊戲進度資料中輸入，或在隊伍詳情以實際分數校正。", average: "預估平均樂曲分數", maximum: "最高", spread: "{n} 次模擬遊玩", typical: "一般（中間80%）", top10: "前10%", bestSeen: "最佳紀錄",
       maxHelp: "所有主動技能皆發動",
     },
   };
@@ -466,6 +466,13 @@
     const details = charts.map((c) => S.evaluate(env, team, c, true));
     const maxes = charts.map((c) => S.evaluate(env, team, c, false, "max"));
     const avg = details.reduce((a, d) => a + d.score, 0) / details.length;
+    // With role-planned boards, also show the score with the boards the user actually saved.
+    let savedAvg = null;
+    if (st.boardSrc === "role") {
+      const envS = S.makeEnv(H.progress, Object.assign(S.boardOpts("saved"), { mode: st.play, lifeFull: st.lifeFull }));
+      const teamS = { leader, members: ids.map((id) => S.prepare(envS, id, overrides && overrides[id])) };
+      savedAvg = charts.reduce((a, c) => a + S.evaluate(envS, teamS, c), 0) / charts.length;
+    }
     const max = maxes.reduce((a, v) => a + v, 0) / maxes.length;
     const spread = charts.length === 1 ? S.simulate(env, team, charts[0], 1000) : null;
     const d0 = details[0];
@@ -486,7 +493,8 @@
         ${charts.length === 1 ? `<div class="song-current">${H.jacketHTML(song, "sm")}<div><b>${esc(L(song.title))}</b><br><span class="small muted">${esc(U.tx(charts[0].diff))} ${song.diff[charts[0].diff] ? song.diff[charts[0].diff].lv : ""}</span></div></div>` :
           `<div class="song-current">${charts.slice(0, 4).map((c) => H.jacketHTML(c.song, "xs")).join("")}</div>`}
         <div><div class="small muted">${esc(tx("average"))}${charts.length > 1 ? " · " + esc(tx("avg")) : ""}</div><div class="big">${n(avg)}</div>
-          <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, avg))}</b></div></div>
+          <div class="small">${esc(U.tx("scoreRank"))}: <b>${esc(U.scoreRank(song, avg))}</b></div>
+          ${savedAvg != null ? `<div class="small muted" title="${esc(tx("boardGap"))}">${esc(tx("withSaved").replace("{v}", n(savedAvg)))} ⓘ</div>` : ""}</div>
         <div><div class="small muted">${esc(tx("maximum"))}</div><div class="big">${n(max)}</div>
           <div class="small">${esc(U.scoreRank(song, max))} · <span class="muted">${esc(tx("maxHelp"))}</span></div></div>
         <div><div class="small muted">${esc(U.tx("unitScore"))}</div><div class="big">${n(d0.unit)}</div>
