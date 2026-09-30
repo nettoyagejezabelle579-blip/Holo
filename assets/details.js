@@ -75,7 +75,7 @@
     await S.loadChart(st.song);
     const song = S.songById[st.song];
     const chart = S.getChart(st.song, st.diff, st.mode);
-    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull }));
+    const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull, songs: [st.song] }));
     const lk = st.leader ? st.leader.chr + ":" + (st.leader.cardId || "") : "";
     let result = null;
     if (st.members.length) {
@@ -182,7 +182,7 @@
       H.store.set("calibration", 1); render();
     } else if (b.id === "d-order") {
       const chart = S.getChart(st.song, st.diff, st.mode);
-      const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull }));
+      const env = S.makeEnv(H.progress, Object.assign(S.boardOpts(st.boardSrc), { mode: st.mode, lifeFull: st.lifeFull, songs: [st.song] }));
       let best = st.members, bestS = -1;
       for (const p of O.permutations(st.members)) {
         const s = S.evaluate(env, { leader: st.leader, members: p.map((id) => S.prepare(env, id)) }, chart);

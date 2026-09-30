@@ -222,7 +222,8 @@
     return { flat, pct, rate, ctShort, seu };
   }
 
-  // opts: { board: bool, boardFull: bool, boardRole: bool, mode: "perfect"|"auto", lifeFull: bool }
+  // opts: { board: bool, boardFull: bool, boardRole: bool, mode: "perfect"|"auto", lifeFull: bool, songs: [songId] }
+  //   songs: the songs being played (role-planned boards only take yellow song tiles that count on them)
   //   boardRole: every board is planned for the holomem's role in the unit being scored (leader /
   //   member / not in the unit) from its rank points, instead of the boards saved in My Data.
   // boardOverride: optional {chr: [effects]} (used by the board planner to try variations quickly).
@@ -233,8 +234,13 @@
       const B = window.HoloBoard;
       role = { eff: { leader: {}, member: {}, support: {} }, sup: { leader: {}, member: {}, support: {} }, lead: {} };
       for (const chr in H.talents) {
+        const songTypes = new Set();
+        for (const sid of opts.songs || []) {
+          const song = songById[sid];
+          if (song) for (const st of ["solo", "group", "all"]) if (songTileApplies(st, chr, song)) songTypes.add(st);
+        }
         for (const r of ["leader", "member", "support"]) {
-          const eff = B.effects(chr, B.roleSetup(progress, chr, r), progress);
+          const eff = B.effects(chr, B.roleSetup(progress, chr, r, songTypes), progress);
           role.eff[r][chr] = eff;
           role.sup[r][chr] = supportPart(chr, eff);
         }

@@ -163,7 +163,8 @@
         cur = bestScore;
         if (o.signal && o.signal.cancelled) break;
       }
-      // Leftover points: support (green) and song (yellow) tiles, including reward tiles. They never
+      // Leftover points: support (green) tiles, including reward tiles, and song (yellow) tiles that count on
+      // these songs. They never
       // lower this unit's score and help other units / rewards. Leader (red) tiles are only taken on
       // the leader's board, member (blue) tiles only on unit members' boards.
       for (let guard = 0; guard < 150 && left > 0; guard++) {
@@ -171,6 +172,8 @@
         let best = null, bestV = 0;
         for (const t of tiles.list) {
           if (set.has(t.k) || !dist.has(t.k) || !t.eff || (t.type !== "all_member" && t.type !== "content")) continue;
+          // Yellow tiles only count on songs this holomem sings (or all-hololive songs for that tile kind).
+          if (t.type === "content" && !o.charts.some((c) => S.songTileApplies(t.eff.singerType || "all", chr, c.song))) continue;
           const cost = dist.get(t.k);
           if (cost > left || cost === 0) continue;
           const path = pathTo(prev, set, t.k);
