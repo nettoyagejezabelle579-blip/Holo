@@ -168,7 +168,7 @@
       ${prods.map(([pid, p]) => `<h3>${esc(L(p.name))}</h3><div class="rank-grid">` + talents.filter(([, t]) => t.production === pid).map(([chr, t]) => {
         const r = H.progress.ranks[chr] || 1;
         return `<div class="rank-card" data-chr="${esc(chr)}">
-          <div class="rank-head"><span class="avatar" style="background:linear-gradient(135deg,${esc(t.color)},${esc(t.color2)})">${esc(L(t.short).slice(0, 2))}</span>
+          <div class="rank-head">${H.avatarHTML(chr, "lg")}
             <div><strong>${esc(L(t.name))}</strong><div class="small muted rank-info">${rankInfo(chr)}</div></div></div>
           <div class="rank-ctl"><button class="icon-btn" data-rank="-1">−</button>
             <input type="range" min="1" max="50" value="${r}" data-act="rank">
@@ -255,7 +255,7 @@
     const r = H.progress.ranks[chr] || 1;
     const next = B.rankTable()[r];
     root2.innerHTML = `<div class="modal-backdrop" id="bd-back"><div class="modal" role="dialog" aria-modal="true" style="max-width:1200px">
-      <div class="modal-head"><span class="avatar" style="background:linear-gradient(135deg,${esc(tl.color)},${esc(tl.color2)})">${esc(L(tl.short).slice(0, 2))}</span>
+      <div class="modal-head">${H.avatarHTML(chr)}
         <strong>${esc(L(tl.name))}</strong><span class="spacer"></span>
         <button class="icon-btn" id="bd-close">✕</button></div>
       <div style="padding:12px 16px">

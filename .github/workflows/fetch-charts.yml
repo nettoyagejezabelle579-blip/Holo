@@ -1,0 +1,38 @@
+# Downloads charts for songs that have none yet (scripts/fetch_charts.mjs) and commits them.
+name: Fetch song charts
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 3 * * *"
+  push:
+    paths:
+      - scripts/fetch_charts.mjs
+      - .github/workflows/fetch-charts.yml
+permissions:
+  contents: write
+concurrency:
+  group: fetch-charts-${{ github.ref }}
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Get the chart parser (yagoo-dori)
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/asciisyaez/yagoo-dori.git .yagoo
+          git -C .yagoo sparse-checkout set packages/core/src
+      - name: Download missing charts
+        run: npx -y tsx scripts/fetch_charts.mjs .yagoo/packages/core/src/chart-timeline-parser.ts
+      - name: Commit new charts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add data/charts
+          if git diff --cached --quiet; then echo "No new charts"; exit 0; fi
+          git commit -m "Add charts for new songs"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

@@ -18,6 +18,8 @@
 
   // ---------- chart loading ----------
   const CODE = ["normal", "flick", "long_start", "long_end", "long_flick_end", "long_continuation", "long_relay", "damage"];
+  // Share of each note code over the 175 parsed charts (for songs without chart data).
+  const SYNTH_MIX = [88179, 10344, 17194, 15045, 2149, 27932, 9935].map((v, _, a) => v / a.reduce((x, y) => x + y, 0));
   const chartIndex = window.HOLO_CHART_INDEX || {};
   const loading = {};
   function chartBase() {
@@ -97,7 +99,16 @@
       synthetic = true;
       const n = (song.diff[diff] && song.diff[diff].notes) || 500;
       const start = 3, end = Math.max(start + 10, song.sec - 3);
-      for (let i = 0; i < n; i++) { times.push(start + ((end - start) * i) / Math.max(1, n - 1)); codes.push(0); }
+      // The listed note count includes hold ticks/relays (0.10 each), so use the average note-type mix
+      // of all parsed charts (tap 51%, flick 6%, hold start 10%, hold end 9%, flick end 1%, tick 16%, relay 6%).
+      const mix = SYNTH_MIX, got = mix.map(() => 0);
+      for (let i = 0; i < n; i++) {
+        times.push(start + ((end - start) * i) / Math.max(1, n - 1));
+        let pick = 0, gap = -Infinity;
+        for (let k = 0; k < mix.length; k++) { const g = mix[k] * (i + 1) - got[k]; if (g > gap) { gap = g; pick = k; } }
+        got[pick]++;
+        codes.push(pick);
+      }
       sp = [0.12, 0.3, 0.48, 0.66, 0.84].map((f) => start + (end - start) * f);
       sc = sp.map((t) => Math.round(((t - start) / (end - start)) * n));
     }
@@ -112,7 +123,9 @@
       const judge = mode === "auto" ? (coefRow.auto || 0) : (coefRow.perfect || 0);
       const bonus = mode === "auto" ? 0 : comboBonus(combo, n);
       T.push(times[i]);
-      W.push(W[W.length - 1] + (judge / 1000) * (1 + bonus / 1000));
+      // Evenly spread notes still score ~7% above real charts (checked on 14 charted songs):
+      // real charts put fewer notes inside skill windows, so scale synthetic notes down to match.
+      W.push(W[W.length - 1] + (judge / 1000) * (1 + bonus / 1000) * (synthetic ? 0.935 : 1));
     }
     const chart = {
       songId, diff, mode, synthetic, song,
