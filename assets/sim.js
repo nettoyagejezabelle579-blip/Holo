@@ -4,7 +4,7 @@
  *   member stat   = (card stat at level & bloom + flat board bonuses)
  *                   × (1 + passive + leader outfit + board % + memories %)
  *   Unit Score    = Σ members (Performance + Technique + Sense) × (1 + Member Upgrade Bonus)
- *   note score    = Unit Score × K × note-type coefficient ÷ (song's total note weight) × (1 + combo bonus)
+ *   note score    = Unit Score × D(level) × note-type coefficient ÷ (song's total note weight) × (1 + combo bonus)
  *                   × (1 + expected active Score UP × (1 + Score Support))
  *   Active skills are checked every cooldown with their activation chance; when several
  *   are active the highest effect wins. Special skills fire at the chart's special
@@ -19,7 +19,7 @@
   // ---------- chart loading ----------
   const CODE = ["normal", "flick", "long_start", "long_end", "long_flick_end", "long_continuation", "long_relay", "damage"];
   // Share of each note code over the 175 parsed charts (for songs without chart data).
-  let SCORE_K = 3.75;
+  let SCORE_K = null; // null: per-level constant from in-game measurements
   const SYNTH_MIX = [88179, 10344, 17194, 15045, 2149, 27932, 9935].map((v, _, a) => v / a.reduce((x, y) => x + y, 0));
   const chartIndex = window.HOLO_CHART_INDEX || {};
   const loading = {};
@@ -480,13 +480,12 @@
       const effs = s.eff.concat(s.add.length && trigOk(s.trig, ctx, t0, combo) ? s.add : []);
       let sup = 0, rate = 0;
       for (const e of effs) {
-        // Score Support X%: the Active Score UP in effect counts X% of its value (120% → ×1.2), matching
-        // holodori.best; several supports at once add their excess over 100%.
-        if (e.type === "score_up_effect_up_permil_up") sup += e.v - 1000;
+        // Score Support X%: the Active Score UP in effect is multiplied by (1 + X), added with the
+        // outfit's support (game guides, hololive Dreams Lab and yagoo-dori all use this rule).
+        if (e.type === "score_up_effect_up_permil_up") sup += e.v;
         else if (e.type === "live_active_skill_activation_probability_up_permil_up") rate += e.v;
       }
-      const supPct = effs.filter((e) => e.type === "score_up_effect_up_permil_up").reduce((a, e) => a + e.v, 0) / 1000;
-      specials.push({ slot: i, t0, t1: t0 + s.dur, sup: sup / 1000, supPct, rate: rate / 1000 });
+      specials.push({ slot: i, t0, t1: t0 + s.dur, sup: sup / 1000, rate: rate / 1000 });
     }
     const act = [];
     const bounds = [0, chart.end];
@@ -542,7 +541,7 @@
           p = hit ? 1 : 0;
         }
         if (!p) continue;
-        const v = (t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * a.mult * (1 + sup);
+        const v = (t0 >= a.addFrom ? Math.max(a.base, a.add) : a.base) * (a.mult + sup);
         vals[k] = v; probs[k] = p; k++;
         if (uptime) uptime[a.i] += w * p;
       }
@@ -561,10 +560,12 @@
     // Event song bonus: +10% when the song's event bonus card is in the unit.
     const ev = env.opts.event === false ? null : eventSong(song.id);
     const eventBonus = ev && members.some((m) => ev.cards.includes(m.id)) ? EVENTS.rules.scoreBonus : 0;
-    // Every song shares the same score ranks (S+9 = 5,000,000), so a note is worth its share of the
-    // song's total note weight: dense songs don't score more just for having more notes.
-    // SCORE_K sets the scale (fitted to holodori.best's Kyapi and BAKU LOVE CHEMISTRY results).
-    const scale = unit * (SCORE_K / chart.full) * (1 + songBonus / 1000) * (1 + eventBonus) * env.calib;
+    // A PERFECT note scores Unit Score ÷ (song's total note weight ÷ D): every chart gives about the same
+    // base score, and dense songs don't score more for having more notes. D depends on the chart level,
+    // fitted to 32 in-game measurements published by hololive Dreams Lab (D ≈ 2.19 + 0.0158 × level).
+    const lv = (song.diff[chart.diff] || {}).lv || 20;
+    const D = SCORE_K != null ? SCORE_K : 2.1907 + 0.01581 * lv;
+    const scale = unit * (D / chart.full) * (1 + songBonus / 1000) * (1 + eventBonus) * env.calib;
     const score = scale * (sumBase + sumSkill);
     if (!detail) return score;
     const totalW = chart.W[chart.W.length - 1] || 1;

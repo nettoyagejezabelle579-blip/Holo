@@ -26,7 +26,7 @@
       The Member Upgrade Bonus is the sum of every owned card's level bonus (Lv 20+), capped at 50%, as the in-game help describes.</p>
 
     <h2>3. Notes</h2>
-    <p>Each note scores <code>Unit Score × 3.75 × note coefficient ÷ (total note coefficient of the song) × (1 + combo bonus)</code>. Every song shares the same score ranks (S+9 = 5,000,000), so a note is worth its share of the song, and a song with more notes does not score more; the scale 3.75 was fitted to holodori.best (Kyapi and BAKU LOVE CHEMISTRY within about 5–10%). Note coefficients come
+    <p>Each note scores <code>Unit Score × D × note coefficient ÷ (total note coefficient of the chart) × (1 + combo bonus)</code>, with D ≈ 2.19 + 0.0158 × chart level (about 2.59 at Expert 25). Every chart gives about the same base score, so a song with more notes does not score more. D is fitted to 32 in-game score measurements published by hololive Dreams Lab (typical error ±2%). Note coefficients come
       from the LiveNote table (PERFECT: tap/hold 1.00, flick 1.05, hold ticks 0.10; AUTO: 0.80 and no combo bonus). The combo bonus is +1% per 100 combo up to +10%.
       Chart timings, special-skill markers and the combo at each marker come from parsed charts; songs without chart data use evenly spaced notes.</p>
 
@@ -34,7 +34,7 @@
     <ul>
       <li><b>Active skills</b> are checked every cooldown (from the start of the song) with their activation chance and last for their duration.
         When several are active, only the highest effect counts (in-game help). The optimizer uses the expected value of that maximum.</li>
-      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support X% makes the active Score UP count X% of its value (120% → ×1.2, the rule holodori.best uses)
+      <li><b>Special skills</b> fire once, at the chart's special markers in formation order (slot 1 first). Score Support X% multiplies the active Score UP by (1 + X), added together with the outfit's support (the rule in the game guides and in hololive Dreams Lab)
         while it lasts; Skill Rate UP raises the activation chance of checks made during it.</li>
       <li><b>Passive skills and leader outfits</b> apply when their conditions hold (type count, unit members, leader, song singer).
         When a skill targets "2 Pure Type Members", the members with the highest base total are assumed to receive it.</li>
@@ -115,7 +115,7 @@
       メンバー強化ボーナスは所持カードすべてのレベルボーナス（Lv20以上）の合計で、ゲーム内ヘルプの通り上限50%です。</p>
 
     <h2>3. ノーツ</h2>
-    <p>各ノーツのスコアは <code>ユニットスコア × 3.75 × ノーツ係数 ÷（楽曲のノーツ係数の合計）×（1 + コンボボーナス）</code> です。全楽曲でスコアランクが共通（S+9 = 5,000,000）なので、ノーツは楽曲全体に対する割合で計算し、ノーツ数が多い楽曲ほど高くなることはありません。倍率 3.75 は holodori.best に合わせています（Kyapi・BAKU LOVE CHEMISTRY で約5〜10%以内）。ノーツ係数は LiveNote 表から
+    <p>各ノーツのスコアは <code>ユニットスコア × D × ノーツ係数 ÷（譜面のノーツ係数の合計）×（1 + コンボボーナス）</code> です（D ≈ 2.19 + 0.0158 × 譜面レベル、EXPERT 25 で約2.59）。どの譜面も基礎スコアはほぼ同じで、ノーツ数が多い楽曲ほど高くなることはありません。D は hololive Dreams Lab が公開しているゲーム内の実測値32件に合わせています（誤差約±2%）。ノーツ係数は LiveNote 表から
       （PERFECT：タップ/ロング 1.00、フリック 1.05、ロング中 0.10、AUTO：0.80 でコンボボーナスなし）。コンボボーナスは100コンボごとに+1%、最大+10%。
       譜面のタイミング、スペシャルスキルのマーカー、各マーカー時点のコンボ数は解析済み譜面から取得し、譜面データのない楽曲はノーツを均等に配置します。</p>
 
@@ -123,7 +123,7 @@
     <ul>
       <li><b>アクティブスキル</b>は曲の開始からクールタイムごとに発動率で判定され、効果時間の間続きます。
         複数発動中は最も高い効果のみが適用されます（ゲーム内ヘルプ）。オプティマイザーはその最大値の期待値を使います。</li>
-      <li><b>スペシャルスキル</b>は譜面のスペシャルマーカーで編成順（スロット1から）に1回ずつ発動します。スコアサポートX%は効果中のアクティブのスコアUPをX%の値にし（120% → ×1.2、holodori.best と同じ）、
+      <li><b>スペシャルスキル</b>は譜面のスペシャルマーカーで編成順（スロット1から）に1回ずつ発動します。スコアサポートX%は効果中のアクティブのスコアUPを（1 + X）倍にし（衣装のサポートと加算、攻略サイトと hololive Dreams Lab と同じ）、
         スキル発動率UPは効果中の判定の発動率を上げます。</li>
       <li><b>パッシブスキルとリーダー衣装</b>は条件（タイプ数、ユニットメンバー、リーダー、歌唱メンバー）を満たすと適用されます。
         「ピュアタイプのメンバー2人」のような対象は、基礎合計値が最も高いメンバーが受けると仮定します。</li>
@@ -199,7 +199,7 @@
       成員強化加成為所有持有卡片的等級加成（Lv20以上）總和，依遊戲內說明上限為50%。</p>
 
     <h2>3. 音符</h2>
-    <p>每個音符的分數為 <code>隊伍分數 × 3.75 × 音符係數 ÷（該歌曲音符係數總和）×（1 + 連擊加成）</code>。所有歌曲的分數評價門檻相同（S+9 = 5,000,000），因此每個音符以其佔整首歌的比例計分，音符較多的歌曲不會因此得分較高；倍率 3.75 依 holodori.best 校準（Kyapi 與 BAKU LOVE CHEMISTRY 相差約5〜10%以內）。音符係數來自 LiveNote 表
+    <p>每個音符的分數為 <code>隊伍分數 × D × 音符係數 ÷（該譜面音符係數總和）×（1 + 連擊加成）</code>，D ≈ 2.19 + 0.0158 × 譜面等級（EXPERT 25 約為 2.59）。每個譜面的基礎分數大致相同，音符較多的歌曲不會因此得分較高。D 依 hololive Dreams Lab 公開的32筆遊戲內實測值校準（誤差約±2%）。音符係數來自 LiveNote 表
       （PERFECT：點擊/長按 1.00、滑動 1.05、長按持續 0.10；AUTO：0.80 且無連擊加成）。連擊加成為每100連擊 +1%，最多 +10%。
       譜面時間、特殊技能標記及各標記時的連擊數來自已解析的譜面；沒有譜面資料的歌曲以平均分佈的音符計算。</p>
 
@@ -207,7 +207,7 @@
     <ul>
       <li><b>主動技能</b>從歌曲開始每隔冷卻時間依發動機率判定，並持續其效果時間。
         多個同時發動時只計算效果最高的一個（遊戲內說明）。最佳化工具使用該最大值的期望值。</li>
-      <li><b>特殊技能</b>在譜面的特殊標記處依隊伍順序（第1格先）各發動一次。分數支援X%會使效果期間主動技能的分數提升變為X%（120% → ×1.2，與 holodori.best 相同）；
+      <li><b>特殊技能</b>在譜面的特殊標記處依隊伍順序（第1格先）各發動一次。分數支援X%會使效果期間主動技能的分數提升乘以（1 + X）（與服裝的支援相加，與攻略網站及 hololive Dreams Lab 相同）；
         技能發動率提升會提高效果期間內判定的發動機率。</li>
       <li><b>被動技能與隊長服裝</b>在條件（類型數量、團體成員、隊長、演唱者）成立時生效。
         若技能對象為「2名 Pure 類型成員」，則假設由基礎總值最高的成員獲得。</li>
