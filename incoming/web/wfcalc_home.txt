@@ -1,0 +1,14 @@
+https://dreams.wf-calc.net/?lang=en
+SCRIPTS: /assets/index-DrmNJHqZ.js
+
+hololive Dreams Lab
+hololive Dreams Lab   Member Data   Outfit Skill Data   Song Data     hololive Dreams Lab
+Research, Build, and Enjoy More
+Holodori Lab is an unofficial database and tool site for hololive Dreams Lab. Use this Holodori guide to compare cards and outfits, plan training, find your best Holodori team, and work toward Live and event goals in one place.
+Build Teams from Your Collection
+In Member Data, filter cards by rarity, attribute, skill effects, and conditions. Outfit Data can also be compared by effects and team requirements.  Members, Teams, and Training  explains parameters, skills, Holomem Boards, and Blooming.
+The Score Simulator brings together five-member teams, owned cards and outfits, unlocked Holomems, and training progress. Your entries are saved in the browser, so you can keep trying teams built around your own collection.
+Make Progress in Live and Events
+Live and Score  covers score calculation, skills, and rewards by difficulty. The event page shows Event Pt bonuses, eligible members, and how to plan toward rewards for the current event.  Game Updates  tracks official announcements by date.
+When You Are Not Sure Where to Start
+Start with the  Beginner's Guide  if you are new, or  Items  when you need to look up materials. The glossary is available for unfamiliar terms, and the  Frequently Asked Questions  is there when you still need an answer.
