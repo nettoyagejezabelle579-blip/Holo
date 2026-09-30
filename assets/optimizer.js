@@ -76,8 +76,10 @@
       return s;
     }
     const chrOf = (id) => H.cardById[id].chr;
+    // Cards excluded while building alternative recommendations.
+    let banned = new Set();
     function canAdd(ids, id, skipIdx) {
-      if (ids.includes(id)) return false;
+      if (ids.includes(id) || banned.has(id)) return false;
       const chr = chrOf(id);
       return !ids.some((x, i) => i !== skipIdx && chrOf(x) === chr);
     }
@@ -318,18 +320,60 @@
     }
     progress(0.9, "order");
     await tick();
-    // Formation order for the finalists; drop duplicate sets.
+    // Formation order for the finalists. Recommendations must be different sets of cards: the same
+    // 5 cards with another leader or order count as one (the best of them is kept).
+    const want = Math.max(3, cfg.finalists);
     const finals = [];
-    const seen = new Set();
+    const seenSet = new Set(), tried = new Set();
+    const setKey = (ids) => ids.slice().sort().join(",");
+    const addFinal = (r) => {
+      const k = setKey(r.ids);
+      if (seenSet.has(k)) return false;
+      seenSet.add(k);
+      finals.push(r);
+      return true;
+    };
     for (const r of results) {
-      const key = leaderKey(r.leader) + "#" + r.ids.slice().sort().join(",");
-      if (seen.has(key)) continue;
-      seen.add(key);
+      if (finals.length >= want) break;
+      const key = leaderKey(r.leader) + "#" + setKey(r.ids);
+      if (tried.has(key) || seenSet.has(setKey(r.ids))) continue;
+      tried.add(key);
       const ord = await polish(r.leader, r.ids);
-      finals.push({ leader: r.leader, ids: ord.ids, score: ord.score });
-      if (finals.length >= cfg.finalists) break;
+      addFinal({ leader: r.leader, ids: ord.ids, score: ord.score });
+      if (o.signal && o.signal.cancelled) break;
     }
     finals.sort((a, b) => b.score - a.score);
+    // Not enough different units: leave out one card of the best unit at a time and search again.
+    if (finals.length && finals.length < want && !(o.signal && o.signal.cancelled)) {
+      progress(0.95, "alternatives");
+      const top = finals[0];
+      const extra = [];
+      for (const out of top.ids) {
+        if (locks.includes(out)) continue;
+        banned = new Set([out]);
+        const ids = top.ids.filter((id) => id !== out);
+        while (ids.length < 5) {
+          let best = null, bestS = -1;
+          for (const id of pool) {
+            if (!canAdd(ids, id, -1)) continue;
+            const sc = score(top.leader, ids.concat(id));
+            if (sc > bestS) { bestS = sc; best = id; }
+          }
+          if (!best) break;
+          ids.push(best);
+        }
+        if (ids.length === 5) {
+          const r = await polish(top.leader, (await localSearch(top.leader, ids)).ids);
+          extra.push({ leader: top.leader, ids: r.ids, score: r.score });
+        }
+        await tick();
+        if (o.signal && o.signal.cancelled) break;
+      }
+      banned = new Set();
+      extra.sort((a, b) => b.score - a.score);
+      for (const r of extra) { if (finals.length >= want) break; addFinal(r); }
+      finals.sort((a, b) => b.score - a.score);
+    }
     progress(1, "done");
     return { best: finals[0] || null, alternatives: finals.slice(1), evals };
   }

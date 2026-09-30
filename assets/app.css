@@ -554,3 +554,4 @@ body.bv-lock { overflow: hidden; }
 .bv-t.has-card img { border-radius: 12px; }
 .bv-t.has-card .bv-name { font-size: 12px; }
 .bv-t.has-card .bv-name { top: auto; bottom: 2px; margin: 0; font-size: 10.5px; padding: 1px 5px; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+.rec-diff { font-weight: 400; margin-top: 4px; } .rec-diff s { color: var(--muted); }

@@ -31,7 +31,7 @@
       pullLv: "Assume the new card is", pullBloom: "Bloom",
       s4: "Holomem board", boardInfo: "How holomem boards are counted when comparing units.", bRole: "Planned for each unit (recommended)", bRoleHelp: "Every board is set up for its holomem's role in the unit being tried, using the points from its rank: the leader gets leader (red) tiles, unit members get member (blue) tiles, everyone else gets support (green) and song (yellow) tiles. Use \"Plan my boards\" on a result to see exactly which tiles to unlock.", bSaved: "My saved boards", bSavedHelp: "Only the tiles you set up in My Data → Holomems (boards you haven't set up count as empty).", bFull: "All tiles unlocked (theory)", bOff: "No board", bFullHelp: "Every tile of every board unlocked.", bOffHelp: "Board bonuses are ignored.",
       s5: "Input details", eventSongs: "Songs", addSong: "Add song", ratingLeader: "Leader holomem", latestEvent: "Use latest event songs",
-      run: "Find best unit", running: "Searching…", cancel: "Cancel", results: "Result", alternatives: "Other strong units",
+      run: "Find best unit", running: "Searching…", cancel: "Cancel", results: "Result", alternatives: "Other strong units", recN: "Recommendation #{n}", vsBest: "{d}% vs #1", cardsOut: "Not in this unit", cardsIn: "New in this unit", distinctNote: "Each recommendation uses a different set of cards (not just another leader, order or board).",
       noCards: "You have no cards yet. Add your cards in My Data first.", perSong: "Per song", avg: "Average", rating: "Rating (top 3)",
       gain: "Gain", pullResult: "Cards that would improve your unit the most", baseline: "Current best", withCard: "With this card",
       evals: "units evaluated", needCore: "Pick at least one core card.", chartNote: "* songs marked with * have no chart data; notes are spread evenly.",
@@ -69,7 +69,7 @@
       pullLv: "新カードの想定", pullBloom: "開花",
       s4: "ホロメンボード", boardInfo: "ユニットを比較するときのボードの扱い。", bRole: "ユニットごとに計画（推奨）", bRoleHelp: "試すユニットでの役割に合わせて、ランクのPtで各ボードを設定して計算します：リーダーはリーダー（赤）マス、ユニットのメンバーはメンバー（青）マス、それ以外はサポート（緑）と楽曲（黄）マス。結果の「ボードを計画」で解放するマスを確認できます。", bSaved: "保存したボード", bSavedHelp: "所持データ→ホロメンで設定したマスのみ（未設定のボードは空として計算）。", bFull: "全マス解放（理論値）", bOff: "ボードなし", bFullHelp: "全ボードの全マスを解放した状態。", bOffHelp: "ボード効果を無視します。",
       s5: "詳細入力", eventSongs: "楽曲", addSong: "楽曲を追加", ratingLeader: "リーダーのホロメン", latestEvent: "最新イベント楽曲を使用",
-      run: "最適ユニットを探す", running: "探索中…", cancel: "中止", results: "結果", alternatives: "その他の強いユニット",
+      run: "最適ユニットを探す", running: "探索中…", cancel: "中止", results: "結果", alternatives: "その他の強いユニット", recN: "おすすめ #{n}", vsBest: "#1 比 {d}%", cardsOut: "外れたカード", cardsIn: "入ったカード", distinctNote: "おすすめはそれぞれ別のカードの組み合わせです（リーダー・並び順・ボードだけの違いは含みません）。",
       noCards: "所持カードがありません。先に所持データでカードを登録してください。", perSong: "楽曲別", avg: "平均", rating: "レーティング（上位3曲）",
       gain: "上昇", pullResult: "ユニットを最も強化できるカード", baseline: "現在の最強", withCard: "このカード入り",
       evals: "ユニットを評価", needCore: "指定カードを1枚以上選んでください。", chartNote: "* 付きの楽曲は譜面データがないため、ノーツを均等配置して計算します。",
@@ -107,7 +107,7 @@
       pullLv: "新卡片假設為", pullBloom: "綻放",
       s4: "Holo成員面板", boardInfo: "比較隊伍時如何計算Holo成員面板。", bRole: "依每個隊伍規劃（推薦）", bRoleHelp: "依照成員在所試隊伍中的角色，以其Rank的Pt設定面板後計算：隊長使用隊長（紅）格子，隊伍成員使用成員（藍）格子，其他成員使用支援（綠）與樂曲（黃）格子。可在結果中按「為此隊伍規劃面板」查看需解鎖的格子。", bSaved: "已儲存的面板", bSavedHelp: "只使用在遊戲進度資料→Holo成員中設定的格子（未設定的面板視為空白）。", bFull: "全部格子解鎖（理論值）", bOff: "不使用面板", bFullHelp: "所有面板的所有格子皆解鎖。", bOffHelp: "忽略面板效果。",
       s5: "輸入細節", eventSongs: "樂曲", addSong: "新增樂曲", ratingLeader: "擔任隊長的Holo成員", latestEvent: "使用最新活動樂曲",
-      run: "尋找最佳隊伍", running: "搜尋中…", cancel: "取消", results: "您的最佳隊伍", alternatives: "其他強力隊伍",
+      run: "尋找最佳隊伍", running: "搜尋中…", cancel: "取消", results: "您的最佳隊伍", alternatives: "其他強力隊伍", recN: "推薦 #{n}", vsBest: "比 #1 {d}%", cardsOut: "換下的卡片", cardsIn: "換上的卡片", distinctNote: "每個推薦都使用不同的卡片組合（不只是更換隊長、位置或面板）。",
       noCards: "你還沒有持有任何卡片，請先到遊戲進度資料登錄卡片。", perSong: "各樂曲", avg: "平均", rating: "評級（前3首）",
       gain: "提升", pullResult: "最能強化隊伍的卡片", baseline: "目前最佳", withCard: "加入此卡片",
       evals: "個隊伍已評估", needCore: "請至少選擇一張核心卡片。", chartNote: "* 標記的樂曲沒有譜面資料，音符以平均分布計算。",
@@ -460,7 +460,7 @@
     return `details.html#${U.encodeTeam({ song, diff, mode: st.play, leader, members: ids })}`;
   }
   const planTargets = [];
-  function teamBlock(env, overrides, leader, ids, charts, songs, title) {
+  function teamBlock(env, overrides, leader, ids, charts, songs, title, openTimeline) {
     const planIdx = planTargets.push({ leader, ids, charts }) - 1;
     const team = { leader, members: ids.map((id) => S.prepare(env, id, overrides && overrides[id])) };
     const details = charts.map((c) => S.evaluate(env, team, c, true));
@@ -502,7 +502,7 @@
       ${U.teamHTML(leader, ids, { stats: d0.stats, hypo })}
       ${U.breakdownHTML(d0, leader)}
       ${ptBlock}
-      <details class="tl-details" ${title ? "" : "open"}><summary>${esc(tx("timeline"))}</summary>${U.timelineHTML(d0, ids)}</details>
+      <details class="tl-details" ${!title || openTimeline ? "open" : ""}><summary>${esc(tx("timeline"))}</summary>${U.timelineHTML(d0, ids)}</details>
       ${st.pool === "owned" ? `<div><button class="icon-btn" data-plan="${planIdx}">🧩 ${esc(tx("planBoards"))}</button>
         <label class="check small"><input type="checkbox" data-plan-others="${planIdx}"> ${esc(tx("planOthers"))}</label><div id="plan-${planIdx}"></div></div>` : ""}
       ${charts.length > 1 ? `<table class="data small-table"><thead><tr><th>${esc(tx("perSong"))}</th><th class="num">${esc(tx("average"))}</th><th class="num">${esc(tx("maximum"))}</th></tr></thead><tbody>
@@ -516,9 +516,22 @@
     planTargets.length = 0;
     if (r.kind === "team") {
       if (!r.r.best) { el.innerHTML = `<div class="panel">${esc(tx("noCards"))}</div>`; return; }
-      el.innerHTML = `<h2>${esc(tx("results"))}</h2>` +
-        teamBlock(r.env, r.overrides, r.r.best.leader, r.r.best.ids, r.charts, r.songs) +
-        (r.r.alternatives.length ? `<h3>${esc(tx("alternatives"))}</h3>` + r.r.alternatives.map((a) => teamBlock(r.env, r.overrides, a.leader, a.ids, r.charts, r.songs)).join("") : "") +
+      const best = r.r.best;
+      const cardLabel = (id) => `${H.stars(H.cardById[id].rarity)} ${L(H.talents[H.cardById[id].chr].short)} · ${L(H.cardById[id].title)}`;
+      const recTitle = (a, i) => {
+        let t = `<span>${esc(tx("recN").replace("{n}", i + 1))}</span>`;
+        if (i > 0) {
+          const d = best.score ? (a.score / best.score - 1) * 100 : 0;
+          const out = best.ids.filter((id) => !a.ids.includes(id)), inn = a.ids.filter((id) => !best.ids.includes(id));
+          t += ` <span class="pill">${esc(tx("vsBest").replace("{d}", d.toFixed(2)))}</span>
+            <div class="small rec-diff"><span class="muted">${esc(tx("cardsOut"))}:</span> ${out.map((id) => `<s>${esc(cardLabel(id))}</s>`).join(", ")}
+            · <span class="muted">${esc(tx("cardsIn"))}:</span> ${inn.map((id) => `<b>${esc(cardLabel(id))}</b>`).join(", ")}</div>`;
+        }
+        return t;
+      };
+      el.innerHTML = `<h2>${esc(tx("results"))}</h2><p class="small muted">${esc(tx("distinctNote"))}</p>` +
+        teamBlock(r.env, r.overrides, best.leader, best.ids, r.charts, r.songs, recTitle(best, 0), true) +
+        (r.r.alternatives.length ? `<h3>${esc(tx("alternatives"))}</h3>` + r.r.alternatives.map((a, i) => teamBlock(r.env, r.overrides, a.leader, a.ids, r.charts, r.songs, recTitle(a, i + 1))).join("") : "") +
         `<p class="small muted">${fmt(r.r.evals)} ${esc(tx("evals"))}</p>`;
     } else if (r.kind === "rating") {
       const top = r.rows.slice(0, 3);
